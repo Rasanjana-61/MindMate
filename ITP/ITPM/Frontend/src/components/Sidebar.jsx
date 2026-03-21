@@ -58,7 +58,7 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
         <div className="bg-wellness-blue-light p-2 rounded-xl shadow-sm">
           <Leaf className="w-6 h-6 text-wellness-green" />
         </div>
-        StudentWell
+        MindMadte
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-6">
