@@ -62,6 +62,14 @@ export function Register({ onRegister, onNavigateToLogin }) {
         newErrors.email = 'Required';
     else if (!formData.email.includes('@'))
         newErrors.email = 'Invalid email';
+
+      //Cross-validate: StudentID must match first 10 chars of email (before @)
+    if (formData.studentId && formData.email && formData.email.includes('@')) {
+        const emailPrefix = formData.email.split('@')[0]; // get part before @
+        if (formData.studentId !== emailPrefix.substring(0, 10)) {
+            newErrors.studentId = 'Student ID must match the first 10 characters of your email';
+        }
+    }
     
     if (!formData.password)
         newErrors.password = 'Required';
