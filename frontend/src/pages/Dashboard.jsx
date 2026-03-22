@@ -53,7 +53,7 @@ export function Dashboard({ onNavigate }) {
   const [isEmotionsExpanded, setIsEmotionsExpanded] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/dashboard/${USER_ID}?timeRange=${timeRange}`)
+    fetch(`${API_URL}/api/dashboard/${USER_ID}?timeRange=${timeRange}`)
       .then((r) => r.json())
       .then((data) => {
         setDashboardData(data)

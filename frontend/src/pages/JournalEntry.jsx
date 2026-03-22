@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { SendIcon, ClockIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 import { getMoodEmoji } from '../data/moodData'
 
+const API_URL = import.meta.env.VITE_API_BASE_URL
 const USER_ID = 'testUser123'
 
 function validateJournalContent(text) {
@@ -199,7 +200,7 @@ function TodayEntriesSidebar({ refreshKey, onEditEntry, onLatestEntryLoaded }) {
     const fetchTodayEntries = async () => {
       setLoading(true)
       try {
-        const response = await fetch(`/api/history/${USER_ID}`)
+        const response = await fetch(`${API_URL}/api/history/${USER_ID}`)
         if (response.ok) {
           const data = await response.json()
           const today = new Date().toDateString()
@@ -332,13 +333,13 @@ export function JournalEntry({ onAnalysisComplete }) {
     try {
       let response;
       if (editingEntryId) {
-        response = await fetch(`/api/entries/${editingEntryId}`, {
+        response = await fetch(`${API_URL}/api/entries/${editingEntryId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: journalText }),
         })
       } else {
-        response = await fetch('/api/entries', {
+        response = await fetch(`${API_URL}/api/entries`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: USER_ID, text: journalText }),
