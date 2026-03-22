@@ -8,6 +8,8 @@ import {
   formatDate,
 } from '../data/moodData'
 
+const API_URL = import.meta.env.VITE_API_BASE_URL
+
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const MONTH_NAMES = [
@@ -29,6 +31,7 @@ const SENTIMENT_COLORS = {
 // Map a backend entry to the shape CalendarPopup needs
 function toPopupEntry(entry) {
   return {
+    entryId: entry.entryId,
     date: entry.entryDate,
     mood: entry.moodScore,
     stress: entry.stressScore,
@@ -42,7 +45,7 @@ function toPopupEntry(entry) {
   }
 }
 
-function CalendarPopup({ entry, onClose }) {
+function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
   const date = new Date(entry.date)
   const formattedDate = date.toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
@@ -117,6 +120,12 @@ function CalendarPopup({ entry, onClose }) {
           </div>
         </div>
 
+        <div className="mb-6 p-3 bg-amber/15 border border-amber/35 rounded-lg">
+          <p className="text-xs text-amber-900 leading-relaxed">
+            AI-generated scores may contain inaccuracies. Use as a general guide, not a definitive psychological assessment.
+          </p>
+        </div>
+
         {/* Main content grid: Journal, Emotion breakdown, Suggestions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Journal Text */}
@@ -166,16 +175,73 @@ function CalendarPopup({ entry, onClose }) {
             </div>
           )}
         </div>
+
+        <div className="mt-6 pt-4 border-t border-sage-light/30 flex justify-end">
+          <button
+            onClick={() => onDelete(entry.entryId)}
+            disabled={isDeleting}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-blush/20 text-dusty-rose border border-dusty-rose/40 hover:bg-blush/30 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Entry'}
+          </button>
+        </div>
       </motion.div>
     </motion.div>
   )
 }
 
-export function Calendar({ entries = [], loading = false }) {
+function DeleteConfirmPopup({ onCancel, onConfirm, isDeleting }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-60 flex items-center justify-center p-4"
+      onClick={onCancel}
+    >
+      <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+        className="relative w-full max-w-md rounded-2xl bg-warm-white p-6 border border-sage-light/40 shadow-popup"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="font-lora text-lg font-semibold text-ink mb-2">Confirm Delete</h3>
+        <p className="text-sm text-olive mb-5">
+          This action is permanent, and you will lose all data related to this entry.
+        </p>
+
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="px-4 py-2 rounded-lg text-sm font-medium border border-sage-light/60 text-forest hover:bg-sage-wash/50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-dusty-rose text-white hover:bg-dusty-rose/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+export function Calendar({ entries = [], loading = false, onEntryDeleted }) {
   const today = new Date()
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
   const [selectedEntry, setSelectedEntry] = useState(null)
+  const [deleteEntryId, setDeleteEntryId] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Build a map: "YYYY-MM-DD" -> latest entry for that day
   const entryMap = {}
@@ -208,6 +274,30 @@ export function Calendar({ entries = [], loading = false }) {
     const key = formatDate(currentYear, currentMonth, day)
     const entry = entryMap[key]
     if (entry) setSelectedEntry(toPopupEntry(entry))
+  }
+
+  const handleDeleteEntry = async () => {
+    if (!deleteEntryId || isDeleting) return
+
+    try {
+      setIsDeleting(true)
+      const response = await fetch(`${API_URL}/api/entries/${deleteEntryId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error(`Delete failed with status ${response.status}`)
+      }
+
+      if (onEntryDeleted) onEntryDeleted(deleteEntryId)
+      setSelectedEntry(null)
+      setDeleteEntryId(null)
+    } catch (err) {
+      console.error('Failed to delete entry:', err)
+      window.alert('Failed to delete entry. Please try again.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -257,7 +347,7 @@ export function Calendar({ entries = [], loading = false }) {
                   ${hasEntry
                     ? 'bg-sage text-white hover:bg-sage/90 cursor-pointer shadow-sm hover:scale-105 hover:z-50 hover:shadow-md active:scale-95'
                     : isTodayDate
-                      ? 'bg-ink text-white'
+                      ? 'bg-olive text-white'
                       : 'text-stone/40 cursor-default'
                   }
                 `}
@@ -274,6 +364,15 @@ export function Calendar({ entries = [], loading = false }) {
           <CalendarPopup
             entry={selectedEntry}
             onClose={() => setSelectedEntry(null)}
+            onDelete={(entryId) => setDeleteEntryId(entryId)}
+            isDeleting={isDeleting}
+          />
+        )}
+        {deleteEntryId && (
+          <DeleteConfirmPopup
+            onCancel={() => setDeleteEntryId(null)}
+            onConfirm={handleDeleteEntry}
+            isDeleting={isDeleting}
           />
         )}
       </AnimatePresence>

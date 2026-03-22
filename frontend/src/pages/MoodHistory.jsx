@@ -21,6 +21,10 @@ export function MoodHistory() {
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
 
+  const handleEntryDeleted = (entryId) => {
+    setEntries((prev) => prev.filter((entry) => entry.entryId !== entryId))
+  }
+
   useEffect(() => {
     fetch(`${API_URL}/api/history/${USER_ID}`)
       .then(r => r.json())
@@ -52,7 +56,7 @@ export function MoodHistory() {
       >
         {/* Left Column - Calendar */}
         <div>
-          <Calendar entries={entries} loading={loading} />
+          <Calendar entries={entries} loading={loading} onEntryDeleted={handleEntryDeleted} />
         </div>
 
         {/* Right Column - Recent Days Feed */}

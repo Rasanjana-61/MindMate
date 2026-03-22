@@ -5,7 +5,6 @@ import { Dashboard } from './pages/Dashboard'
 import { JournalEntry } from './pages/JournalEntry'
 import { Results } from './pages/Results'
 import { MoodHistory } from './pages/MoodHistory'
-import Encouragement from './pages/Encouragement'
 
 const pageVariants = {
   initial: {

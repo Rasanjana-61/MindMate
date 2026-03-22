@@ -70,6 +70,7 @@ export function Results({ analysisResult, onNavigate }) {
     energyScore,
     suggestions = [],
   } = analysisResult
+  const entryText = analysisResult.text || analysisResult.journalText || ''
 
   const sentiment = deriveSentiment(moodScore)
   const sentColor = sentimentColors[sentiment]
@@ -111,6 +112,30 @@ export function Results({ analysisResult, onNavigate }) {
           {sentiment}
         </span>
       </motion.div>
+
+      <motion.div
+        variants={itemVariants}
+        className="bg-amber/15 border border-amber/40 rounded-card p-4"
+      >
+        <p className="text-sm text-amber-900">
+          AI-generated scores may contain inaccuracies. Use as a general guide, not a definitive psychological assessment.
+        </p>
+      </motion.div>
+
+      {/* Journal Entry Text */}
+      {entryText.trim() && (
+        <motion.div
+          variants={itemVariants}
+          className="bg-warm-white rounded-card shadow-card p-6"
+        >
+          <h3 className="font-lora text-lg font-semibold text-ink mb-3">
+            Your Journal Entry
+          </h3>
+          <p className="text-forest leading-relaxed whitespace-pre-wrap">
+            {entryText}
+          </p>
+        </motion.div>
+      )}
 
       {/* Emotion Breakdown */}
       {sortedEmotions.length > 0 && (

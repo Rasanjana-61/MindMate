@@ -312,3 +312,24 @@ export async function updateEntry(req, res) {
     res.status(500).json({ status: "error", message: err.message });
   }
 }
+
+// 8. Delete Journal Entry
+export async function deleteEntry(req, res) {
+  try {
+    const { id } = req.params;
+
+    const deletedEntry = await JournalEntry.findByIdAndDelete(id);
+    if (!deletedEntry) {
+      return res.status(404).json({ status: "error", message: "Entry not found" });
+    }
+
+    res.json({
+      status: "success",
+      message: "Journal entry deleted.",
+      entryId: id,
+    });
+  } catch (err) {
+    console.error("[deleteEntry] Error:", err);
+    res.status(500).json({ status: "error", message: err.message });
+  }
+}

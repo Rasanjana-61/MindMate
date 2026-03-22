@@ -9,8 +9,6 @@ const USER_ID = 'testUser123'
 function validateJournalContent(text) {
   const trimmed = text.trim()
 
-
-
   // Soft Warnings
   const lettersOnly = trimmed.replace(/[^a-zA-Z]/g, '')
   const vowelsCount = (lettersOnly.match(/[aeiouyAEIOUY]/g) || []).length
@@ -235,6 +233,12 @@ function TodayEntriesSidebar({ refreshKey, onEditEntry, onLatestEntryLoaded }) {
         {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
       </p>
 
+      <div className="mb-4 p-3 bg-amber/15 border border-amber/35 rounded-lg">
+        <p className="text-xs text-amber-900 leading-relaxed">
+          AI-generated scores may contain inaccuracies. Use as a general guide, not a definitive psychological assessment.
+        </p>
+      </div>
+
       {loading ? (
         <div className="flex items-center justify-center flex-1">
           <div className="flex gap-1">
@@ -331,6 +335,7 @@ export function JournalEntry({ onAnalysisComplete }) {
     setForceSubmit(false)
 
     try {
+      const submittedText = journalText
       let response;
       if (editingEntryId) {
         response = await fetch(`${API_URL}/api/entries/${editingEntryId}`, {
@@ -355,7 +360,7 @@ export function JournalEntry({ onAnalysisComplete }) {
       setJournalText('')
       setEditingEntryId(null)
       setRefreshKey((k) => k + 1)
-      onAnalysisComplete(data)
+      onAnalysisComplete({ ...data, text: submittedText })
     } catch (err) {
       console.error('Error submitting entry:', err)
       setError(err.message || 'Failed to analyze. Please try again.')
