@@ -6,6 +6,7 @@ import {
   saveChatbotData,
   CONVERSATION_STATES,
 } from "../lib/preLoginChatbot";
+import chatbotIcon from "../assets/chatbot-icon.svg";
 
 export default function PreLoginChatbot({ isOpen = false, onClose, onComplete }) {
   const [messages, setMessages] = useState([]);
@@ -128,7 +129,7 @@ export default function PreLoginChatbot({ isOpen = false, onClose, onComplete })
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
-              💬
+              <img src={chatbotIcon} alt="MindMate" className="w-7 h-7" />
             </div>
             <div>
               <h3 className="font-semibold text-lg">MindMate Guide</h3>
