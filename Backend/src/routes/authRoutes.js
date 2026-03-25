@@ -127,7 +127,7 @@ router.post("/register", async (req, res) => {
       year: req.body.year,
       semester: req.body.semester,
       bio: req.body.bio?.trim() || '',
-      role: "Student",
+      role: "student",
     });
 
     const token = generateToken(user._id);
