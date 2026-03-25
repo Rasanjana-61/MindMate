@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Send, X, Loader } from "lucide-react";
 import { startChatbot, sendMessage, endChatbot } from "../lib/chatService";
+import chatbotIcon from "../assets/chatbot-icon.svg";
 
 export default function Chatbot({ isOpen = true, onClose, onComplete }) {
   const [messages, setMessages] = useState([]);
@@ -114,7 +115,7 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
         <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-              <span className="text-lg">🤖</span>
+              <img src={chatbotIcon} alt="MindMate" className="w-7 h-7" />
             </div>
             <div>
               <h3 className="font-semibold text-lg">MindMate Guide</h3>
