@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, User, BookOpen, Calendar, GraduationCap, ShieldCheck, Leaf, Sparkles, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, BookOpen, Calendar, GraduationCap, ShieldCheck, Sparkles, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Chatbot from '../components/Chatbot';
 import { getChatbotData, clearChatbotData } from '../lib/preLoginChatbot';
+import logo from '../assets/logo.svg';
 
 export function Register({ onRegister, onNavigateToLogin, chatbotData = null }) {
     const [formData, setFormData] = useState({
@@ -242,9 +243,7 @@ export function Register({ onRegister, onNavigateToLogin, chatbotData = null }) 
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 text-white font-bold text-2xl mb-16">
-            <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
-              <Leaf className="w-8 h-8 text-white"/>
-            </div>
+            <img src={logo} alt="MindMate" className="w-10 h-10" />
               MindMadte
           </div>
 
@@ -280,7 +279,7 @@ export function Register({ onRegister, onNavigateToLogin, chatbotData = null }) 
       <div className="w-full lg:w-7/12 xl:w-2/3 lg:ml-auto flex items-center justify-center p-6 sm:p-12 min-h-screen">
         {/* Mobile logo */}
         <div className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-wellness-blue font-bold text-xl">
-          <Leaf className="w-6 h-6 text-wellness-green"/>
+          <img src={logo} alt="MindMate" className="w-6 h-6" />
           MindMadte
         </div>
 
