@@ -15,6 +15,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const resourceRoutes = require("./routes/resourceRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const { setIO } = require("./utils/socket");
 
 dotenv.config();
@@ -52,6 +53,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/resources", resourceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found." });
