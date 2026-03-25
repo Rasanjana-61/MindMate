@@ -1,5 +1,6 @@
-import { BookOpen, LayoutDashboard, Leaf, LogOut, MessageCircle, Smile, Timer, User } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LogOut, MessageCircle, Smile, Timer, User, Bookmark, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logo from '../assets/logo.svg';
 
 function SidebarAvatar({ user }) {
   if (user.avatarUrl) {
@@ -22,6 +23,7 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
 
   const communityNavItems = [
     { id: 'peer', label: 'Peer Support', icon: MessageCircle },
+    { id: 'bookmarks', label: 'Bookmarks', icon: Bookmark },
     { id: 'resources', label: 'Resource Hub', icon: BookOpen },
   ];
 
@@ -55,9 +57,7 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen bg-white border-r border-wellness-border fixed left-0 top-0 z-20">
       <div className="p-6 flex items-center gap-3 text-wellness-blue font-bold text-xl border-b border-wellness-border/50">
-        <div className="bg-wellness-blue-light p-2 rounded-xl shadow-sm">
-          <Leaf className="w-6 h-6 text-wellness-green" />
-        </div>
+        <img src={logo} alt="MindMate" className="w-8 h-8" />
         MindMadte
       </div>
 
@@ -71,6 +71,13 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
           <p className="px-4 text-xs font-semibold text-wellness-text-muted uppercase tracking-wider mb-2">Community</p>
           {communityNavItems.map(renderNavItem)}
         </nav>
+
+        {user.role === 'admin' && (
+          <nav className="space-y-1 border-t border-wellness-border pt-4">
+            <p className="px-4 text-xs font-semibold text-red-500 uppercase tracking-wider mb-2">Administration</p>
+            {[{ id: 'admin', label: 'Admin Dashboard', icon: Shield }].map(renderNavItem)}
+          </nav>
+        )}
       </div>
 
       <div className="p-4 border-t border-wellness-border bg-gray-50/50">
