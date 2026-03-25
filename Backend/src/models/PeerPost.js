@@ -45,6 +45,33 @@ const peerPostSchema = new mongoose.Schema(
       enum: ["visible", "hidden"],
       default: "visible",
     },
+    replies: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "PeerReply",
+      default: [],
+    },
+    reports: [
+      {
+        _id: mongoose.Schema.Types.ObjectId,
+        reason: {
+          type: String,
+          default: "Inappropriate content",
+        },
+        details: {
+          type: String,
+          default: "",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
