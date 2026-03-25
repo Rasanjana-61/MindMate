@@ -10,6 +10,9 @@ import {
   Trash2,
   UserPlus,
   X,
+  Heart,
+  Bookmark,
+  Flag,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -98,6 +101,10 @@ export function PeerSupport({ user }) {
   const [replyTexts, setReplyTexts] = useState({});
   const [postErrors, setPostErrors] = useState({});
   const [replyErrors, setReplyErrors] = useState({});
+  const [likedPosts, setLikedPosts] = useState(new Set());
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
+  const [reportedPosts, setReportedPosts] = useState(new Set());
+  const [postLikeCounts, setPostLikeCounts] = useState({});
   const [overview, setOverview] = useState({
     posts: [],
     categories: [],
@@ -283,12 +290,42 @@ export function PeerSupport({ user }) {
     }
   }
 
-  async function handleMarkNotificationsRead() {
-    try {
-      await markPeerNotificationsRead();
-      await loadOverview(activeCategory, { silent: true });
-    } catch (error) {
-      setErrorMessage(error.message);
+  function handleLikePost(postId) {
+    if (likedPosts.has(postId)) {
+      setLikedPosts((current) => {
+        const next = new Set(current);
+        next.delete(postId);
+        return next;
+      });
+      setPostLikeCounts((current) => ({
+        ...current,
+        [postId]: (current[postId] || 1) - 1,
+      }));
+    } else {
+      setLikedPosts((current) => new Set([...current, postId]));
+      setPostLikeCounts((current) => ({
+        ...current,
+        [postId]: (current[postId] || 0) + 1,
+      }));
+    }
+  }
+
+  function handleBookmarkPost(postId) {
+    if (bookmarkedPosts.has(postId)) {
+      setBookmarkedPosts((current) => {
+        const next = new Set(current);
+        next.delete(postId);
+        return next;
+      });
+    } else {
+      setBookmarkedPosts((current) => new Set([...current, postId]));
+    }
+  }
+
+  function handleReportPost(postId) {
+    if (!reportedPosts.has(postId)) {
+      setReportedPosts((current) => new Set([...current, postId]));
+      setStatusMessage('Post reported successfully. Thank you for helping keep our community safe.');
     }
   }
 
@@ -436,12 +473,73 @@ export function PeerSupport({ user }) {
 
                         <div className="flex items-center gap-6 border-t border-wellness-border/50 pt-4">
                           <button
+                            onClick={() => handleLikePost(post.id)}
+                            className={`flex items-center gap-2 text-sm font-bold transition-colors group ${
+                              likedPosts.has(post.id)
+                                ? 'text-wellness-peach'
+                                : 'text-wellness-text-sec hover:text-wellness-peach'
+                            }`}
+                            type="button"
+                            title="Like this post"
+                          >
+                            <div className={`p-1.5 rounded-full transition-colors ${
+                              likedPosts.has(post.id)
+                                ? 'bg-wellness-peach-light'
+                                : 'group-hover:bg-wellness-peach-light'
+                            }`}>
+                              <Heart className="w-5 h-5" fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
+                            </div>
+                            {postLikeCounts[post.id] || 0} {postLikeCounts[post.id] === 1 ? 'Like' : 'Likes'}
+                          </button>
+
+                          <button
+                            onClick={() => handleBookmarkPost(post.id)}
+                            className={`flex items-center gap-2 text-sm font-bold transition-colors group ${
+                              bookmarkedPosts.has(post.id)
+                                ? 'text-wellness-blue'
+                                : 'text-wellness-text-sec hover:text-wellness-blue'
+                            }`}
+                            type="button"
+                            title="Bookmark this post"
+                          >
+                            <div className={`p-1.5 rounded-full transition-colors ${
+                              bookmarkedPosts.has(post.id)
+                                ? 'bg-wellness-blue/10'
+                                : 'group-hover:bg-wellness-blue/10'
+                            }`}>
+                              <Bookmark className="w-5 h-5" fill={bookmarkedPosts.has(post.id) ? 'currentColor' : 'none'} />
+                            </div>
+                            Save
+                          </button>
+
+                          <button
+                            onClick={() => handleReportPost(post.id)}
+                            className={`flex items-center gap-2 text-sm font-bold transition-colors group ${
+                              reportedPosts.has(post.id)
+                                ? 'text-wellness-peach'
+                                : 'text-wellness-text-sec hover:text-wellness-peach'
+                            }`}
+                            type="button"
+                            title="Report this post"
+                            disabled={reportedPosts.has(post.id)}
+                          >
+                            <div className={`p-1.5 rounded-full transition-colors ${
+                              reportedPosts.has(post.id)
+                                ? 'bg-wellness-peach-light'
+                                : 'group-hover:bg-wellness-peach-light'
+                            }`}>
+                              <Flag className="w-5 h-5" />
+                            </div>
+                            {reportedPosts.has(post.id) ? 'Reported' : 'Report'}
+                          </button>
+
+                          <button
                             onClick={() =>
                               setExpandedThreads((current) =>
                                 current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id]
                               )
                             }
-                            className="flex items-center gap-2 text-sm text-wellness-text-sec hover:text-wellness-blue font-bold transition-colors group"
+                            className="flex items-center gap-2 text-sm text-wellness-text-sec hover:text-wellness-blue font-bold transition-colors group ml-auto"
                             type="button"
                           >
                             <div className="p-1.5 rounded-full group-hover:bg-wellness-blue-light transition-colors">
