@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
+import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
+import { HomePage } from './pages/HomePage';
 import { Dashboard } from './pages/Dashboard';
 import { MoodTracker } from './pages/MoodTracker';
 import { FocusTimer } from './pages/FocusTimer';
 import { PeerSupport } from './pages/PeerSupport';
+import { BookmarkedQuestions } from './pages/BookmarkedQuestions';
 import { ResourceHub } from './pages/ResourceHub';
 import { Profile } from './pages/Profile';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import AdminDashboard from './pages/AdminDashboard';
 import {
   API_BASE_URL,
   clearToken,
@@ -25,6 +29,7 @@ import {
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showHome, setShowHome] = useState(true);
   const [authPage, setAuthPage] = useState('login');
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [user, setUser] = useState(null);
@@ -152,6 +157,7 @@ export function App() {
     setNotifications([]);
     setUnreadNotificationCount(0);
     setToastNotifications([]);
+    setShowHome(true);
     setAuthPage('login');
     setCurrentPage('dashboard');
   };
@@ -206,16 +212,32 @@ export function App() {
         return <FocusTimer user={user} />;
       case 'peer':
         return <PeerSupport user={user} />;
+      case 'bookmarks':
+        return <BookmarkedQuestions />;
       case 'resources':
         return <ResourceHub />;
       case 'profile':
         return <Profile user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
+      case 'admin':
+        return user.role === 'admin' ? <AdminDashboard /> : <Dashboard setPage={setCurrentPage} userName={user.name} />;
       default:
         return <Dashboard setPage={setCurrentPage} userName={user.name} />;
     }
   };
 
   if (!isAuthenticated) {
+    if (showHome) {
+      return (
+        <HomePage
+          onNavigateToLogin={() => setShowHome(false)}
+          onNavigateToRegister={() => {
+            setShowHome(false);
+            setAuthPage('register');
+          }}
+        />
+      );
+    }
+
     if (authPage === 'login') {
       return (
         <Login
@@ -238,18 +260,21 @@ export function App() {
   }
 
   return (
-    <Layout
-      currentPage={currentPage}
-      setPage={setCurrentPage}
-      user={user}
-      onLogout={handleLogout}
-      notifications={notifications}
-      unreadNotificationCount={unreadNotificationCount}
-      onOpenNotification={handleNotificationOpen}
-      onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
-      toastNotifications={toastNotifications}
-    >
-      {renderPage()}
-    </Layout>
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
+      <Layout
+        currentPage={currentPage}
+        setPage={setCurrentPage}
+        user={user}
+        onLogout={handleLogout}
+        notifications={notifications}
+        unreadNotificationCount={unreadNotificationCount}
+        onOpenNotification={handleNotificationOpen}
+        onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
+        toastNotifications={toastNotifications}
+      >
+        {renderPage()}
+      </Layout>
+    </>
   );
 }
