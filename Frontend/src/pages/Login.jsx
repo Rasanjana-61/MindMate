@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Leaf, Sparkles, Clock, Users, MessageCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, Clock, Users, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PreLoginChatbot from '../components/PreLoginChatbot';
+import logo from '../assets/logo.svg';
 
 export function Login({ onLogin, onNavigateToRegister }) {
     const [email, setEmail] = useState('');
@@ -58,9 +59,7 @@ export function Login({ onLogin, onNavigateToRegister }) {
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 text-white font-bold text-2xl mb-16">
-            <div className="bg-white/20 p-2.5 rounded-xl backdrop-blur-sm">
-              <Leaf className="w-8 h-8 text-white"/>
-            </div>
+            <img src={logo} alt="MindMate" className="w-10 h-10" />
             MindMadte
           </div>
 
@@ -119,7 +118,7 @@ export function Login({ onLogin, onNavigateToRegister }) {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
         {/* Mobile logo */}
         <div className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-wellness-blue font-bold text-xl">
-          <Leaf className="w-6 h-6 text-wellness-green"/>
+          <img src={logo} alt="MindMate" className="w-6 h-6" />
           MindMadte
         </div>
 
