@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { fetchBookmarkedPosts, removeBookmark } from '../lib/auth';
 
 const categoryColors = {
   Stress: 'bg-wellness-peach-light text-wellness-peach border-wellness-peach/20',
@@ -54,26 +55,34 @@ function getAvatarGradient(seed) {
 
 export function BookmarkedQuestions() {
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // In a real app, you would fetch bookmarked questions from the API
-  // For now, we'll show a demo with localStorage
   useEffect(() => {
-    // Simulate loading bookmarked questions
-    const saved = localStorage.getItem('mindmate_bookmarked_posts');
-    if (saved) {
-      try {
-        // In a real implementation, you'd fetch actual post data from API
-        setBookmarkedQuestions(JSON.parse(saved) || []);
-      } catch (error) {
-        console.error('Error loading bookmarks:', error);
-      }
-    }
-    setIsLoading(false);
+    loadBookmarks();
   }, []);
 
-  function removeBookmark(postId) {
-    setBookmarkedQuestions((current) => current.filter((q) => q.id !== postId));
+  async function loadBookmarks() {
+    try {
+      setIsLoading(true);
+      setErrorMessage('');
+      const data = await fetchBookmarkedPosts();
+      setBookmarkedQuestions(data.data || []);
+    } catch (error) {
+      setErrorMessage(error.message);
+      console.error('Error loading bookmarks:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleRemoveBookmark(postId) {
+    try {
+      await removeBookmark(postId);
+      setBookmarkedQuestions((current) => current.filter((q) => q.id !== postId));
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
   }
 
   return (
@@ -85,6 +94,12 @@ export function BookmarkedQuestions() {
         </div>
 
         <div className="space-y-4">
+          {errorMessage ? (
+            <div className="card p-6 border border-wellness-peach/30 bg-wellness-peach-light/30 text-wellness-peach text-sm rounded-2xl">
+              {errorMessage}
+            </div>
+          ) : null}
+
           {isLoading ? (
             <div className="card p-12 text-center text-sm text-wellness-text-sec">
               <div className="w-12 h-12 border-4 border-wellness-blue/20 border-t-wellness-blue rounded-full animate-spin mx-auto mb-4"></div>
@@ -133,7 +148,7 @@ export function BookmarkedQuestions() {
                       </span>
                     )}
                     <button
-                      onClick={() => removeBookmark(question.id)}
+                      onClick={() => handleRemoveBookmark(question.id)}
                       className="p-2 rounded-lg bg-wellness-bg text-wellness-text-sec hover:text-wellness-peach transition-colors"
                       title="Remove bookmark"
                       type="button"
