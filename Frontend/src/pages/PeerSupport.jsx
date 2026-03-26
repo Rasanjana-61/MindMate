@@ -28,6 +28,7 @@ import {
   removeBookmark,
   likePost,
   unlikePost,
+  reportPost,
 } from '../lib/auth';
 
 const categoryIcons = {
@@ -357,10 +358,18 @@ export function PeerSupport({ user }) {
     }
   }
 
-  function handleReportPost(postId) {
-    if (!reportedPosts.has(postId)) {
+  async function handleReportPost(postId) {
+    if (reportedPosts.has(postId)) {
+      setErrorMessage("You have already reported this post.");
+      return;
+    }
+
+    try {
+      await reportPost(postId, "Inappropriate content", "");
       setReportedPosts((current) => new Set([...current, postId]));
       setStatusMessage('Post reported successfully. Thank you for helping keep our community safe.');
+    } catch (error) {
+      setErrorMessage(error.message);
     }
   }
 
