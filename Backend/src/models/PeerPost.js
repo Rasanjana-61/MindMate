@@ -53,6 +53,10 @@ const peerPostSchema = new mongoose.Schema(
     reports: [
       {
         _id: mongoose.Schema.Types.ObjectId,
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
         reason: {
           type: String,
           default: "Inappropriate content",
