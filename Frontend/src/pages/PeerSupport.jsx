@@ -103,6 +103,7 @@ export function PeerSupport({ user }) {
   const [postForm, setPostForm] = useState(createInitialPostForm);
   const [editingPostId, setEditingPostId] = useState('');
   const [editingReplyId, setEditingReplyId] = useState('');
+  const [replyingToReplyId, setReplyingToReplyId] = useState('');
   const [replyTexts, setReplyTexts] = useState({});
   const [postErrors, setPostErrors] = useState({});
   const [replyErrors, setReplyErrors] = useState({});
@@ -275,10 +276,14 @@ export function PeerSupport({ user }) {
       const response =
         editingReplyId && overview.posts.some((post) => post.replies.some((reply) => reply.id === editingReplyId))
           ? await updatePeerReply(editingReplyId, { content })
-          : await createPeerReply(postId, { content });
+          : await createPeerReply(postId, { 
+              content,
+              parentReplyId: replyingToReplyId || undefined 
+            });
 
       setStatusMessage(response.message);
       setEditingReplyId('');
+      setReplyingToReplyId('');
       setReplyTexts((current) => ({
         ...current,
         [postId]: '',
@@ -620,12 +625,32 @@ export function PeerSupport({ user }) {
                                       </div>
                                     ) : null}
                                   </div>
-                                  <p className="text-sm text-wellness-text-sec leading-relaxed">{reply.content}</p>
+                                  <p className="text-sm text-wellness-text-sec leading-relaxed mb-3">{reply.content}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => setReplyingToReplyId(reply.id)}
+                                    className="text-xs font-bold text-wellness-blue hover:text-wellness-lavender transition-colors flex items-center gap-1"
+                                  >
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    Reply
+                                  </button>
                                 </div>
                               </div>
                             ))}
 
                             <div className="mt-6 pt-2">
+                              {replyingToReplyId && (
+                                <div className="mb-3 p-3 bg-wellness-blue-light/40 border border-wellness-blue/30 rounded-lg flex items-center justify-between">
+                                  <span className="text-xs font-bold text-wellness-blue">↳ Replying to Anonymous</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setReplyingToReplyId('')}
+                                    className="p-1 hover:bg-wellness-blue/10 rounded text-wellness-blue"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
                               <div className="flex gap-3">
                                 <input
                                   type="text"
