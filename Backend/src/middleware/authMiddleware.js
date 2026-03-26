@@ -24,6 +24,11 @@ async function protect(req, res, next) {
       return res.status(401).json({ message: "User not found." });
     }
 
+    // Check if user account is deactivated
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Your account has been deactivated. Please contact admin for assistance." });
+    }
+
     await syncAcademicProgress(user);
     req.user = user;
     next();
