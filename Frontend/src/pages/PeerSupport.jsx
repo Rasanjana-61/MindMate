@@ -24,6 +24,10 @@ import {
   markPeerNotificationsRead,
   updatePeerPost,
   updatePeerReply,
+  bookmarkPost,
+  removeBookmark,
+  likePost,
+  unlikePost,
 } from '../lib/auth';
 
 const categoryIcons = {
@@ -126,6 +130,25 @@ export function PeerSupport({ user }) {
     try {
       const data = await fetchPeerOverview(nextCategory);
       setOverview(data);
+      
+      // Update bookmarked posts from API response
+      const bookmarked = data.posts
+        .filter((post) => post.isBookmarked)
+        .map((post) => post.id);
+      setBookmarkedPosts(new Set(bookmarked));
+
+      // Update liked posts from API response
+      const liked = data.posts
+        .filter((post) => post.isLiked)
+        .map((post) => post.id);
+      setLikedPosts(new Set(liked));
+
+      // Update like counts from API response
+      const counts = {};
+      data.posts.forEach((post) => {
+        counts[post.id] = post.likeCount || 0;
+      });
+      setPostLikeCounts(counts);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -290,35 +313,47 @@ export function PeerSupport({ user }) {
     }
   }
 
-  function handleLikePost(postId) {
-    if (likedPosts.has(postId)) {
-      setLikedPosts((current) => {
-        const next = new Set(current);
-        next.delete(postId);
-        return next;
-      });
-      setPostLikeCounts((current) => ({
-        ...current,
-        [postId]: (current[postId] || 1) - 1,
-      }));
-    } else {
-      setLikedPosts((current) => new Set([...current, postId]));
-      setPostLikeCounts((current) => ({
-        ...current,
-        [postId]: (current[postId] || 0) + 1,
-      }));
+  async function handleLikePost(postId) {
+    try {
+      if (likedPosts.has(postId)) {
+        const response = await unlikePost(postId);
+        setLikedPosts((current) => {
+          const next = new Set(current);
+          next.delete(postId);
+          return next;
+        });
+        setPostLikeCounts((current) => ({
+          ...current,
+          [postId]: response.likeCount || 0,
+        }));
+      } else {
+        const response = await likePost(postId);
+        setLikedPosts((current) => new Set([...current, postId]));
+        setPostLikeCounts((current) => ({
+          ...current,
+          [postId]: response.likeCount || 0,
+        }));
+      }
+    } catch (error) {
+      setErrorMessage(error.message);
     }
   }
 
-  function handleBookmarkPost(postId) {
-    if (bookmarkedPosts.has(postId)) {
-      setBookmarkedPosts((current) => {
-        const next = new Set(current);
-        next.delete(postId);
-        return next;
-      });
-    } else {
-      setBookmarkedPosts((current) => new Set([...current, postId]));
+  async function handleBookmarkPost(postId) {
+    try {
+      if (bookmarkedPosts.has(postId)) {
+        await removeBookmark(postId);
+        setBookmarkedPosts((current) => {
+          const next = new Set(current);
+          next.delete(postId);
+          return next;
+        });
+      } else {
+        await bookmarkPost(postId);
+        setBookmarkedPosts((current) => new Set([...current, postId]));
+      }
+    } catch (error) {
+      setErrorMessage(error.message);
     }
   }
 
