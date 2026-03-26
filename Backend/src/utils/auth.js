@@ -39,6 +39,7 @@ function sanitizeUser(user) {
     year: user.year,
     semester: user.semester,
     role: user.role,
+    isActive: user.isActive,
     phone: user.phone,
     bio: user.bio,
     avatarUrl: user.avatarUrl,
