@@ -162,6 +162,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    // Check if user account is deactivated
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "Your account has been deactivated. Please contact admin for assistance.",
+      });
+    }
+
     await syncAcademicProgress(user);
 
     const token = generateToken(user._id);
