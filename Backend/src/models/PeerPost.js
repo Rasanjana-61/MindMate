@@ -53,6 +53,10 @@ const peerPostSchema = new mongoose.Schema(
     reports: [
       {
         _id: mongoose.Schema.Types.ObjectId,
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
         reason: {
           type: String,
           default: "Inappropriate content",
@@ -67,6 +71,16 @@ const peerPostSchema = new mongoose.Schema(
         },
       },
     ],
+    bookmarkedBy: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+    likedBy: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
     isDeleted: {
       type: Boolean,
       default: false,

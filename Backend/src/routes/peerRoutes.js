@@ -123,6 +123,9 @@ function formatPost(post, replies, currentUserId) {
     faculty: post.faculty,
     isOwn: String(post.user) === String(currentUserId),
     isFlagged: post.isFlagged,
+    isBookmarked: post.bookmarkedBy.some(userId => String(userId) === String(currentUserId)),
+    isLiked: post.likedBy.some(userId => String(userId) === String(currentUserId)),
+    likeCount: post.likedBy.length,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
     replyCount: replies.length,
@@ -411,6 +414,20 @@ router.post("/posts/:postId/replies", async (req, res) => {
       return res.status(404).json({ message: "Discussion post not found." });
     }
 
+    // Validate parentReply if provided
+    let parentReply = null;
+    if (req.body.parentReplyId) {
+      parentReply = await PeerReply.findOne({
+        _id: req.body.parentReplyId,
+        post: post._id,
+        moderationStatus: "visible",
+      });
+
+      if (!parentReply) {
+        return res.status(404).json({ message: "Parent reply not found." });
+      }
+    }
+
     const isFlagged = containsFlaggedContent(values.content);
 
     const reply = await PeerReply.create({
@@ -418,21 +435,62 @@ router.post("/posts/:postId/replies", async (req, res) => {
       user: req.user._id,
       faculty: req.user.faculty,
       content: values.content,
+      parentReply: parentReply ? parentReply._id : null,
       isFlagged,
       moderationStatus: isFlagged ? "hidden" : "visible",
     });
 
-    if (!isFlagged && String(post.user) !== String(req.user._id)) {
-      await createNotification({
-        user: post.user,
-        type: "peer_reply",
-        module: "peer",
-        title: "New anonymous reply",
-        message: `Someone replied to your ${post.category.toLowerCase()} post.`,
-        linkPage: "peer",
-        post: post._id,
-        reply: reply._id,
-      });
+    // Send notifications
+    if (!isFlagged) {
+      // Case 1: Non-post-owner replying to the post directly → notify post owner
+      if (!parentReply && String(post.user) !== String(req.user._id)) {
+        await createNotification({
+          user: post.user,
+          type: "peer_reply",
+          module: "peer",
+          title: "New anonymous reply",
+          message: `Someone replied to your ${post.category.toLowerCase()} post.`,
+          linkPage: "peer",
+          post: post._id,
+          reply: reply._id,
+        });
+      }
+
+      // Case 2: Post owner replying to the post directly → notify all other reply authors
+      if (!parentReply && String(post.user) === String(req.user._id)) {
+        const existingReplies = await PeerReply.distinct("user", {
+          post: post._id,
+          user: { $ne: req.user._id },
+          moderationStatus: "visible",
+        });
+
+        for (const userId of existingReplies) {
+          await createNotification({
+            user: userId,
+            type: "peer_reply",
+            module: "peer",
+            title: "Post owner replied",
+            message: `The post owner replied to their ${post.category.toLowerCase()} post.`,
+            linkPage: "peer",
+            post: post._id,
+            reply: reply._id,
+          });
+        }
+      }
+
+      // Case 3: User replying to a reply → notify the reply author
+      if (parentReply && String(parentReply.user) !== String(req.user._id)) {
+        await createNotification({
+          user: parentReply.user,
+          type: "peer_reply",
+          module: "peer",
+          title: "New anonymous reply",
+          message: `Someone replied to your comment on a ${post.category.toLowerCase()} post.`,
+          linkPage: "peer",
+          post: post._id,
+          reply: reply._id,
+        });
+      }
     }
 
     return res.status(201).json({
@@ -443,6 +501,7 @@ router.post("/posts/:postId/replies", async (req, res) => {
         id: reply._id,
         postId: reply.post,
         content: reply.content,
+        parentReplyId: reply.parentReply,
         isOwn: true,
         isFlagged: reply.isFlagged,
         createdAt: reply.createdAt,
@@ -540,6 +599,190 @@ router.post("/notifications/read", async (req, res) => {
   } catch (error) {
     console.error("Read notifications error:", error);
     return res.status(500).json({ message: "Server error while updating notifications." });
+  }
+});
+
+// POST /api/peer/posts/:postId/bookmark - Add bookmark
+router.post("/posts/:postId/bookmark", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    const isAlreadyBookmarked = post.bookmarkedBy.some(id => String(id) === String(userId));
+
+    if (isAlreadyBookmarked) {
+      return res.status(400).json({ message: "Post is already bookmarked." });
+    }
+
+    post.bookmarkedBy.push(userId);
+    await post.save();
+
+    return res.json({ 
+      message: "Post bookmarked successfully.",
+      isBookmarked: true
+    });
+  } catch (error) {
+    console.error("Bookmark post error:", error);
+    return res.status(500).json({ message: "Server error while bookmarking post." });
+  }
+});
+
+// DELETE /api/peer/posts/:postId/bookmark - Remove bookmark
+router.delete("/posts/:postId/bookmark", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    post.bookmarkedBy = post.bookmarkedBy.filter(id => String(id) !== String(userId));
+    await post.save();
+
+    return res.json({ 
+      message: "Bookmark removed successfully.",
+      isBookmarked: false
+    });
+  } catch (error) {
+    console.error("Remove bookmark error:", error);
+    return res.status(500).json({ message: "Server error while removing bookmark." });
+  }
+});
+
+// GET /api/peer/bookmarks - Get all bookmarked posts
+router.get("/bookmarks", async (req, res) => {
+  try {
+    const posts = await PeerPost.find({
+      bookmarkedBy: req.user._id,
+      moderationStatus: "visible",
+      isDeleted: false,
+    }).sort({ createdAt: -1 });
+
+    const postIds = posts.map((post) => post._id);
+    const replies = await PeerReply.find({
+      post: { $in: postIds },
+      moderationStatus: "visible",
+    }).sort({ createdAt: 1 });
+
+    const repliesByPost = replies.reduce((accumulator, reply) => {
+      const key = String(reply.post);
+      if (!accumulator[key]) {
+        accumulator[key] = [];
+      }
+      accumulator[key].push(reply);
+      return accumulator;
+    }, {});
+
+    const formattedPosts = posts.map((post) => 
+      formatPost(post, repliesByPost[String(post._id)] || [], req.user._id)
+    );
+
+    return res.json({
+      success: true,
+      count: formattedPosts.length,
+      data: formattedPosts,
+    });
+  } catch (error) {
+    console.error("Get bookmarks error:", error);
+    return res.status(500).json({ message: "Server error while loading bookmarks." });
+  }
+});
+
+// POST /api/peer/posts/:postId/like - Add like
+router.post("/posts/:postId/like", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    const isAlreadyLiked = post.likedBy.some(id => String(id) === String(userId));
+
+    if (isAlreadyLiked) {
+      return res.status(400).json({ message: "Post is already liked." });
+    }
+
+    post.likedBy.push(userId);
+    await post.save();
+
+    return res.json({ 
+      message: "Post liked successfully.",
+      isLiked: true,
+      likeCount: post.likedBy.length
+    });
+  } catch (error) {
+    console.error("Like post error:", error);
+    return res.status(500).json({ message: "Server error while liking post." });
+  }
+});
+
+// DELETE /api/peer/posts/:postId/like - Remove like
+router.delete("/posts/:postId/like", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    post.likedBy = post.likedBy.filter(id => String(id) !== String(userId));
+    await post.save();
+
+    return res.json({ 
+      message: "Like removed successfully.",
+      isLiked: false,
+      likeCount: post.likedBy.length
+    });
+  } catch (error) {
+    console.error("Remove like error:", error);
+    return res.status(500).json({ message: "Server error while removing like." });
+  }
+});
+
+// POST /api/peer/posts/:postId/report - Report a post
+router.post("/posts/:postId/report", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const { reason, details } = req.body;
+    const userId = req.user._id;
+
+    // Check if user already reported this post
+    const alreadyReported = post.reports.some(report => String(report.userId) === String(userId));
+
+    if (alreadyReported) {
+      return res.status(400).json({ message: "You have already reported this post." });
+    }
+
+    // Add report
+    post.reports.push({
+      userId,
+      reason: reason || "Inappropriate content",
+      details: details || "",
+      createdAt: new Date(),
+    });
+
+    await post.save();
+
+    return res.json({ 
+      message: "Post reported successfully. Thank you for helping keep our community safe.",
+      reportCount: post.reports.length
+    });
+  } catch (error) {
+    console.error("Report post error:", error);
+    return res.status(500).json({ message: "Server error while reporting post." });
   }
 });
 

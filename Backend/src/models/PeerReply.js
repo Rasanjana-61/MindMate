@@ -25,6 +25,12 @@ const peerReplySchema = new mongoose.Schema(
       trim: true,
       maxlength: 400,
     },
+    parentReply: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PeerReply",
+      default: null,
+      index: true,
+    },
     isFlagged: {
       type: Boolean,
       default: false,

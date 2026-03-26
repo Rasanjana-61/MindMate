@@ -5,7 +5,6 @@ import {
   Lock,
   LogOut,
   Mail,
-  Phone,
   Save,
   Settings,
   ShieldCheck,
@@ -17,7 +16,6 @@ import { changePassword, updateProfile, uploadProfileAvatar } from '../lib/auth'
 export function Profile({ user, onLogout, onUserUpdate }) {
   const [profileForm, setProfileForm] = useState({
     fullName: user.fullName || '',
-    phone: user.phone || '',
     bio: user.bio || '',
   });
   const [passwordForm, setPasswordForm] = useState({
@@ -38,7 +36,6 @@ export function Profile({ user, onLogout, onUserUpdate }) {
     console.log('Profile: User data updated:', user);
     setProfileForm({
       fullName: user.fullName || '',
-      phone: user.phone || '',
       bio: user.bio || '',
     });
   }, [user]);
@@ -57,7 +54,7 @@ export function Profile({ user, onLogout, onUserUpdate }) {
     try {
       const response = await updateProfile({
         fullName: profileForm.fullName,
-        phone: profileForm.phone,
+        phone: user.email,
         bio: profileForm.bio,
       });
       onUserUpdate(response.user);
@@ -199,18 +196,6 @@ export function Profile({ user, onLogout, onUserUpdate }) {
                   className="w-full p-3.5 bg-wellness-bg border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-wellness-blue/20 focus:border-wellness-blue outline-none text-sm transition-all"
                   placeholder="Enter your full name"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-wellness-text mb-2">Phone Number</label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-wellness-text-muted" />
-                  <input
-                    value={profileForm.phone}
-                    onChange={(e) => handleProfileFieldChange('phone', e.target.value)}
-                    className="w-full pl-10 p-3.5 bg-wellness-bg border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-wellness-blue/20 focus:border-wellness-blue outline-none text-sm transition-all"
-                    placeholder="Optional phone number"
-                  />
-                </div>
               </div>
             </div>
 

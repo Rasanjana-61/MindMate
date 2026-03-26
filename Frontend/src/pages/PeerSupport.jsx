@@ -24,6 +24,11 @@ import {
   markPeerNotificationsRead,
   updatePeerPost,
   updatePeerReply,
+  bookmarkPost,
+  removeBookmark,
+  likePost,
+  unlikePost,
+  reportPost,
 } from '../lib/auth';
 
 const categoryIcons = {
@@ -98,6 +103,7 @@ export function PeerSupport({ user }) {
   const [postForm, setPostForm] = useState(createInitialPostForm);
   const [editingPostId, setEditingPostId] = useState('');
   const [editingReplyId, setEditingReplyId] = useState('');
+  const [replyingToReplyId, setReplyingToReplyId] = useState('');
   const [replyTexts, setReplyTexts] = useState({});
   const [postErrors, setPostErrors] = useState({});
   const [replyErrors, setReplyErrors] = useState({});
@@ -126,6 +132,25 @@ export function PeerSupport({ user }) {
     try {
       const data = await fetchPeerOverview(nextCategory);
       setOverview(data);
+      
+      // Update bookmarked posts from API response
+      const bookmarked = data.posts
+        .filter((post) => post.isBookmarked)
+        .map((post) => post.id);
+      setBookmarkedPosts(new Set(bookmarked));
+
+      // Update liked posts from API response
+      const liked = data.posts
+        .filter((post) => post.isLiked)
+        .map((post) => post.id);
+      setLikedPosts(new Set(liked));
+
+      // Update like counts from API response
+      const counts = {};
+      data.posts.forEach((post) => {
+        counts[post.id] = post.likeCount || 0;
+      });
+      setPostLikeCounts(counts);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -251,10 +276,14 @@ export function PeerSupport({ user }) {
       const response =
         editingReplyId && overview.posts.some((post) => post.replies.some((reply) => reply.id === editingReplyId))
           ? await updatePeerReply(editingReplyId, { content })
-          : await createPeerReply(postId, { content });
+          : await createPeerReply(postId, { 
+              content,
+              parentReplyId: replyingToReplyId || undefined 
+            });
 
       setStatusMessage(response.message);
       setEditingReplyId('');
+      setReplyingToReplyId('');
       setReplyTexts((current) => ({
         ...current,
         [postId]: '',
@@ -290,42 +319,62 @@ export function PeerSupport({ user }) {
     }
   }
 
-  function handleLikePost(postId) {
-    if (likedPosts.has(postId)) {
-      setLikedPosts((current) => {
-        const next = new Set(current);
-        next.delete(postId);
-        return next;
-      });
-      setPostLikeCounts((current) => ({
-        ...current,
-        [postId]: (current[postId] || 1) - 1,
-      }));
-    } else {
-      setLikedPosts((current) => new Set([...current, postId]));
-      setPostLikeCounts((current) => ({
-        ...current,
-        [postId]: (current[postId] || 0) + 1,
-      }));
+  async function handleLikePost(postId) {
+    try {
+      if (likedPosts.has(postId)) {
+        const response = await unlikePost(postId);
+        setLikedPosts((current) => {
+          const next = new Set(current);
+          next.delete(postId);
+          return next;
+        });
+        setPostLikeCounts((current) => ({
+          ...current,
+          [postId]: response.likeCount || 0,
+        }));
+      } else {
+        const response = await likePost(postId);
+        setLikedPosts((current) => new Set([...current, postId]));
+        setPostLikeCounts((current) => ({
+          ...current,
+          [postId]: response.likeCount || 0,
+        }));
+      }
+    } catch (error) {
+      setErrorMessage(error.message);
     }
   }
 
-  function handleBookmarkPost(postId) {
-    if (bookmarkedPosts.has(postId)) {
-      setBookmarkedPosts((current) => {
-        const next = new Set(current);
-        next.delete(postId);
-        return next;
-      });
-    } else {
-      setBookmarkedPosts((current) => new Set([...current, postId]));
+  async function handleBookmarkPost(postId) {
+    try {
+      if (bookmarkedPosts.has(postId)) {
+        await removeBookmark(postId);
+        setBookmarkedPosts((current) => {
+          const next = new Set(current);
+          next.delete(postId);
+          return next;
+        });
+      } else {
+        await bookmarkPost(postId);
+        setBookmarkedPosts((current) => new Set([...current, postId]));
+      }
+    } catch (error) {
+      setErrorMessage(error.message);
     }
   }
 
-  function handleReportPost(postId) {
-    if (!reportedPosts.has(postId)) {
+  async function handleReportPost(postId) {
+    if (reportedPosts.has(postId)) {
+      setErrorMessage("You have already reported this post.");
+      return;
+    }
+
+    try {
+      await reportPost(postId, "Inappropriate content", "");
       setReportedPosts((current) => new Set([...current, postId]));
       setStatusMessage('Post reported successfully. Thank you for helping keep our community safe.');
+    } catch (error) {
+      setErrorMessage(error.message);
     }
   }
 
@@ -576,12 +625,32 @@ export function PeerSupport({ user }) {
                                       </div>
                                     ) : null}
                                   </div>
-                                  <p className="text-sm text-wellness-text-sec leading-relaxed">{reply.content}</p>
+                                  <p className="text-sm text-wellness-text-sec leading-relaxed mb-3">{reply.content}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => setReplyingToReplyId(reply.id)}
+                                    className="text-xs font-bold text-wellness-blue hover:text-wellness-lavender transition-colors flex items-center gap-1"
+                                  >
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    Reply
+                                  </button>
                                 </div>
                               </div>
                             ))}
 
                             <div className="mt-6 pt-2">
+                              {replyingToReplyId && (
+                                <div className="mb-3 p-3 bg-wellness-blue-light/40 border border-wellness-blue/30 rounded-lg flex items-center justify-between">
+                                  <span className="text-xs font-bold text-wellness-blue">↳ Replying to Anonymous</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setReplyingToReplyId('')}
+                                    className="p-1 hover:bg-wellness-blue/10 rounded text-wellness-blue"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
                               <div className="flex gap-3">
                                 <input
                                   type="text"

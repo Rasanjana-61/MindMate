@@ -114,7 +114,8 @@ const getReports = async (req, res, next) => {
       createdAt: p.createdAt,
       reportCount: p.reports.length,
       reports: p.reports.map(r => ({ 
-        _id: r._id, 
+        _id: r._id,
+        userId: r.userId,
         reason: r.reason || "Inappropriate content", 
         details: r.details || "", 
         createdAt: r.createdAt 
