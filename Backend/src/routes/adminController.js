@@ -1,6 +1,6 @@
-const User = require("../models/User");
-const PeerPost = require("../models/PeerPost");
-const PeerReply = require("../models/PeerReply");
+const { User } = require("../models/User");
+const { PeerPost } = require("../models/PeerPost");
+const { PeerReply } = require("../models/PeerReply");
 const Notification = require("../models/Notification");
 
 // GET /api/admin/stats

@@ -127,7 +127,7 @@ router.post("/register", async (req, res) => {
       year: req.body.year,
       semester: req.body.semester,
       bio: req.body.bio?.trim() || '',
-      role: "Student",
+      role: "student",
     });
 
     const token = generateToken(user._id);
@@ -159,6 +159,13 @@ router.post("/login", async (req, res) => {
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({
         message: "Invalid email or password. Please try again.",
+      });
+    }
+
+    // Check if user account is deactivated
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "Your account has been deactivated. Please contact admin for assistance.",
       });
     }
 
