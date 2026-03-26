@@ -414,6 +414,20 @@ router.post("/posts/:postId/replies", async (req, res) => {
       return res.status(404).json({ message: "Discussion post not found." });
     }
 
+    // Validate parentReply if provided
+    let parentReply = null;
+    if (req.body.parentReplyId) {
+      parentReply = await PeerReply.findOne({
+        _id: req.body.parentReplyId,
+        post: post._id,
+        moderationStatus: "visible",
+      });
+
+      if (!parentReply) {
+        return res.status(404).json({ message: "Parent reply not found." });
+      }
+    }
+
     const isFlagged = containsFlaggedContent(values.content);
 
     const reply = await PeerReply.create({
@@ -421,21 +435,62 @@ router.post("/posts/:postId/replies", async (req, res) => {
       user: req.user._id,
       faculty: req.user.faculty,
       content: values.content,
+      parentReply: parentReply ? parentReply._id : null,
       isFlagged,
       moderationStatus: isFlagged ? "hidden" : "visible",
     });
 
-    if (!isFlagged && String(post.user) !== String(req.user._id)) {
-      await createNotification({
-        user: post.user,
-        type: "peer_reply",
-        module: "peer",
-        title: "New anonymous reply",
-        message: `Someone replied to your ${post.category.toLowerCase()} post.`,
-        linkPage: "peer",
-        post: post._id,
-        reply: reply._id,
-      });
+    // Send notifications
+    if (!isFlagged) {
+      // Case 1: Non-post-owner replying to the post directly → notify post owner
+      if (!parentReply && String(post.user) !== String(req.user._id)) {
+        await createNotification({
+          user: post.user,
+          type: "peer_reply",
+          module: "peer",
+          title: "New anonymous reply",
+          message: `Someone replied to your ${post.category.toLowerCase()} post.`,
+          linkPage: "peer",
+          post: post._id,
+          reply: reply._id,
+        });
+      }
+
+      // Case 2: Post owner replying to the post directly → notify all other reply authors
+      if (!parentReply && String(post.user) === String(req.user._id)) {
+        const existingReplies = await PeerReply.find({
+          post: post._id,
+          user: { $ne: req.user._id },
+          moderationStatus: "visible",
+        }).distinct("user");
+
+        for (const userId of existingReplies) {
+          await createNotification({
+            user: userId,
+            type: "peer_reply",
+            module: "peer",
+            title: "Post owner replied",
+            message: `The post owner replied to their ${post.category.toLowerCase()} post.`,
+            linkPage: "peer",
+            post: post._id,
+            reply: reply._id,
+          });
+        }
+      }
+
+      // Case 3: User replying to a reply → notify the reply author
+      if (parentReply && String(parentReply.user) !== String(req.user._id)) {
+        await createNotification({
+          user: parentReply.user,
+          type: "peer_reply",
+          module: "peer",
+          title: "New anonymous reply",
+          message: `Someone replied to your comment on a ${post.category.toLowerCase()} post.`,
+          linkPage: "peer",
+          post: post._id,
+          reply: reply._id,
+        });
+      }
     }
 
     return res.status(201).json({
@@ -446,6 +501,7 @@ router.post("/posts/:postId/replies", async (req, res) => {
         id: reply._id,
         postId: reply.post,
         content: reply.content,
+        parentReplyId: reply.parentReply,
         isOwn: true,
         isFlagged: reply.isFlagged,
         createdAt: reply.createdAt,
