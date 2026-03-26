@@ -1,46 +1,31 @@
-<svg width="40" height="40" viewBox="0 0 200 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer circle outline -->
-  <circle cx="100" cy="110" r="95" fill="none" stroke="#CCCCCC" stroke-width="2" opacity="0.6"/>
+<svg width="40" height="40" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Purple background -->
+  <rect width="200" height="200" fill="#B88FFF"/>
   
-  <!-- Head Profile -->
-  <path d="M 70 60 Q 60 80 60 110 Q 60 140 70 160 L 85 180 Q 95 185 105 185 Q 115 185 125 180 L 140 160 Q 150 140 150 110 Q 150 80 140 60 Q 130 50 115 50 Q 105 48 100 48 Q 95 48 85 50 Q 70 50 70 60 Z" fill="#999999" opacity="0.85"/>
-  
-  <!-- Head outline/profile line -->
-  <path d="M 70 60 Q 60 80 60 110 Q 60 140 70 160 L 85 180" fill="none" stroke="#AAAAAA" stroke-width="1.5" opacity="0.5"/>
-  <path d="M 140 60 Q 150 80 150 110 Q 150 140 140 160 L 125 180" fill="none" stroke="#AAAAAA" stroke-width="1.5" opacity="0.5"/>
-  
-  <!-- Brain area background (lighter circle) -->
-  <circle cx="100" cy="90" r="50" fill="white" opacity="0.15"/>
-  
-  <!-- Plant/Leaf Design in Brain Area -->
-  <g transform="translate(100, 85)">
-    <!-- Main central stem -->
-    <path d="M 0 20 Q -3 10 -5 0" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M 0 20 Q 3 10 5 0" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    
-    <!-- Top left leaf -->
-    <ellipse cx="-18" cy="-5" rx="11" ry="18" fill="white" transform="rotate(-40 -18 -5)"/>
-    
-    <!-- Top right leaf -->
-    <ellipse cx="18" cy="-5" rx="11" ry="18" fill="white" transform="rotate(40 18 -5)"/>
-    
-    <!-- Middle left leaf -->
-    <ellipse cx="-14" cy="8" rx="10" ry="15" fill="white" transform="rotate(-30 -14 8)"/>
-    
-    <!-- Middle right leaf -->
-    <ellipse cx="14" cy="8" rx="10" ry="15" fill="white" transform="rotate(30 14 8)"/>
-    
-    <!-- Bottom left leaf -->
-    <ellipse cx="-10" cy="18" rx="9" ry="13" fill="white" transform="rotate(-20 -10 18)"/>
-    
-    <!-- Bottom right leaf -->
-    <ellipse cx="10" cy="18" rx="9" ry="13" fill="white" transform="rotate(20 10 18)"/>
+  <!-- Head profile outline (left side) -->
+  <g id="head">
+    <!-- Face contour -->
+    <path d="M 65 85 Q 60 95 60 115 Q 60 135 70 155 L 80 170" fill="none" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 65 85 Q 65 65 80 60 Q 95 55 105 60" fill="none" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 105 60 Q 120 65 125 85" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
   </g>
   
-  <!-- Neck area -->
-  <ellipse cx="100" cy="195" rx="18" ry="20" fill="#999999" opacity="0.6"/>
-  
-  <!-- Shoulder hints -->
-  <path d="M 82 210 Q 70 220 70 235" fill="none" stroke="#AAAAAA" stroke-width="1.5" opacity="0.4"/>
-  <path d="M 118 210 Q 130 220 130 235" fill="none" stroke="#AAAAAA" stroke-width="1.5" opacity="0.4"/>
+  <!-- Brain circle with leaves -->
+  <g id="brain">
+    <!-- Outer circle for mind/brain -->
+    <circle cx="105" cy="95" r="45" fill="none" stroke="white" stroke-width="6"/>
+    
+    <!-- Left leaf -->
+    <path d="M 90 75 Q 75 65 70 75 Q 68 80 80 85 Q 90 82 90 75" fill="white"/>
+    
+    <!-- Right leaf (top) -->
+    <path d="M 120 70 Q 135 60 140 72 Q 140 80 128 82 Q 120 80 120 70" fill="white"/>
+    
+    <!-- Right leaf (bottom) -->
+    <path d="M 128 105 Q 145 100 150 115 Q 147 125 132 122 Q 125 120 128 105" fill="white"/>
+    
+    <!-- Center top leaf/sprout -->
+    <path d="M 105 50 Q 100 35 105 30 Q 110 35 105 50" fill="white"/>
+    <path d="M 105 50 Q 110 40 108 35" fill="white"/>
+  </g>
 </svg>
