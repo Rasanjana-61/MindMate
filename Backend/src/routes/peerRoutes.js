@@ -691,4 +691,43 @@ router.delete("/posts/:postId/like", async (req, res) => {
   }
 });
 
+// POST /api/peer/posts/:postId/report - Report a post
+router.post("/posts/:postId/report", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const { reason, details } = req.body;
+    const userId = req.user._id;
+
+    // Check if user already reported this post
+    const alreadyReported = post.reports.some(report => String(report.userId) === String(userId));
+
+    if (alreadyReported) {
+      return res.status(400).json({ message: "You have already reported this post." });
+    }
+
+    // Add report
+    post.reports.push({
+      userId,
+      reason: reason || "Inappropriate content",
+      details: details || "",
+      createdAt: new Date(),
+    });
+
+    await post.save();
+
+    return res.json({ 
+      message: "Post reported successfully. Thank you for helping keep our community safe.",
+      reportCount: post.reports.length
+    });
+  } catch (error) {
+    console.error("Report post error:", error);
+    return res.status(500).json({ message: "Server error while reporting post." });
+  }
+});
+
 module.exports = router;
