@@ -458,11 +458,11 @@ router.post("/posts/:postId/replies", async (req, res) => {
 
       // Case 2: Post owner replying to the post directly → notify all other reply authors
       if (!parentReply && String(post.user) === String(req.user._id)) {
-        const existingReplies = await PeerReply.find({
+        const existingReplies = await PeerReply.distinct("user", {
           post: post._id,
           user: { $ne: req.user._id },
           moderationStatus: "visible",
-        }).distinct("user");
+        });
 
         for (const userId of existingReplies) {
           await createNotification({
