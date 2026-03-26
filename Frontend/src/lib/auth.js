@@ -256,6 +256,34 @@ async function deletePeerReply(replyId) {
   });
 }
 
+async function bookmarkPost(postId) {
+  return request(`/peer/posts/${postId}/bookmark`, {
+    method: "POST",
+  });
+}
+
+async function removeBookmark(postId) {
+  return request(`/peer/posts/${postId}/bookmark`, {
+    method: "DELETE",
+  });
+}
+
+async function fetchBookmarkedPosts() {
+  return request("/peer/bookmarks");
+}
+
+async function likePost(postId) {
+  return request(`/peer/posts/${postId}/like`, {
+    method: "POST",
+  });
+}
+
+async function unlikePost(postId) {
+  return request(`/peer/posts/${postId}/like`, {
+    method: "DELETE",
+  });
+}
+
 async function markPeerNotificationsRead() {
   return request("/peer/notifications/read", {
     method: "POST",
@@ -342,6 +370,7 @@ async function fetchDashboardOverview() {
 
 export {
   API_BASE_URL,
+  bookmarkPost,
   changePassword,
   clearToken,
   createFocusSession,
@@ -355,6 +384,7 @@ export {
   deletePeerReply,
   deleteResource,
   downloadResourceSummary,
+  fetchBookmarkedPosts,
   fetchCurrentUser,
   fetchDashboardOverview,
   fetchFocusOverview,
@@ -364,6 +394,7 @@ export {
   fetchResource,
   fetchResources,
   getToken,
+  likePost,
   loginUser,
   markPeerNotificationsRead,
   logoutUser,
@@ -371,7 +402,9 @@ export {
   markNotificationRead,
   regenerateResource,
   registerUser,
+  removeBookmark,
   saveToken,
+  unlikePost,
   uploadResource,
   updatePeerPost,
   updatePeerReply,
