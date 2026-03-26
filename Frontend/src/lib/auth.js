@@ -284,6 +284,13 @@ async function unlikePost(postId) {
   });
 }
 
+async function reportPost(postId, reason, details) {
+  return request(`/peer/posts/${postId}/report`, {
+    method: "POST",
+    body: JSON.stringify({ reason, details }),
+  });
+}
+
 async function markPeerNotificationsRead() {
   return request("/peer/notifications/read", {
     method: "POST",
@@ -403,6 +410,7 @@ export {
   regenerateResource,
   registerUser,
   removeBookmark,
+  reportPost,
   saveToken,
   unlikePost,
   uploadResource,
