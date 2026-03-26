@@ -123,6 +123,9 @@ function formatPost(post, replies, currentUserId) {
     faculty: post.faculty,
     isOwn: String(post.user) === String(currentUserId),
     isFlagged: post.isFlagged,
+    isBookmarked: post.bookmarkedBy.some(userId => String(userId) === String(currentUserId)),
+    isLiked: post.likedBy.some(userId => String(userId) === String(currentUserId)),
+    likeCount: post.likedBy.length,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
     replyCount: replies.length,
@@ -540,6 +543,151 @@ router.post("/notifications/read", async (req, res) => {
   } catch (error) {
     console.error("Read notifications error:", error);
     return res.status(500).json({ message: "Server error while updating notifications." });
+  }
+});
+
+// POST /api/peer/posts/:postId/bookmark - Add bookmark
+router.post("/posts/:postId/bookmark", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    const isAlreadyBookmarked = post.bookmarkedBy.some(id => String(id) === String(userId));
+
+    if (isAlreadyBookmarked) {
+      return res.status(400).json({ message: "Post is already bookmarked." });
+    }
+
+    post.bookmarkedBy.push(userId);
+    await post.save();
+
+    return res.json({ 
+      message: "Post bookmarked successfully.",
+      isBookmarked: true
+    });
+  } catch (error) {
+    console.error("Bookmark post error:", error);
+    return res.status(500).json({ message: "Server error while bookmarking post." });
+  }
+});
+
+// DELETE /api/peer/posts/:postId/bookmark - Remove bookmark
+router.delete("/posts/:postId/bookmark", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    post.bookmarkedBy = post.bookmarkedBy.filter(id => String(id) !== String(userId));
+    await post.save();
+
+    return res.json({ 
+      message: "Bookmark removed successfully.",
+      isBookmarked: false
+    });
+  } catch (error) {
+    console.error("Remove bookmark error:", error);
+    return res.status(500).json({ message: "Server error while removing bookmark." });
+  }
+});
+
+// GET /api/peer/bookmarks - Get all bookmarked posts
+router.get("/bookmarks", async (req, res) => {
+  try {
+    const posts = await PeerPost.find({
+      bookmarkedBy: req.user._id,
+      moderationStatus: "visible",
+      isDeleted: false,
+    }).sort({ createdAt: -1 });
+
+    const postIds = posts.map((post) => post._id);
+    const replies = await PeerReply.find({
+      post: { $in: postIds },
+      moderationStatus: "visible",
+    }).sort({ createdAt: 1 });
+
+    const repliesByPost = replies.reduce((accumulator, reply) => {
+      const key = String(reply.post);
+      if (!accumulator[key]) {
+        accumulator[key] = [];
+      }
+      accumulator[key].push(reply);
+      return accumulator;
+    }, {});
+
+    const formattedPosts = posts.map((post) => 
+      formatPost(post, repliesByPost[String(post._id)] || [], req.user._id)
+    );
+
+    return res.json({
+      success: true,
+      count: formattedPosts.length,
+      data: formattedPosts,
+    });
+  } catch (error) {
+    console.error("Get bookmarks error:", error);
+    return res.status(500).json({ message: "Server error while loading bookmarks." });
+  }
+});
+
+// POST /api/peer/posts/:postId/like - Add like
+router.post("/posts/:postId/like", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    const isAlreadyLiked = post.likedBy.some(id => String(id) === String(userId));
+
+    if (isAlreadyLiked) {
+      return res.status(400).json({ message: "Post is already liked." });
+    }
+
+    post.likedBy.push(userId);
+    await post.save();
+
+    return res.json({ 
+      message: "Post liked successfully.",
+      isLiked: true,
+      likeCount: post.likedBy.length
+    });
+  } catch (error) {
+    console.error("Like post error:", error);
+    return res.status(500).json({ message: "Server error while liking post." });
+  }
+});
+
+// DELETE /api/peer/posts/:postId/like - Remove like
+router.delete("/posts/:postId/like", async (req, res) => {
+  try {
+    const post = await PeerPost.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    const userId = req.user._id;
+    post.likedBy = post.likedBy.filter(id => String(id) !== String(userId));
+    await post.save();
+
+    return res.json({ 
+      message: "Like removed successfully.",
+      isLiked: false,
+      likeCount: post.likedBy.length
+    });
+  } catch (error) {
+    console.error("Remove like error:", error);
+    return res.status(500).json({ message: "Server error while removing like." });
   }
 });
 
