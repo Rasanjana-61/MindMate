@@ -151,7 +151,7 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
             {/* Journal Text */}
             <div className="bg-sage-wash/25 rounded-xl p-4 border border-sage-light/30">
               <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Journal Entry</p>
-              <p className="font-lora italic text-forest/85 text-[15px] leading-relaxed whitespace-pre-wrap max-h-[44vh] overflow-y-auto pr-1">
+              <p className="theme-scrollbar font-lora italic text-forest/85 text-[15px] leading-relaxed whitespace-pre-wrap max-h-[44vh] overflow-y-auto pr-1">
                 "{entry.text}"
               </p>
             </div>
@@ -190,7 +190,7 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
               </div>
               <p className="text-[11px] text-stone/80 mb-2">Scroll to view all suggestions</p>
               <div className="relative">
-                <ul className="space-y-2.5 max-h-[58vh] overflow-y-scroll pr-1">
+                <ul className="theme-scrollbar space-y-2.5 max-h-[58vh] overflow-y-scroll pr-1">
                 {displayedSuggestions.map((s, idx) => (
                   <li key={idx} className="bg-warm-white/95 border border-sage-light/30 rounded-lg p-3.5 text-sm text-forest leading-relaxed">
                     <span className="mr-1.5 text-sage font-semibold">{idx + 1}.</span>

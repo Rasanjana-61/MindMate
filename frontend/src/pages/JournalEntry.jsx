@@ -224,7 +224,7 @@ function TodayEntriesSidebar({ refreshKey, onEditEntry, onLatestEntryLoaded }) {
   }, [refreshKey])
 
   return (
-    <div className="bg-warm-white rounded-card shadow-card p-6 flex flex-col h-full min-h-125">
+    <div className="bg-warm-white rounded-card shadow-card p-6 flex flex-col h-full min-h-0 overflow-hidden">
       <h2 className="font-lora text-xl font-semibold text-ink mb-1 flex items-center gap-2">
         <span>🗒️</span>
         Today's Entries
@@ -261,7 +261,7 @@ function TodayEntriesSidebar({ refreshKey, onEditEntry, onLatestEntryLoaded }) {
           </p>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto w-full pb-4">
+        <div className="today-entries-scroll flex-1 min-h-0 overflow-y-auto w-full pb-4 pr-1">
           <EntryCard entry={latestEntry} index={0} defaultExpanded={true} hideToggle={true} />
           
           <div className="flex justify-end mt-3">
@@ -533,7 +533,7 @@ export function JournalEntry({ onAnalysisComplete }) {
           </div>
 
           {/* Right Column — Today's Entries */}
-          <motion.div variants={itemVariants} className="h-full">
+          <motion.div variants={itemVariants} className="h-full min-h-0 md:h-[calc(100vh-6rem)]">
             <TodayEntriesSidebar 
               refreshKey={refreshKey} 
               onEditEntry={handleEditEntry} 
