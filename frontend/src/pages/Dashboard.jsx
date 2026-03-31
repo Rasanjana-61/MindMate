@@ -51,6 +51,7 @@ export function Dashboard({ onNavigate }) {
   const [dashboardData, setDashboardData] = useState(null)
   const [timeRange, setTimeRange] = useState('7D')
   const [isEmotionsExpanded, setIsEmotionsExpanded] = useState(false)
+  const [activeChart, setActiveChart] = useState('trend')
 
   useEffect(() => {
     fetch(`${API_URL}/api/dashboard/${USER_ID}?timeRange=${timeRange}`)
@@ -215,54 +216,88 @@ export function Dashboard({ onNavigate }) {
           )}
         </AnimatePresence>
 
-        {/* Charts Container */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-          {/* Trend Line Chart */}
-          <div>
-            <h3 className="text-sm text-stone uppercase tracking-wide mb-4 font-medium">Trend Lines</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#CFE3D2" vertical={false} />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} />
-                  <YAxis domain={[0, 5]} axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} ticks={[1, 2, 3, 4, 5]} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#FBF8F3', border: '1px solid #CFE3D2', borderRadius: '12px', boxShadow: '0 4px 12px rgba(47, 62, 47, 0.1)' }}
-                    labelStyle={{ color: '#2F3E2F', fontWeight: 600 }}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: '15px' }} formatter={(value) => <span className="text-olive text-sm capitalize">{value}</span>} />
-                  <Line type="monotone" dataKey="mood" name="Mood" stroke="#7FAF8A" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="stress" name="Stress" stroke="#E6B8B5" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="energy" name="Energy" stroke="#E7C46A" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+        {/* Chart Switcher */}
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex p-1 rounded-full bg-sage-wash/50 border border-sage-light/40">
+            <button
+              onClick={() => setActiveChart('trend')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activeChart === 'trend' ? 'bg-warm-white text-forest shadow-sm' : 'text-olive hover:text-forest'
+              }`}
+            >
+              Trend Lines
+            </button>
+            <button
+              onClick={() => setActiveChart('bars')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activeChart === 'bars' ? 'bg-warm-white text-forest shadow-sm' : 'text-olive hover:text-forest'
+              }`}
+            >
+              Frequency Bars
+            </button>
           </div>
-
-          {/* Value Bar Chart */}
-          <div>
-            <h3 className="text-sm text-stone uppercase tracking-wide mb-4 font-medium">Frequency Bars</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#CFE3D2" vertical={false} />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} />
-                  <YAxis domain={[0, 5]} axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} ticks={[1, 2, 3, 4, 5]} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#FBF8F3', border: '1px solid #CFE3D2', borderRadius: '12px', boxShadow: '0 4px 12px rgba(47, 62, 47, 0.1)' }}
-                    labelStyle={{ color: '#2F3E2F', fontWeight: 600 }}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: '15px' }} formatter={(value) => <span className="text-olive text-sm capitalize">{value}</span>} />
-                  <Bar dataKey="mood" name="Mood" fill="#7FAF8A" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="stress" name="Stress" fill="#E6B8B5" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="energy" name="Energy" fill="#E7C46A" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
         </div>
+
+        {/* Full-Width Active Chart */}
+        <AnimatePresence mode="wait">
+          {activeChart === 'trend' ? (
+            <motion.div
+              key="trend-chart"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="bg-sage-wash/20 rounded-xl border border-sage-light/30 p-4"
+            >
+              <h3 className="text-sm text-stone uppercase tracking-wide mb-3 font-medium">Trend Lines</h3>
+              <div className="h-72 md:h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#CFE3D2" vertical={false} />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} />
+                    <YAxis domain={[0, 5]} axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} ticks={[1, 2, 3, 4, 5]} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#FBF8F3', border: '1px solid #CFE3D2', borderRadius: '12px', boxShadow: '0 4px 12px rgba(47, 62, 47, 0.1)' }}
+                      labelStyle={{ color: '#2F3E2F', fontWeight: 600 }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '15px' }} formatter={(value) => <span className="text-olive text-sm capitalize">{value}</span>} />
+                    <Line type="monotone" dataKey="mood" name="Mood" stroke="#7FAF8A" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="stress" name="Stress" stroke="#E6B8B5" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="energy" name="Energy" stroke="#E7C46A" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="bars-chart"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="bg-sage-wash/20 rounded-xl border border-sage-light/30 p-4"
+            >
+              <h3 className="text-sm text-stone uppercase tracking-wide mb-3 font-medium">Frequency Bars</h3>
+              <div className="h-72 md:h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#CFE3D2" vertical={false} />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} />
+                    <YAxis domain={[0, 5]} axisLine={false} tickLine={false} tick={{ fill: '#5F705F', fontSize: 11 }} ticks={[1, 2, 3, 4, 5]} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#FBF8F3', border: '1px solid #CFE3D2', borderRadius: '12px', boxShadow: '0 4px 12px rgba(47, 62, 47, 0.1)' }}
+                      labelStyle={{ color: '#2F3E2F', fontWeight: 600 }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '15px' }} formatter={(value) => <span className="text-olive text-sm capitalize">{value}</span>} />
+                    <Bar dataKey="mood" name="Mood" fill="#7FAF8A" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="stress" name="Stress" fill="#E6B8B5" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="energy" name="Energy" fill="#E7C46A" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.div>
   )

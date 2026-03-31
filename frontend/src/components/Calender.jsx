@@ -28,6 +28,22 @@ const SENTIMENT_COLORS = {
   Negative: 'bg-blush text-dusty-rose',
 }
 
+function deriveSentiment(emotion, moodScore) {
+  const normalizedEmotion = String(emotion || '').toLowerCase()
+
+  const negativeHints = ['overwhelmed', 'anxious', 'anxiety', 'stress', 'stressed', 'sad', 'anger', 'angry', 'fear', 'afraid', 'upset', 'frustrated', 'lonely', 'guilty', 'burnout', 'tired']
+  const positiveHints = ['joy', 'happy', 'calm', 'grateful', 'hopeful', 'excited', 'proud', 'content', 'relieved', 'peaceful', 'motivated']
+  const neutralHints = ['neutral', 'mixed', 'meh', 'okay', 'ok', 'stable']
+
+  if (negativeHints.some((hint) => normalizedEmotion.includes(hint))) return 'Negative'
+  if (positiveHints.some((hint) => normalizedEmotion.includes(hint))) return 'Positive'
+  if (neutralHints.some((hint) => normalizedEmotion.includes(hint))) return 'Neutral'
+
+  if (moodScore >= 4) return 'Positive'
+  if (moodScore <= 2) return 'Negative'
+  return 'Neutral'
+}
+
 // Map a backend entry to the shape CalendarPopup needs
 function toPopupEntry(entry) {
   return {
@@ -39,7 +55,7 @@ function toPopupEntry(entry) {
     text: entry.text,
     emotion: entry.emotion,
     emotionScores: entry.emotionScores ?? {},
-    sentiment: entry.sentiment ?? (entry.moodScore >= 4 ? 'Positive' : entry.moodScore <= 2 ? 'Negative' : 'Neutral'),
+    sentiment: entry.sentiment ?? deriveSentiment(entry.emotion, entry.moodScore),
     summaryText: entry.summaryText,
     suggestions: entry.suggestions ?? [],
   }
@@ -172,14 +188,18 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
                 <p className="text-xs font-medium text-stone uppercase tracking-wide">Wellness Suggestions</p>
                 <span className="text-[11px] text-stone">{displayedSuggestions.length} tips</span>
               </div>
-              <ul className="space-y-2.5 max-h-[58vh] overflow-y-auto pr-1">
+              <p className="text-[11px] text-stone/80 mb-2">Scroll to view all suggestions</p>
+              <div className="relative">
+                <ul className="space-y-2.5 max-h-[58vh] overflow-y-scroll pr-1">
                 {displayedSuggestions.map((s, idx) => (
                   <li key={idx} className="bg-warm-white/95 border border-sage-light/30 rounded-lg p-3.5 text-sm text-forest leading-relaxed">
                     <span className="mr-1.5 text-sage font-semibold">{idx + 1}.</span>
                     {s}
                   </li>
                 ))}
-              </ul>
+                </ul>
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-sage-wash/80 to-transparent rounded-b-xl" />
+              </div>
             </div>
           )}
         </div>

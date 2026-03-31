@@ -32,7 +32,17 @@ const EMOTION_COLOR = {
   surprise: 'bg-sky-100 text-sky-600 border-sky-400',
 }
 
-function deriveSentiment(moodScore) {
+function deriveSentiment(emotion, moodScore) {
+  const normalizedEmotion = String(emotion || '').toLowerCase()
+
+  const negativeHints = ['overwhelmed', 'anxious', 'anxiety', 'stress', 'stressed', 'sad', 'anger', 'angry', 'fear', 'afraid', 'upset', 'frustrated', 'lonely', 'guilty', 'burnout', 'tired']
+  const positiveHints = ['joy', 'happy', 'calm', 'grateful', 'hopeful', 'excited', 'proud', 'content', 'relieved', 'peaceful', 'motivated']
+  const neutralHints = ['neutral', 'mixed', 'meh', 'okay', 'ok', 'stable']
+
+  if (negativeHints.some((hint) => normalizedEmotion.includes(hint))) return 'Negative'
+  if (positiveHints.some((hint) => normalizedEmotion.includes(hint))) return 'Positive'
+  if (neutralHints.some((hint) => normalizedEmotion.includes(hint))) return 'Neutral'
+
   if (moodScore >= 3.5) return 'Positive'
   if (moodScore >= 2.5) return 'Neutral'
   return 'Negative'
@@ -72,7 +82,7 @@ export function Results({ analysisResult, onNavigate }) {
   } = analysisResult
   const entryText = analysisResult.text || analysisResult.journalText || ''
 
-  const sentiment = deriveSentiment(moodScore)
+  const sentiment = deriveSentiment(emotion, moodScore)
   const sentColor = sentimentColors[sentiment]
 
   // Sort emotion scores descending for display

@@ -289,7 +289,7 @@ export async function updateEntry(req, res) {
         energyScore: aiResult.energyScore,
         suggestions: aiResult.suggestions,
       },
-      { new: true } // returns the updated document
+      { returnDocument: 'after' } // returns the updated document
     );
 
     if (!updatedEntry) {
