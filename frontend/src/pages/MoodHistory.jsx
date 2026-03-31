@@ -36,7 +36,7 @@ export function MoodHistory() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-6"
+      className="h-[calc(100vh-7.5rem)] lg:h-[calc(100vh-6.5rem)] flex flex-col overflow-hidden"
     >
       {/* Page Title */}
       <motion.div variants={itemVariants}>
@@ -52,15 +52,15 @@ export function MoodHistory() {
       {/* Two Column Layout */}
       <motion.div
         variants={itemVariants}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0"
       >
         {/* Left Column - Calendar */}
-        <div>
+        <div className="h-full min-h-0">
           <Calendar entries={entries} loading={loading} onEntryDeleted={handleEntryDeleted} />
         </div>
 
         {/* Right Column - Recent Days Feed */}
-        <div>
+        <div className="h-full min-h-0">
           <RecentDaysFeed entries={entries} loading={loading} />
         </div>
       </motion.div>

@@ -72,10 +72,10 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative bg-warm-white rounded-card shadow-popup w-full max-w-3xl border border-sage-light/30 max-h-[90vh] overflow-hidden"
+        className="relative bg-warm-white rounded-card shadow-popup w-full max-w-5xl border border-sage-light/30 max-h-[95vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="max-h-[90vh] overflow-y-auto p-8">
+        <div className="max-h-[95vh] overflow-y-auto p-8 md:p-10">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-sage-wash transition-colors text-stone hover:text-forest"
@@ -130,12 +130,12 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
         </div>
 
         {/* Main content grid: left detail + right suggestions */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-7 items-start">
           <div className="md:col-span-7 space-y-4">
             {/* Journal Text */}
             <div className="bg-sage-wash/25 rounded-xl p-4 border border-sage-light/30">
               <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Journal Entry</p>
-              <p className="font-lora italic text-forest/85 text-sm leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto pr-1">
+              <p className="font-lora italic text-forest/85 text-[15px] leading-relaxed whitespace-pre-wrap max-h-[44vh] overflow-y-auto pr-1">
                 "{entry.text}"
               </p>
             </div>
@@ -167,14 +167,14 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
 
           {/* Wellness Suggestions */}
           {displayedSuggestions.length > 0 && (
-            <div className="md:col-span-5 bg-sage-wash/50 rounded-xl p-4 border border-sage-light/40">
+            <div className="md:col-span-5 bg-sage-wash/50 rounded-xl p-4 md:p-5 border border-sage-light/40">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-medium text-stone uppercase tracking-wide">Wellness Suggestions</p>
                 <span className="text-[11px] text-stone">{displayedSuggestions.length} tips</span>
               </div>
-              <ul className="space-y-2 max-h-96 overflow-y-auto pr-1">
+              <ul className="space-y-2.5 max-h-[58vh] overflow-y-auto pr-1">
                 {displayedSuggestions.map((s, idx) => (
-                  <li key={idx} className="bg-warm-white/95 border border-sage-light/30 rounded-lg p-3 text-sm text-forest leading-relaxed">
+                  <li key={idx} className="bg-warm-white/95 border border-sage-light/30 rounded-lg p-3.5 text-sm text-forest leading-relaxed">
                     <span className="mr-1.5 text-sage font-semibold">{idx + 1}.</span>
                     {s}
                   </li>
@@ -310,8 +310,8 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="bg-warm-white border border-sage-light/50 rounded-card shadow-card p-5 flex-1">
+    <div className="flex flex-col h-full items-start min-h-0">
+      <div className="bg-warm-white border border-sage-light/50 rounded-card shadow-card p-4 md:p-5 flex-1 w-full max-w-165 overflow-y-auto min-h-0">
 
         <div className="flex items-center justify-between mb-4">
           <button onClick={goToPrevMonth} className="p-2 rounded-lg hover:bg-sage-wash">
@@ -327,17 +327,17 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted }) {
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-1.5 mb-2">
           {DAYS_OF_WEEK.map((day) => (
-            <div key={day} className="text-center text-xs font-medium text-stone py-2">
+            <div key={day} className="text-center text-[11px] font-medium text-stone py-1.5">
               {day}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1.5">
           {Array.from({ length: firstDayOfMonth }).map((_, idx) => (
-            <div key={idx} className="aspect-square" />
+            <div key={idx} className="aspect-square max-h-14" />
           ))}
 
           {Array.from({ length: daysInMonth }).map((_, idx) => {
@@ -352,7 +352,7 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted }) {
                 onClick={() => handleDayClick(day)}
                 disabled={!hasEntry}
                 title={hasEntry ? `View entry for ${key}` : undefined}
-                className={`relative aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 z-0
+                className={`relative aspect-square max-h-14 rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 z-0
                   ${hasEntry
                     ? 'bg-sage text-white hover:bg-sage/90 cursor-pointer shadow-sm hover:scale-105 hover:z-50 hover:shadow-md active:scale-95'
                     : isTodayDate

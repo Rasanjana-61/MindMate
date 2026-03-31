@@ -90,7 +90,7 @@ export function RecentDaysFeed({ entries = [], loading = false }) {
 
   return (
     <div className="flex flex-col h-full">
-      <h2 className="font-lora text-xl font-semibold text-ink mb-4 flex items-center gap-2">
+      <h2 className="font-lora text-xl font-semibold text-ink mb-4 flex items-center gap-2 shrink-0">
         <span>🌿</span>
         Recent 7 Days
       </h2>
@@ -100,7 +100,7 @@ export function RecentDaysFeed({ entries = [], loading = false }) {
           Loading entries…
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-y-auto pr-1 min-h-0 flex-1">
           {recentDays.map((date, idx) => {
             const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
             return (
