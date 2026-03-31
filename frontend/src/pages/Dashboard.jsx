@@ -73,7 +73,7 @@ export function Dashboard({ onNavigate }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink mb-1">
-              {getGreeting()}, User 🌱
+              {getGreeting()}, Asitha 🌱
             </h1>
             <p className="text-olive">{formatTodayDate()}</p>
           </div>
@@ -94,7 +94,7 @@ export function Dashboard({ onNavigate }) {
         <span className="text-2xl shrink-0">🌿</span>
         <p className="font-lora italic text-forest leading-relaxed">
           {streakCount > 0
-            ? `You've logged your mood ${streakCount} days in a row — wonderful consistency! Keep nurturing your growth.`
+            ? `You've logged your mood ${streakCount} days in a row - wonderful consistency! Keep nurturing your growth.`
             : 'Start your wellness journey today by writing your first entry. Every step counts!'}
         </p>
       </motion.div>
@@ -131,7 +131,7 @@ export function Dashboard({ onNavigate }) {
             </div>
             {chartData.some(d => d.mood > 0) && (
               <div className="w-16 h-10 md:w-20 md:h-12 opacity-80">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <LineChart data={chartData}>
                     <Line type="monotone" dataKey="mood" stroke="#7FAF8A" strokeWidth={2.5} dot={false} />
                   </LineChart>
@@ -150,7 +150,7 @@ export function Dashboard({ onNavigate }) {
             </div>
             {chartData.some(d => d.stress > 0) && (
               <div className="w-16 h-10 md:w-20 md:h-12 opacity-80">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <LineChart data={chartData}>
                     <Line type="monotone" dataKey="stress" stroke="#E6B8B5" strokeWidth={2.5} dot={false} />
                   </LineChart>
@@ -169,7 +169,7 @@ export function Dashboard({ onNavigate }) {
             </div>
             {chartData.some(d => d.energy > 0) && (
               <div className="w-16 h-10 md:w-20 md:h-12 opacity-80">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <LineChart data={chartData}>
                     <Line type="monotone" dataKey="energy" stroke="#E7C46A" strokeWidth={2.5} dot={false} />
                   </LineChart>
