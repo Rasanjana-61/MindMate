@@ -142,9 +142,9 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
               <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Emotion Breakdown</p>
               <div className="space-y-2">
                 {sortedEmotions.map(([emotion, score], index) => (
-                  <div key={emotion} className="flex items-center gap-2">
+                  <div key={`${String(emotion || 'emotion')}-${index}`} className="flex items-center gap-2">
                     <span className="text-sm w-5 text-center">{EMOTION_EMOJI[emotion] ?? '💭'}</span>
-                    <span className="text-xs text-stone capitalize w-16">{emotion}</span>
+                    <span className="text-xs text-stone capitalize w-16">{emotion || 'unknown'}</span>
                     <div className="flex-1 h-1.5 bg-sage-wash rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}

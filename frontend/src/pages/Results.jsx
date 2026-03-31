@@ -150,10 +150,10 @@ export function Results({ analysisResult, onNavigate }) {
 
           <div className="space-y-3">
             {sortedEmotions.map(([em, score], idx) => (
-              <div key={em}>
+              <div key={`${String(em || 'emotion')}-${idx}`}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium text-olive capitalize flex items-center gap-1.5">
-                    <span>{EMOTION_EMOJI[em]}</span> {em}
+                    <span>{EMOTION_EMOJI[em] ?? '💭'}</span> {em || 'unknown'}
                   </span>
                   <span className="text-xs text-stone">{(score * 100).toFixed(1)}%</span>
                 </div>

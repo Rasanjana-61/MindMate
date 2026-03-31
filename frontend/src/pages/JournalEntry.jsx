@@ -141,13 +141,13 @@ function EntryCard({ entry, index, defaultExpanded = false, hideToggle = false }
                     Emotion Breakdown
                   </p>
                   <div className="space-y-1.5">
-                    {emotionScores.map(([emotion, score]) => {
+                    {emotionScores.map(([emotion, score], idx) => {
                       const percentStr = (score * 100).toFixed(1)
                       const isZero = parseFloat(percentStr) === 0
 
                       return (
-                        <div key={emotion} className={`flex items-center gap-2 ${isZero ? 'opacity-40 grayscale' : 'font-medium'}`}>
-                          <span className={`text-xs capitalize w-20 shrink-0 ${isZero ? 'text-forest' : 'text-forest font-bold'}`}>{emotion}</span>
+                        <div key={`${String(emotion || 'emotion')}-${idx}`} className={`flex items-center gap-2 ${isZero ? 'opacity-40 grayscale' : 'font-medium'}`}>
+                          <span className={`text-xs capitalize w-20 shrink-0 ${isZero ? 'text-forest' : 'text-forest font-bold'}`}>{emotion || 'unknown'}</span>
                           <div className="flex-1 bg-sage-light/20 rounded-full h-1.5 overflow-hidden">
                             <motion.div
                               initial={{ width: 0 }}
