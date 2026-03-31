@@ -34,8 +34,7 @@ const JournalEntrySchema = new Schema({
     max: 5
   },
   emotion: {
-    type: String,
-    enum: ["anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"]
+    type: String
   },
   emotionScores: {
     type: Map,

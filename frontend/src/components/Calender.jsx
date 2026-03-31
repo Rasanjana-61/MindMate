@@ -55,6 +55,8 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
   const sortedEmotions = Object.entries(entry.emotionScores ?? {})
     .sort((a, b) => b[1] - a[1])
 
+  const displayedSuggestions = Array.isArray(entry.suggestions) ? entry.suggestions : []
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -70,9 +72,10 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative bg-warm-white rounded-card shadow-popup p-8 w-full max-w-3xl border border-sage-light/30 max-h-[90vh] overflow-y-auto"
+        className="relative bg-warm-white rounded-card shadow-popup w-full max-w-3xl border border-sage-light/30 max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="max-h-[90vh] overflow-y-auto p-8">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-sage-wash transition-colors text-stone hover:text-forest"
@@ -126,49 +129,54 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
           </p>
         </div>
 
-        {/* Main content grid: Journal, Emotion breakdown, Suggestions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Journal Text */}
-          <div className="bg-sage-wash/30 rounded-xl p-4 h-fit">
-            <p className="text-xs font-medium text-stone uppercase tracking-wide mb-1.5">Journal Entry</p>
-            <p className="font-lora italic text-forest/80 text-sm leading-relaxed">
-              "{entry.text}"
-            </p>
+        {/* Main content grid: left detail + right suggestions */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          <div className="md:col-span-7 space-y-4">
+            {/* Journal Text */}
+            <div className="bg-sage-wash/25 rounded-xl p-4 border border-sage-light/30">
+              <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Journal Entry</p>
+              <p className="font-lora italic text-forest/85 text-sm leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto pr-1">
+                "{entry.text}"
+              </p>
+            </div>
+
+            {/* Emotion score breakdown */}
+            {sortedEmotions.length > 0 && (
+              <div className="bg-warm-white rounded-xl p-4 border border-sage-light/30">
+                <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Emotion Breakdown</p>
+                <div className="space-y-2">
+                  {sortedEmotions.slice(0, 8).map(([emotion, score], index) => (
+                    <div key={`${String(emotion || 'emotion')}-${index}`} className="flex items-center gap-2">
+                      <span className="text-sm w-5 text-center">{EMOTION_EMOJI[emotion] ?? '💭'}</span>
+                      <span className="text-xs text-stone capitalize w-20 truncate">{emotion || 'unknown'}</span>
+                      <div className="flex-1 h-1.5 bg-sage-wash rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${score * 100}%` }}
+                          transition={{ duration: 0.4, delay: 0.05 * index }}
+                          className="h-full bg-forest/50 rounded-full"
+                        />
+                      </div>
+                      <span className="text-xs text-stone w-10 text-right">{(score * 100).toFixed(0)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Emotion score breakdown */}
-          {sortedEmotions.length > 0 && (
-            <div className="mb-0 bg-sage-wash/30 rounded-xl p-4 h-fit">
-              <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Emotion Breakdown</p>
-              <div className="space-y-2">
-                {sortedEmotions.map(([emotion, score], index) => (
-                  <div key={`${String(emotion || 'emotion')}-${index}`} className="flex items-center gap-2">
-                    <span className="text-sm w-5 text-center">{EMOTION_EMOJI[emotion] ?? '💭'}</span>
-                    <span className="text-xs text-stone capitalize w-16">{emotion || 'unknown'}</span>
-                    <div className="flex-1 h-1.5 bg-sage-wash rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${score * 100}%` }}
-                        transition={{ duration: 0.4, delay: 0.05 * index }}
-                        className="h-full bg-forest/50 rounded-full"
-                      />
-                    </div>
-                    <span className="text-xs text-stone w-10 text-right">{(score * 100).toFixed(0)}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Wellness Suggestions */}
-          {entry.suggestions?.length > 0 && (
-            <div className="bg-sage-wash/50 rounded-xl p-4 h-fit">
-              <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Wellness Suggestions</p>
-              <ul className="space-y-1.5">
-                {entry.suggestions.map((s, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-forest">
-                    <span className="text-sage mt-0.5">•</span>
-                    <span>{s}</span>
+          {displayedSuggestions.length > 0 && (
+            <div className="md:col-span-5 bg-sage-wash/50 rounded-xl p-4 border border-sage-light/40">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-stone uppercase tracking-wide">Wellness Suggestions</p>
+                <span className="text-[11px] text-stone">{displayedSuggestions.length} tips</span>
+              </div>
+              <ul className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                {displayedSuggestions.map((s, idx) => (
+                  <li key={idx} className="bg-warm-white/95 border border-sage-light/30 rounded-lg p-3 text-sm text-forest leading-relaxed">
+                    <span className="mr-1.5 text-sage font-semibold">{idx + 1}.</span>
+                    {s}
                   </li>
                 ))}
               </ul>
@@ -184,6 +192,7 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
           >
             {isDeleting ? 'Deleting...' : 'Delete Entry'}
           </button>
+        </div>
         </div>
       </motion.div>
     </motion.div>
