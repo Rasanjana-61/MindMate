@@ -375,6 +375,11 @@ async function fetchDashboardOverview() {
   return request("/dashboard/overview");
 }
 
+function useAuthStore() {
+  const isAuthenticated = !!getToken();
+  return { isAuthenticated };
+}
+
 export {
   API_BASE_URL,
   bookmarkPost,
@@ -420,4 +425,5 @@ export {
   updateMoodLog,
   updateProfile,
   uploadProfileAvatar,
+  useAuthStore,
 };
