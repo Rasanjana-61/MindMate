@@ -6,7 +6,8 @@ import "./index.css";
 // Prevent ethereum property redefinition errors from third-party scripts/extensions
 if (typeof window !== 'undefined') {
   try {
-    if (!window.ethereum) {
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'ethereum');
+    if (!descriptor || (descriptor && descriptor.value === undefined && !window.ethereum)) {
       Object.defineProperty(window, 'ethereum', {
         value: undefined,
         writable: true,
@@ -14,7 +15,7 @@ if (typeof window !== 'undefined') {
       });
     }
   } catch (e) {
-    console.warn('Could not define ethereum property:', e);
+    // Silently ignore - browser extension or another script has defined ethereum
   }
 }
 
