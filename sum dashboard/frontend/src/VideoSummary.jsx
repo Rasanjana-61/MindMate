@@ -31,6 +31,9 @@ function VideoSummary() {
     const [chatMessage, setChatMessage] = useState('');
     const [currentTime, setCurrentTime] = useState(0);
     const [player, setPlayer] = useState(null);
+    const [notes, setNotes] = useState('');
+    const [error, setError] = useState('');
+    const [isShaking, setIsShaking] = useState(false);
     const transcriptContainerRef = useRef(null);
 
     const extractYoutubeId = (url) => {
@@ -80,12 +83,26 @@ function VideoSummary() {
         }
     }, [currentTime]);
 
+    const triggerShake = () => {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 400); // 400ms is the duration of the shake animation
+    };
+
     const handleSummarize = async () => {
-        if (!videoLink) {
-            alert('Please enter a video link');
+        if (!videoLink.trim()) {
+            setError('Please copy the YouTube link and paste it here!');
+            triggerShake();
             return;
         }
 
+        if (!videoId) {
+            setError('Please enter a valid YouTube link.');
+            triggerShake();
+            return;
+        }
+
+        setError(''); // Clear any previous error
+        setIsShaking(false);
         setIsLoading(true);
         setSummary('');
         setTranscriptData([]);
@@ -121,9 +138,10 @@ function VideoSummary() {
             }
 
             setIsLoading(false);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            alert(`Error: ${error.message}`);
+        } catch (err) {
+            console.error('Error fetching data:', err);
+            setError(`Error: ${err.message}`); // Replace alert with in-app error
+            triggerShake();
             setIsLoading(false);
         }
     };
@@ -148,28 +166,60 @@ function VideoSummary() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const handleDownloadNotes = () => {
+        if (!notes.trim()) {
+            alert("Please type some notes before downloading!");
+            return;
+        }
+        const element = document.createElement("a");
+        const file = new Blob([notes], { type: 'text/plain' });
+        element.href = URL.createObjectURL(file);
+        element.download = "video_notes.txt";
+        document.body.appendChild(element); 
+        element.click();
+        document.body.removeChild(element);
+    };
+
     return (
         <div className="video-summary-page">
             <nav className="video-summary-nav">
                 <button onClick={() => window.history.back()} className="nav-back-btn">
                     ← Dashboard
-                </button>
-                <div className="video-link-input-group">
-                    <input
-                        type="text"
-                        placeholder="Paste YouTube video link here"
-                        value={videoLink}
-                        onChange={(e) => setVideoLink(e.target.value)}
-                        className="nav-video-input"
-                    />
-                    <button
-                        onClick={handleSummarize}
-                        className="nav-summarize-btn"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? 'Processing...' : 'Summarize'}
-                    </button>
+                </button>                <div style={{ flex: 1, maxWidth: '600px', position: 'relative' }}>
+                    <div className={`video-link-input-group ${isShaking ? 'shake' : ''}`}>
+                        <input
+                            type="text"
+                            placeholder="Paste YouTube video link here"
+                            value={videoLink}
+                            onChange={(e) => {
+                                setVideoLink(e.target.value);
+                                if (error) setError(''); // Clear error while typing
+                            }}
+                            className={`nav-video-input ${error ? 'input-error' : ''}`}
+                        />
+                        <button
+                            onClick={handleSummarize}
+                            className="nav-summarize-btn"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Processing...' : 'Summarize'}
+                        </button>
+                    </div>
+                    {error && (
+                        <div style={{ 
+                            position: 'absolute', 
+                            bottom: '-22px', 
+                            left: '10px', 
+                            color: '#ef4444', 
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            animation: 'fadeIn 0.2s ease-in-out'
+                        }}>
+                            {error}
+                        </div>
+                    )}
                 </div>
+
             </nav>
 
             <main className="video-summary-layout">
@@ -192,9 +242,8 @@ function VideoSummary() {
                     <div className="video-info-mock">
                         <h2 className="video-title">Live Transcript Session</h2>
                         <div className="video-actions">
-                            <button className="video-action-btn">📚 Chapters</button>
-                            <button className="video-action-btn">📝 Transcripts</button>
-                            <button className="video-action-btn">🔄 Auto Scroll</button>
+                            <button className="video-action-btn"> Transcripts</button>
+                            <button className="video-action-btn"> Auto Scroll</button>
                         </div>
                         <div className="mock-transcript">
                             <div className="transcript-list" ref={transcriptContainerRef}>
@@ -228,19 +277,19 @@ function VideoSummary() {
                             className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
                             onClick={() => setActiveTab('chat')}
                         >
-                            💬 Chat
+                            Chat
                         </button>
                         <button
                             className={`tab-btn ${activeTab === 'summary' ? 'active' : ''}`}
                             onClick={() => setActiveTab('summary')}
                         >
-                            📜 Summary
+                            Summary
                         </button>
                         <button
                             className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
                             onClick={() => setActiveTab('notes')}
                         >
-                            📓 Notes
+                            Notes
                         </button>
                     </div>
 
@@ -288,7 +337,7 @@ function VideoSummary() {
                                         value={chatMessage}
                                         onChange={(e) => setChatMessage(e.target.value)}
                                     />
-                                    <button className="send-chat-btn">发送</button>
+                                    <button className="send-chat-btn">Send</button>
                                 </div>
                             </div>
                         )}
@@ -296,7 +345,14 @@ function VideoSummary() {
                         {activeTab === 'notes' && (
                             <div className="tab-pane notes-pane">
                                 <h3>My Notes</h3>
-                                <textarea placeholder="Take your notes here while watching..."></textarea>
+                                <textarea 
+                                    placeholder="Take your notes here while watching..."
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                ></textarea>
+                                <button className="download-notes-btn" onClick={handleDownloadNotes}>
+                                    Download Notes
+                                </button>
                             </div>
                         )}
                     </div>

@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const multer = require('multer');
+const pdf = require('pdf-parse');
+const mammoth = require('mammoth');
 
 const TranscriptLoader = require('./services/TranscriptLoader');
 const GeminiService = require('./services/GeminiService');
@@ -8,6 +11,7 @@ const TextSplitter = require('./utils/TextSplitter');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
@@ -53,6 +57,56 @@ app.post('/api/video/summarize', async (req, res) => {
     } catch (error) {
         console.error('[API] Summarize Error:', error.message);
         res.status(500).json({ error: "Failed to generate summary: " + error.message });
+    }
+});
+
+app.post('/api/text/summarize', async (req, res) => {
+    const { text, language } = req.body;
+    console.log(`[API] Text summarize request (${text?.length || 0} chars)`);
+
+    if (!text || text.trim().length === 0) {
+        return res.status(400).json({ error: "Text is required for summarization" });
+    }
+
+    try {
+        const summary = await GeminiService.summarizeGeneralText(text, language);
+        res.json({ summary });
+    } catch (error) {
+        console.error('[API] Text Summarize Error:', error.message);
+        res.status(500).json({ error: "Failed to generate summary: " + error.message });
+    }
+});
+
+app.post('/api/file/summarize', upload.single('file'), async (req, res) => {
+    console.log(`[API] File summarize request received`);
+    if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    try {
+        let extractedText = "";
+        const fileBuffer = req.file.buffer;
+        const fileMimeType = req.file.mimetype;
+
+        if (fileMimeType === 'application/pdf') {
+            const data = await pdf(fileBuffer);
+            extractedText = data.text;
+        } else if (fileMimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            const data = await mammoth.extractRawText({ buffer: fileBuffer });
+            extractedText = data.value;
+        } else {
+            return res.status(400).json({ error: "Unsupported file type. Please upload PDF or Word (.docx)." });
+        }
+
+        if (!extractedText || extractedText.trim().length === 0) {
+            return res.status(400).json({ error: "No text could be extracted from the file." });
+        }
+
+        const summary = await GeminiService.summarizeGeneralText(extractedText);
+        res.json({ summary });
+    } catch (error) {
+        console.error('[API] File Summarize Error:', error.message);
+        res.status(500).json({ error: "Failed to process file: " + error.message });
     }
 });
 

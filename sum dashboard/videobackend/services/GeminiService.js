@@ -38,6 +38,35 @@ class GeminiService {
             return "Failed to generate AI summary. Please check your connection or try again later.";
         }
     }
+
+    async summarizeGeneralText(text, language = 'English') {
+        try {
+            if (!process.env.GEMINI_API_KEY) {
+                return "AI Summary is ready to be activated. Please add your GEMINI_API_KEY to the .env file to see real results!";
+            }
+
+            const prompt = `
+                You are a professional text summarizer. 
+                Below is a text document/article. 
+                Please provide a concise, accurate, and high-quality summary in ${language}.
+                Maintain the core message and key details.
+                Use bullet points for key takeaways if appropriate.
+                
+                Text:
+                ${text}
+            `;
+
+            console.log(`[Gemini] Summarizing general text (${text.length} chars) in ${language}.`);
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const summary = response.text();
+            console.log(`[Gemini] Successfully generated summary (${summary.length} chars).`);
+            return summary;
+        } catch (error) {
+            console.error("Gemini General Text API Error:", error);
+            return "Failed to generate AI summary. Please check your connection or try again later.";
+        }
+    }
 }
 
 module.exports = new GeminiService();
