@@ -246,7 +246,7 @@ export function App() {
             if (data) setChatbotData(data);
             setAuthPage('register');
           }}
-          onBackHome={() => setShowHome(true)}
+          onNavigateToHome={() => setShowHome(true)}
         />
       );
     }
@@ -256,7 +256,7 @@ export function App() {
         onRegister={handleRegisterSuccess}
         onNavigateToLogin={() => setAuthPage('login')}
         chatbotData={chatbotData}
-        onBackHome={() => setShowHome(true)}
+        onNavigateToHome={() => setShowHome(true)}
       />
     );
   }

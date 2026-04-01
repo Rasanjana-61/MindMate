@@ -20,13 +20,34 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+            <a 
+              href="#features" 
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
               Features
             </a>
-            <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+            <a 
+              href="#how-it-works" 
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
               How It Works
             </a>
-            <a href="#benefits" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+            <a 
+              href="#benefits" 
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
               Benefits
             </a>
             <a href="#" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
