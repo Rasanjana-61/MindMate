@@ -54,7 +54,6 @@ export function Profile({ user, onLogout, onUserUpdate }) {
     try {
       const response = await updateProfile({
         fullName: profileForm.fullName,
-        phone: user.email,
         bio: profileForm.bio,
       });
       onUserUpdate(response.user);

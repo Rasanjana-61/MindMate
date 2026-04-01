@@ -24,6 +24,18 @@ export default {
           'text-sec': '#5F705F',
           'text-muted': '#9AA69A',
           border: '#CFE3D2',
+        },
+        app: {
+          'primary': '#7BAE7F',
+          'primary-dark': '#4F7D5C',
+          'primary-light': '#DDEAD9',
+          'background': '#F6F7F5',
+          'card': '#FFFFFF',
+          'text-primary': '#2F3E34',
+          'text-secondary': '#6B7C72',
+          'mood': '#6FBF73',
+          'stress': '#E07A7A',
+          'energy': '#E6B85C',
         }
       },
       boxShadow: {

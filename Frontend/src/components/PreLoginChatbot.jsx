@@ -126,14 +126,14 @@ export default function PreLoginChatbot({ isOpen = false, onClose, onComplete })
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#7BAE7F] to-[#4F7D5C] text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
               <img src={chatbotIcon} alt="MindMate" className="w-7 h-7" />
             </div>
             <div>
               <h3 className="font-semibold text-lg">MindMate Guide</h3>
-              <p className="text-xs text-blue-100">Get to know you better</p>
+              <p className="text-xs" style={{ color: '#D4E8D5' }}>Get to know you better</p>
             </div>
           </div>
           <button
@@ -149,7 +149,7 @@ export default function PreLoginChatbot({ isOpen = false, onClose, onComplete })
           {messages.length === 0 && isLoading && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <Loader className="animate-spin mx-auto mb-2 text-blue-600" size={32} />
+                <Loader className="animate-spin mx-auto mb-2" size={32} style={{ color: '#7BAE7F' }} />
                 <p className="text-gray-500">Starting conversation...</p>
               </div>
             </div>
@@ -163,15 +163,21 @@ export default function PreLoginChatbot({ isOpen = false, onClose, onComplete })
               <div
                 className={`max-w-xs px-4 py-3 rounded-lg ${
                   msg.type === "user"
-                    ? "bg-blue-600 text-white rounded-br-none"
+                    ? "text-white rounded-br-none" 
                     : "bg-gray-100 text-gray-800 rounded-bl-none"
                 }`}
+                style={{
+                  backgroundColor: msg.type === "user" ? '#7BAE7F' : undefined
+                }}
               >
                 <p className="text-sm leading-relaxed">{msg.text}</p>
                 <p
                   className={`text-xs mt-1 ${
-                    msg.type === "user" ? "text-blue-100" : "text-gray-500"
+                    msg.type === "user" ? "" : "text-gray-500"
                   }`}
+                  style={{
+                    color: msg.type === "user" ? '#D4E8D5' : undefined
+                  }}
                 >
                   {msg.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",
@@ -202,7 +208,13 @@ export default function PreLoginChatbot({ isOpen = false, onClose, onComplete })
               <button
                 key={idx}
                 onClick={() => handleQuickReply(reply)}
-                className="px-3 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium hover:bg-blue-200 transition"
+                className="px-3 py-2 rounded-full text-sm font-medium transition"
+                style={{
+                  backgroundColor: '#E8F3E9',
+                  color: '#7BAE7F'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#D4E8D5'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#E8F3E9'}
               >
                 {reply}
               </button>
@@ -232,12 +244,33 @@ export default function PreLoginChatbot({ isOpen = false, onClose, onComplete })
               }}
               placeholder="Type your answer..."
               disabled={isLoading}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-sm"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-100 text-sm"
+              onFocus={(e) => {
+                e.target.style.borderColor = '#7BAE7F';
+                e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
             <button
               onClick={() => handleSendMessage()}
               disabled={isLoading || !inputValue.trim()}
-              className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+              className="p-2 text-white rounded-lg transition"
+              style={{
+                backgroundColor: isLoading || !inputValue.trim() ? '#d1d5db' : '#7BAE7F'
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading && inputValue.trim()) {
+                  e.target.style.backgroundColor = '#4F7D5C';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading && inputValue.trim()) {
+                  e.target.style.backgroundColor = '#7BAE7F';
+                }
+              }}
             >
               <Send size={18} />
             </button>
@@ -249,7 +282,10 @@ export default function PreLoginChatbot({ isOpen = false, onClose, onComplete })
           <div className="border-t px-4 py-4 bg-white rounded-b-2xl">
             <button
               onClick={onClose}
-              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+              className="w-full px-4 py-3 text-white rounded-lg transition font-medium text-sm"
+              style={{ backgroundColor: '#7BAE7F' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
             >
               Go to Register
             </button>

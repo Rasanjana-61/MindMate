@@ -6,14 +6,14 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <main className="bg-white overflow-hidden">
+    <main className="overflow-hidden" style={{ backgroundColor: "#FBF8F3" }}>
       {/* =====================================
          Header Navigation
       ====================================== */}
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: '#7BAE7F' }}>
               M
             </div>
             <span className="text-xl font-bold text-slate-900">MindMate</span>
@@ -26,7 +26,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                 e.preventDefault();
                 document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+              className="text-sm font-medium text-slate-600 transition" style={{ color: '#5F705F' }}
+              onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+              onMouseLeave={(e) => e.target.style.color = '#5F705F'}
             >
               Features
             </a>
@@ -36,7 +38,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                 e.preventDefault();
                 document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+              className="text-sm font-medium text-slate-600 transition" style={{ color: '#5F705F' }}
+              onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+              onMouseLeave={(e) => e.target.style.color = '#5F705F'}
             >
               How It Works
             </a>
@@ -46,11 +50,15 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                 e.preventDefault();
                 document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+              className="text-sm font-medium text-slate-600 transition" style={{ color: '#5F705F' }}
+              onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+              onMouseLeave={(e) => e.target.style.color = '#5F705F'}
             >
               Benefits
             </a>
-            <a href="#" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+            <a href="#" className="text-sm font-medium text-slate-600 transition" style={{ color: '#5F705F' }}
+              onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+              onMouseLeave={(e) => e.target.style.color = '#5F705F'}>
               About
             </a>
           </nav>
@@ -58,13 +66,17 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
           <div className="flex items-center gap-3">
             <button
               onClick={onNavigateToLogin}
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition"
+              className="px-4 py-2 text-sm font-medium text-slate-700 transition" style={{ color: '#5F705F' }}
+              onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+              onMouseLeave={(e) => e.target.style.color = '#5F705F'}
             >
               Sign In
             </button>
             <button
               onClick={onNavigateToRegister}
-              className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+              className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition" style={{ backgroundColor: '#7BAE7F' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
             >
               Sign Up
             </button>
@@ -86,7 +98,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
               <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl">
-                Your Student <span className="text-blue-600">Wellness</span>
+                Your Student <span style={{ color: '#7BAE7F' }}>Wellness</span>
                 <br />
                 Hub
               </h1>
@@ -100,7 +112,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                   <>
                     <button
                       onClick={onNavigateToLogin}
-                      className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                      className="inline-flex items-center rounded-xl px-6 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ backgroundColor: '#7BAE7F', '--tw-ring-color': '#7BAE7F' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
                     >
                       Get Started
                       <svg
@@ -117,11 +131,13 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
 
                     <a
                       href="#features"
-                      className="inline-flex items-center rounded-xl border border-blue-300 px-6 py-3 text-base font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                      className="inline-flex items-center rounded-xl px-6 py-3 text-base font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ borderColor: '#7BAE7F', border: '1px solid #7BAE7F', color: '#7BAE7F' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#F6F7F5'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
-                      <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-blue-400">
+                      <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full" style={{ borderColor: '#7BAE7F', border: '1px solid #7BAE7F' }}>
                         <svg
-                          className="h-3.5 w-3.5 text-blue-600"
+                          className="h-3.5 w-3.5" style={{ color: '#7BAE7F' }}
                           viewBox="0 0 24 24"
                           fill="currentColor"
                         >
@@ -135,7 +151,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                   <>
                     <button
                       onClick={() => {}}
-                      className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                      className="inline-flex items-center rounded-xl px-6 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ backgroundColor: '#7BAE7F' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
                     >
                       Go to Dashboard
                       <svg
@@ -152,7 +170,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
 
                     <a
                       href="#features"
-                      className="inline-flex items-center rounded-xl border border-blue-300 px-6 py-3 text-base font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                      className="inline-flex items-center rounded-xl px-6 py-3 text-base font-semibold shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ borderColor: '#7BAE7F', border: '1px solid #7BAE7F', color: '#7BAE7F' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#F6F7F5'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
                       Explore Features
                     </a>
@@ -196,10 +216,10 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                 </span>
               </div>
 
-              <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50 p-8 shadow-xl ring-1 ring-slate-200">
+              <div className="rounded-2xl p-8 shadow-xl ring-1 ring-slate-200" style={{ backgroundImage: 'linear-gradient(to bottom right, rgba(123, 174, 127, 0.1), rgba(127, 127, 127, 0.05))' }}>
                 <div className="space-y-4">
                   <div className="flex items-center rounded-lg bg-white p-4 shadow-sm">
-                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-xl">
+                    <div className="h-12 w-12 rounded-full flex items-center justify-center text-xl" style={{ backgroundColor: 'rgba(123, 174, 127, 0.2)' }}>
                       😊
                     </div>
                     <div className="ml-4">
@@ -230,9 +250,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                 </div>
               </div>
 
-              <div className="absolute -bottom-4 right-6 z-10 rounded-xl bg-blue-600 px-5 py-3 text-white shadow-lg">
+              <div className="absolute -bottom-4 right-6 z-10 rounded-xl px-5 py-3 text-white shadow-lg" style={{ backgroundColor: '#7BAE7F' }}>
                 <div className="text-sm font-semibold">Always Here</div>
-                <div className="text-xs text-blue-100">For Your Wellness</div>
+                <div className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>For Your Wellness</div>
               </div>
             </div>
           </div>
@@ -252,21 +272,21 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
       >
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:py-24">
           <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#7BAE7F' }}>
               Core Features
             </p>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
               Everything You Need for Student Success
             </h2>
-            <div className="mx-auto mt-4 h-1 w-24 rounded bg-blue-600" />
+            <div className="mx-auto mt-4 h-1 w-24 rounded" style={{ backgroundColor: '#7BAE7F' }} />
           </div>
 
           <div className="mt-12 grid gap-6 md:mt-16 md:grid-cols-2 lg:grid-cols-4">
             {/* Module 1: Mood Tracker */}
             <div className="rounded-2xl bg-slate-50 p-8 shadow-sm ring-1 ring-slate-200 hover:shadow-md transition">
               <div className="flex items-start">
-                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
-                  <svg className="h-7 w-7 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: 'rgba(123, 174, 127, 0.2)' }}>
+                  <svg className="h-7 w-7" style={{ color: '#7BAE7F' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M8 14s1.5 2 4 2 4-2 4-2" />
                     <line x1="9" y1="9" x2="9.01" y2="9" />
@@ -326,8 +346,8 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
             {/* Module 4: AI Resource Hub */}
             <div className="rounded-2xl bg-slate-50 p-8 shadow-sm ring-1 ring-slate-200 hover:shadow-md transition">
               <div className="flex items-start">
-                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
-                  <svg className="h-7 w-7 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ backgroundColor: '#E8F3E9' }}>
+                  <svg className="h-7 w-7" style={{ color: '#7BAE7F' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                   </svg>
@@ -352,19 +372,19 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
       <section className="relative bg-slate-50" id="how-it-works">
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:py-24">
           <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#7BAE7F' }}>
               Simple Process
             </p>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
               How MindMate Works
             </h2>
-            <div className="mx-auto mt-4 h-1 w-24 rounded bg-blue-600" />
+            <div className="mx-auto mt-4 h-1 w-24 rounded" style={{ backgroundColor: '#7BAE7F' }} />
           </div>
 
           <div className="mt-12 grid gap-8 md:grid-cols-4">
             {/* Step 1 */}
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white" style={{ backgroundColor: '#7BAE7F' }}>
                 1
               </div>
               <h3 className="text-lg font-bold text-slate-900">Sign In</h3>
@@ -375,7 +395,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
 
             {/* Step 2 */}
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white" style={{ backgroundColor: '#7BAE7F' }}>
                 2
               </div>
               <h3 className="text-lg font-bold text-slate-900">Explore</h3>
@@ -386,7 +406,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
 
             {/* Step 3 */}
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white" style={{ backgroundColor: '#7BAE7F' }}>
                 3
               </div>
               <h3 className="text-lg font-bold text-slate-900">Track or Share</h3>
@@ -397,7 +417,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
 
             {/* Step 4 */}
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white" style={{ backgroundColor: '#7BAE7F' }}>
                 4
               </div>
               <h3 className="text-lg font-bold text-slate-900">Get Insights</h3>
@@ -412,32 +432,32 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
       {/* =====================================
          Part 4: Stats Ribbon
       ====================================== */}
-      <section className="bg-blue-600">
+      <section style={{ backgroundColor: '#7BAE7F' }}>
         <div className="mx-auto max-w-7xl px-6 py-12 sm:py-14 lg:py-16">
           <div className="grid grid-cols-2 gap-y-10 text-center text-white sm:grid-cols-4">
             <div>
               <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 1000+
               </div>
-              <div className="mt-2 text-sm text-blue-100">Active Students</div>
+              <div className="mt-2 text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Active Students</div>
             </div>
             <div>
               <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 50K+
               </div>
-              <div className="mt-2 text-sm text-blue-100">Mood Logs</div>
+              <div className="mt-2 text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Mood Logs</div>
             </div>
             <div>
               <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 100K+
               </div>
-              <div className="mt-2 text-sm text-blue-100">Focus Sessions</div>
+              <div className="mt-2 text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Focus Sessions</div>
             </div>
             <div>
               <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 500+
               </div>
-              <div className="mt-2 text-sm text-blue-100">Peer Q&As</div>
+              <div className="mt-2 text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Peer Q&As</div>
             </div>
           </div>
         </div>
@@ -455,7 +475,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:py-24">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 ring-1 ring-inset ring-blue-100">
+              <span className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ring-1 ring-inset" style={{ backgroundColor: 'rgba(123, 174, 127, 0.1)', color: '#7BAE7F', borderColor: '#7BAE7F', '--tw-ring-color': '#7BAE7F' }}>
                 <svg
                   className="h-4 w-4"
                   viewBox="0 0 24 24"
@@ -469,7 +489,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
               </span>
 
               <h2 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">
-                Transform Your <span className="text-blue-600">Student Life</span>
+                Transform Your <span style={{ color: '#7BAE7F' }}>Student Life</span>
               </h2>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
@@ -531,7 +551,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                 {!isAuthenticated ? (
                   <button
                     onClick={onNavigateToRegister}
-                    className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                    className="inline-flex items-center rounded-xl px-6 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ backgroundColor: '#7BAE7F' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
                   >
                     Start Free Today
                     <svg
@@ -548,7 +570,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                 ) : (
                   <button
                     onClick={() => {}}
-                    className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                    className="inline-flex items-center rounded-xl px-6 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ backgroundColor: '#7BAE7F' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
                   >
                     Go to Dashboard
                     <svg
@@ -567,7 +591,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
             </div>
 
             <div className="relative">
-              <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50 p-8 shadow-xl ring-1 ring-slate-200">
+              <div className="rounded-2xl p-8 shadow-xl ring-1 ring-slate-200" style={{ backgroundImage: 'linear-gradient(to bottom right, rgba(123, 174, 127, 0.1), rgba(127, 127, 127, 0.05))' }}>
                 <div className="space-y-6">
                   <div className="rounded-lg bg-white p-6 shadow-sm">
                     <div className="flex items-center justify-between">
@@ -593,7 +617,7 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
                         <div className="text-sm text-slate-500">Focus Streak</div>
                         <div className="mt-1 text-2xl font-bold text-slate-900">12 days</div>
                       </div>
-                      <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-xl">
+                      <div className="h-12 w-12 rounded-full flex items-center justify-center text-xl" style={{ backgroundColor: 'rgba(123, 174, 127, 0.2)' }}>
                         🔥
                       </div>
                     </div>
@@ -637,12 +661,12 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
       {/* =====================================
          Part 6: CTA Section
       ====================================== */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800">
+      <section style={{ backgroundImage: 'linear-gradient(to right, #7BAE7F, #4F7D5C)' }}>
         <div className="mx-auto max-w-4xl px-6 py-16 sm:py-20 lg:py-24 text-center">
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl md:text-5xl">
             Ready to Transform Your Student Journey?
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-blue-100">
+          <p className="mx-auto mt-6 max-w-2xl text-lg" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
             Join thousands of students already using MindMate to balance academics, mental health, and productivity in one intelligent platform.
           </p>
 
@@ -651,7 +675,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
               <>
                 <button
                   onClick={onNavigateToRegister}
-                  className="inline-flex items-center rounded-xl bg-white px-8 py-3 text-base font-semibold text-blue-600 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+                  className="inline-flex items-center rounded-xl px-8 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ backgroundColor: '#FBF8F3', color: '#7BAE7F', '--tw-ring-offset-color': '#7BAE7F' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#FBF8F3'}
                 >
                   Get Started Now
                   <svg
@@ -668,7 +694,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
 
                 <a
                   href="#features"
-                  className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+                  className="inline-flex items-center rounded-xl px-8 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2" style={{ borderColor: 'white', border: '2px solid white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
                   Learn More
                 </a>
@@ -677,7 +705,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
               <>
                 <button
                   onClick={() => {}}
-                  className="inline-flex items-center rounded-xl bg-white px-8 py-3 text-base font-semibold text-blue-600 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+                  className="inline-flex items-center rounded-xl px-8 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2" style={{ backgroundColor: '#FBF8F3', color: '#7BAE7F', '--tw-ring-offset-color': '#7BAE7F' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#FBF8F3'}
                 >
                   Go to Dashboard
                   <svg
@@ -694,7 +724,9 @@ export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = 
 
                 <a
                   href="#features"
-                  className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+                  className="inline-flex items-center rounded-xl px-8 py-3 text-base font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2" style={{ borderColor: 'white', border: '2px solid white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
                   Explore Features
                 </a>

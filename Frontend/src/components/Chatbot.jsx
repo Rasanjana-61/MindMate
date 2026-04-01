@@ -112,14 +112,14 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
       {/* Chatbot Container */}
       <div className="w-full md:w-96 h-full md:h-[90vh] md:rounded-t-2xl bg-white shadow-2xl flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#7BAE7F] to-[#4F7D5C] text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
               <img src={chatbotIcon} alt="MindMate" className="w-7 h-7" />
             </div>
             <div>
               <h3 className="font-semibold text-lg">MindMate Guide</h3>
-              <p className="text-xs text-purple-100">Let's complete your profile</p>
+              <p className="text-xs" style={{ color: '#D4E8D5' }}>Let's complete your profile</p>
             </div>
           </div>
           <button
@@ -135,7 +135,7 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
           {messages.length === 0 && !isChatStarted && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <Loader className="animate-spin mx-auto mb-2 text-purple-600" size={32} />
+                <Loader className="animate-spin mx-auto mb-2" size={32} style={{ color: '#7BAE7F' }} />
                 <p className="text-gray-500">Starting conversation...</p>
               </div>
             </div>
@@ -149,15 +149,21 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
               <div
                 className={`max-w-[80%] px-4 py-3 rounded-lg ${
                   msg.type === "user"
-                    ? "bg-purple-600 text-white rounded-br-none"
+                    ? "text-white rounded-br-none"
                     : "bg-gray-100 text-gray-800 rounded-bl-none"
                 }`}
+                style={{
+                  backgroundColor: msg.type === "user" ? '#7BAE7F' : undefined
+                }}
               >
                 <p className="text-sm leading-relaxed">{msg.text}</p>
                 <p
                   className={`text-xs mt-1 ${
-                    msg.type === "user" ? "text-purple-100" : "text-gray-500"
+                    msg.type === "user" ? "" : "text-gray-500"
                   }`}
+                  style={{
+                    color: msg.type === "user" ? '#D4E8D5' : undefined
+                  }}
                 >
                   {msg.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",
@@ -190,7 +196,13 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
               <button
                 key={idx}
                 onClick={() => handleQuickReply(reply)}
-                className="px-3 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium hover:bg-purple-200 transition"
+                className="px-3 py-2 rounded-full text-sm font-medium transition"
+                style={{
+                  backgroundColor: '#E8F3E9',
+                  color: '#7BAE7F'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#D4E8D5'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#E8F3E9'}
               >
                 {reply}
               </button>
@@ -220,12 +232,33 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
               }}
               placeholder="Type your answer..."
               disabled={isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 disabled:bg-gray-100"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 disabled:bg-gray-100"
+              onFocus={(e) => {
+                e.target.style.borderColor = '#7BAE7F';
+                e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
             />
             <button
               onClick={() => handleSendMessage()}
               disabled={isLoading || !inputValue.trim()}
-              className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 transition"
+              className="p-2 text-white rounded-lg transition"
+              style={{
+                backgroundColor: isLoading || !inputValue.trim() ? '#d1d5db' : '#7BAE7F'
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading && inputValue.trim()) {
+                  e.target.style.backgroundColor = '#4F7D5C';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading && inputValue.trim()) {
+                  e.target.style.backgroundColor = '#7BAE7F';
+                }
+              }}
             >
               <Send size={20} />
             </button>
@@ -237,7 +270,11 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
           <div className="border-t px-4 py-4">
             <button
               onClick={onClose}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
+              className="w-full px-4 py-2 text-white rounded-lg transition font-medium"
+              style={{ backgroundColor: '#7BAE7F' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
+            >
             >
               Go to Dashboard
             </button>

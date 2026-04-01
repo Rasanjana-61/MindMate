@@ -233,339 +233,448 @@ export function Register({ onRegister, onNavigateToLogin, chatbotData = null, on
             y: 0
         }
     };
-    return (<div className="flex flex-col min-h-screen bg-wellness-bg">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={onNavigateToHome}
-            className="flex items-center gap-2 hover:opacity-80 transition"
-          >
-            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-              M
-            </div>
-            <span className="text-xl font-bold text-slate-900">MindMate</span>
-          </button>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <a 
-              href="#features" 
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToHome();
-                setTimeout(() => {
-                  document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
-            >
-              Features
-            </a>
-            <a 
-              href="#how-it-works" 
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToHome();
-                setTimeout(() => {
-                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
-            >
-              How It Works
-            </a>
-            <a 
-              href="#benefits" 
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToHome();
-                setTimeout(() => {
-                  document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
-            >
-              Benefits
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-slate-600 hidden sm:inline">
-              Already have an account?
-            </span>
+    return (
+      <div className="flex flex-col min-h-screen bg-white">
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-white border-b border-slate-100">
+          <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
             <button
-              onClick={onNavigateToLogin}
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition"
+              onClick={onNavigateToHome}
+              className="flex items-center gap-2 hover:opacity-80 transition"
             >
-              Sign In
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: '#7BAE7F' }}>
+                M
+              </div>
+              <span className="text-xl font-bold text-slate-900">MindMate</span>
             </button>
+
+            <nav className="hidden md:flex items-center gap-8">
+              <a 
+                href="#features" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigateToHome();
+                  setTimeout(() => {
+                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="text-sm font-medium text-slate-600 transition"
+                style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                Features
+              </a>
+              <a 
+                href="#how-it-works" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigateToHome();
+                  setTimeout(() => {
+                    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="text-sm font-medium text-slate-600 transition"
+                style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                How It Works
+              </a>
+              <a 
+                href="#benefits" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigateToHome();
+                  setTimeout(() => {
+                    document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="text-sm font-medium text-slate-600 transition"
+                style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                Benefits
+              </a>
+            </nav>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onNavigateToLogin}
+                className="px-4 py-2 text-sm font-medium text-slate-700 transition" style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={onNavigateToHome}
+                className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition" style={{ backgroundColor: '#7BAE7F' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
+              >
+                Sign Up
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <div className="flex flex-1 bg-wellness-bg">
-      {/* Right Register Panel */}
-      <div className="w-full flex items-center justify-center p-6 sm:p-12 min-h-screen relative">
+        {/* Main Content */}
+        <div className="flex flex-1 items-center justify-center px-6 py-12">
+          <motion.div 
+            className="w-full max-w-md"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants} className="mb-8 text-center">
+              <h1 className="text-4xl font-bold text-slate-900 mb-2">
+                Join the <span style={{ color: '#7BAE7F' }}>Community</span>
+              </h1>
+              <p className="text-slate-600">
+                Create an account to get started
+              </p>
+            </motion.div>
 
-        <motion.div className="w-full max-w-2xl mt-12 lg:mt-0" variants={containerVariants} initial="hidden" animate="visible">
+            <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+              <form onSubmit={handleRegister} className="space-y-5">
+                {submitError && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
+                    {submitError}
+                  </div>
+                )}
 
-          <motion.div variants={itemVariants} className="mb-8">
-            <h2 className="text-3xl font-bold text-wellness-text mb-2">
-              Create your account
-            </h2>
-            <p className="text-wellness-text-sec">
-              Fill in your details to get started.
-            </p>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="bg-white p-8 rounded-3xl shadow-xl shadow-wellness-blue/5 border border-wellness-border/50">
-
-            <form onSubmit={handleRegister} className="space-y-6">
-              {submitError &&
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
-                  {submitError}
-                </div>}
-              {/* Personal Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Student ID */}
                 <div>
-                  <label className="block text-sm font-medium text-wellness-text mb-1.5">
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
                     Student ID
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-wellness-text-muted group-focus-within:text-wellness-blue transition-colors"/>
-                    </div>
-                    <input type="text" name="studentId" value={formData.studentId} onChange={handleChange} placeholder="e.g. STU2024" className={`w-full pl-11 pr-4 py-3 bg-wellness-bg/50 border ${errors.studentId ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-wellness-border focus:border-wellness-blue focus:ring-wellness-blue/10'} rounded-xl focus:bg-white focus:ring-4 outline-none transition-all text-sm`}/>
-
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                    <input
+                      type="text"
+                      name="studentId"
+                      value={formData.studentId}
+                      onChange={handleChange}
+                      placeholder="e.g. STU2024"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none transition-all text-slate-900 ${
+                        errors.studentId 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+                          : 'border-slate-200'
+                      }`}
+                      onFocus={(e) => {
+                        if (!errors.studentId) {
+                          e.target.style.borderColor = '#7BAE7F';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!errors.studentId) {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.boxShadow = 'none';
+                        }
+                      }}
+                    />
                   </div>
-                  {errors.studentId &&
-            <p className="text-xs text-red-500 mt-1.5 ml-1">
-                      {errors.studentId}
-                    </p>}
+                  {errors.studentId && <p className="text-xs text-red-500 mt-1">{errors.studentId}</p>}
                 </div>
 
+                {/* University Email */}
                 <div>
-                  <label className="block text-sm font-medium text-wellness-text mb-1.5">
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
                     University Email
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-wellness-text-muted group-focus-within:text-wellness-blue transition-colors"/>
-                    </div>
-                    <input type="email" name="universityMail" value={formData.universityMail} onChange={handleChange} placeholder="student@university.edu" className={`w-full pl-11 pr-4 py-3 bg-wellness-bg/50 border ${errors.universityMail ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-wellness-border focus:border-wellness-blue focus:ring-wellness-blue/10'} rounded-xl focus:bg-white focus:ring-4 outline-none transition-all text-sm`}/>
-
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                    <input
+                      type="email"
+                      name="universityMail"
+                      value={formData.universityMail}
+                      onChange={handleChange}
+                      placeholder="student@university.edu"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none transition-all text-slate-900 ${
+                        errors.universityMail 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+                          : 'border-slate-200'
+                      }`}
+                      onFocus={(e) => {
+                        if (!errors.universityMail) {
+                          e.target.style.borderColor = '#7BAE7F';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!errors.universityMail) {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.boxShadow = 'none';
+                        }
+                      }}
+                    />
                   </div>
-                  {errors.universityMail &&
-            <p className="text-xs text-red-500 mt-1.5 ml-1">
-                      {errors.universityMail}
-                    </p>}
+                  {errors.universityMail && <p className="text-xs text-red-500 mt-1">{errors.universityMail}</p>}
                 </div>
-              </div>
 
-              {/* Password Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Password */}
                 <div>
-                  <label className="block text-sm font-medium text-wellness-text mb-1.5">
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
                     Password
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-wellness-text-muted group-focus-within:text-wellness-blue transition-colors"/>
-                    </div>
-                    <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" className={`w-full pl-11 pr-12 py-3 bg-wellness-bg/50 border ${errors.password ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-wellness-border focus:border-wellness-blue focus:ring-wellness-blue/10'} rounded-xl focus:bg-white focus:ring-4 outline-none transition-all text-sm`}/>
-
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-wellness-text-muted hover:text-wellness-text">
-
-                      {showPassword ?
-            <EyeOff className="h-5 w-5"/> :
-            <Eye className="h-5 w-5"/>}
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none transition-all text-slate-900 ${
+                        errors.password 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+                          : 'border-slate-200'
+                      }`}
+                      onFocus={(e) => {
+                        if (!errors.password) {
+                          e.target.style.borderColor = '#7BAE7F';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!errors.password) {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.boxShadow = 'none';
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
-
-                  {/* Password Strength */}
-                  <div className="mt-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] text-wellness-text-muted font-medium uppercase tracking-wider">
-                        Strength
-                      </span>
-                      {passwordStrength &&
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${getStrengthColor()}`}>
-
-                          {passwordStrength}
-                        </span>}
-                    </div>
-                    <div className="h-1.5 w-full bg-wellness-bg rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-500 ease-out ${getStrengthWidth()}`}/>
-
-                    </div>
-                  </div>
+                  {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
                 </div>
 
+                {/* Confirm Password */}
                 <div>
-                  <label className="block text-sm font-medium text-wellness-text mb-1.5">
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
                     Confirm Password
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-wellness-text-muted group-focus-within:text-wellness-blue transition-colors"/>
-                    </div>
-                    <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" className={`w-full pl-11 pr-12 py-3 bg-wellness-bg/50 border ${errors.confirmPassword ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-wellness-border focus:border-wellness-blue focus:ring-wellness-blue/10'} rounded-xl focus:bg-white focus:ring-4 outline-none transition-all text-sm`}/>
-
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-wellness-text-muted hover:text-wellness-text">
-
-                      {showConfirmPassword ?
-            <EyeOff className="h-5 w-5"/> :
-            <Eye className="h-5 w-5"/>}
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none transition-all text-slate-900 ${
+                        errors.confirmPassword 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+                          : 'border-slate-200'
+                      }`}
+                      onFocus={(e) => {
+                        if (!errors.confirmPassword) {
+                          e.target.style.borderColor = '#7BAE7F';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!errors.confirmPassword) {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.boxShadow = 'none';
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
-                  {errors.confirmPassword &&
-            <p className="text-xs text-red-500 mt-1.5 ml-1">
-                      {errors.confirmPassword}
-                    </p>}
+                  {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword}</p>}
                 </div>
-              </div>
 
-              {/* Academic Info */}
-              <div className="bg-wellness-bg/30 p-5 rounded-2xl border border-wellness-border/50">
-                <p className="text-xs text-wellness-text-sec mb-4 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-wellness-blue"/>
-                  Your faculty determines your accessible modules and community.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Faculty, Year, Semester */}
+                <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-wellness-text-sec mb-1.5">
+                    <label className="block text-sm font-medium text-slate-900 mb-2">
                       Faculty
                     </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <BookOpen className="h-4 w-4 text-wellness-text-muted"/>
-                      </div>
-                      <select name="faculty" value={formData.faculty} onChange={handleChange} className="w-full pl-9 pr-8 py-2.5 bg-white border border-wellness-border rounded-xl focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/10 outline-none transition-all text-sm appearance-none cursor-pointer">
-
-                        <option value="" disabled>
-                          Select
-                        </option>
-                        <option value="FOC">Computing (FOC)</option>
-                        <option value="FOB">Business (FOB)</option>
-                        <option value="FOE">Engineering (FOE)</option>
-                        <option value="FAS">Science (FAS)</option>
-                        <option value="FOL">Law (FOL)</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg className="w-4 h-4 text-wellness-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7">
-                          </path>
-                        </svg>
-                      </div>
-                    </div>
+                    <select
+                      name="faculty"
+                      value={formData.faculty}
+                      onChange={handleChange}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none transition-all text-sm text-slate-900 ${
+                        errors.faculty 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+                          : 'border-slate-200'
+                      }`}
+                      onFocus={(e) => {
+                        if (!errors.faculty) {
+                          e.target.style.borderColor = '#7BAE7F';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!errors.faculty) {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.boxShadow = 'none';
+                        }
+                      }}
+                    >
+                      <option value="">Select</option>
+                      <option value="FOC">Computing</option>
+                      <option value="FOB">Business</option>
+                      <option value="FOE">Engineering</option>
+                      <option value="FAS">Science</option>
+                      <option value="FOL">Law</option>
+                    </select>
+                    {errors.faculty && <p className="text-xs text-red-500 mt-1">{errors.faculty}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-wellness-text-sec mb-1.5">
+                    <label className="block text-sm font-medium text-slate-900 mb-2">
                       Year
                     </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <GraduationCap className="h-4 w-4 text-wellness-text-muted"/>
-                      </div>
-                      <select name="year" value={formData.year} onChange={handleChange} className="w-full pl-9 pr-8 py-2.5 bg-white border border-wellness-border rounded-xl focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/10 outline-none transition-all text-sm appearance-none cursor-pointer">
-
-                        <option value="" disabled>
-                          Select
-                        </option>
-                        <option value="Year 1">Year 1</option>
-                        <option value="Year 2">Year 2</option>
-                        <option value="Year 3">Year 3</option>
-                        <option value="Year 4">Year 4</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg className="w-4 h-4 text-wellness-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7">
-                          </path>
-                        </svg>
-                      </div>
-                    </div>
+                    <select
+                      name="year"
+                      value={formData.year}
+                      onChange={handleChange}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none transition-all text-sm text-slate-900 ${
+                        errors.year 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+                          : 'border-slate-200'
+                      }`}
+                      onFocus={(e) => {
+                        if (!errors.year) {
+                          e.target.style.borderColor = '#7BAE7F';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!errors.year) {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.boxShadow = 'none';
+                        }
+                      }}
+                    >
+                      <option value="">Select</option>
+                      <option value="Year 1">Year 1</option>
+                      <option value="Year 2">Year 2</option>
+                      <option value="Year 3">Year 3</option>
+                      <option value="Year 4">Year 4</option>
+                    </select>
+                    {errors.year && <p className="text-xs text-red-500 mt-1">{errors.year}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-wellness-text-sec mb-1.5">
+                    <label className="block text-sm font-medium text-slate-900 mb-2">
                       Semester
                     </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Calendar className="h-4 w-4 text-wellness-text-muted"/>
-                      </div>
-                      <select name="semester" value={formData.semester} onChange={handleChange} disabled={!formData.year} className="w-full pl-9 pr-8 py-2.5 bg-white border border-wellness-border rounded-xl focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/10 outline-none transition-all text-sm appearance-none cursor-pointer disabled:opacity-50 disabled:bg-gray-50">
-
-                        <option value="" disabled>
-                          Select
-                        </option>
-                        <option value="Semester 1">Semester 1</option>
-                        <option value="Semester 2">Semester 2</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg className="w-4 h-4 text-wellness-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7">
-                          </path>
-                        </svg>
-                      </div>
-                    </div>
+                    <select
+                      name="semester"
+                      value={formData.semester}
+                      onChange={handleChange}
+                      disabled={!formData.year}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none transition-all text-sm text-slate-900 ${
+                        errors.semester 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100' 
+                          : 'border-slate-200'
+                      } disabled:opacity-50 disabled:bg-slate-50`}
+                      onFocus={(e) => {
+                        if (!errors.semester) {
+                          e.target.style.borderColor = '#7BAE7F';
+                          e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!errors.semester) {
+                          e.target.style.borderColor = '#e2e8f0';
+                          e.target.style.boxShadow = 'none';
+                        }
+                      }}
+                    >
+                      <option value="">Select</option>
+                      <option value="Semester 1">Sem 1</option>
+                      <option value="Semester 2">Sem 2</option>
+                    </select>
+                    {errors.semester && <p className="text-xs text-red-500 mt-1">{errors.semester}</p>}
                   </div>
                 </div>
-              </div>
 
-              <div className="pt-2">
-                <label className="flex items-start gap-3 cursor-pointer group mb-6">
-                  <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 w-4 h-4 rounded border-wellness-border text-wellness-blue focus:ring-wellness-blue/20 cursor-pointer"/>
-
-                  <span className="text-sm text-wellness-text-sec group-hover:text-wellness-text transition-colors leading-relaxed">
-                    I agree to the{' '}
-                    <a href="#" className="text-wellness-blue hover:underline">
-                      Terms of Service
-                    </a>{' '}
-                    and{' '}
-                    <a href="#" className="text-wellness-blue hover:underline">
-                      Privacy Policy
-                    </a>
-                    .
+                {/* Terms Checkbox */}
+                <label className="flex items-center gap-2 cursor-pointer mt-4">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="w-4 h-4 border-slate-300 rounded"
+                    style={{ accentColor: '#7BAE7F' }}
+                  />
+                  <span className="text-sm text-slate-600">
+                    I agree to the Terms of Service and Privacy Policy
                   </span>
                 </label>
 
-                <button type="submit" disabled={!isFormValid || isLoading} className="btn-primary w-full py-3.5 flex justify-center items-center gap-2 text-base shadow-lg shadow-wellness-blue/20 disabled:opacity-70 disabled:cursor-not-allowed">
-
-                  {isLoading ?
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/> :
-            <>
-                      Create Account <ArrowRight className="w-4 h-4"/>
-                    </>}
+                {/* Sign Up Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading || !agreed}
+                  className="w-full text-white font-semibold py-3 rounded-lg transition-all inline-flex items-center justify-center gap-2 mt-6"
+                  style={{ 
+                    backgroundColor: isLoading || !agreed ? '#B8D0B8' : '#7BAE7F'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading && agreed) {
+                      e.target.style.backgroundColor = '#4F7D5C';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLoading && agreed) {
+                      e.target.style.backgroundColor = '#7BAE7F';
+                    }
+                  }}
+                >
+                  Create Account
+                  <ArrowRight size={18} />
                 </button>
-                <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-wellness-text-muted">
-                  <Lock className="w-3 h-3"/>
-                  <span>Secure, encrypted registration</span>
-                </div>
-              </div>
-            </form>
+              </form>
+
+              {/* Sign In Link */}
+              <p className="text-center text-sm text-slate-600 mt-6">
+                Already have an account?{' '}
+                <button 
+                  onClick={onNavigateToLogin}
+                  className="font-semibold transition-colors"
+                  style={{ color: '#7BAE7F' }}
+                  onMouseEnter={(e) => e.target.style.color = '#4F7D5C'}
+                  onMouseLeave={(e) => e.target.style.color = '#7BAE7F'}
+                >
+                  Sign in
+                </button>
+              </p>
+            </motion.div>
+
+            {/* Back to Home */}
+            <div className="text-center mt-6">
+              <button
+                onClick={onNavigateToHome}
+                className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                ← Back to Home
+              </button>
+            </div>
           </motion.div>
+        </div>
 
-          <motion.p variants={itemVariants} className="text-center mt-8 text-sm text-wellness-text-sec">
-
-            Already have an account?{' '}
-            <button onClick={onNavigateToLogin} className="text-wellness-blue font-semibold hover:text-blue-600 transition-colors">
-
-              Sign in
-            </button>
-          </motion.p>
-        </motion.div>
+        {/* Footer */}
+        <Footer />
       </div>
-      </div>
-
-      {/* Footer */}
-      <Footer />
-    </div>);
+    );
 }

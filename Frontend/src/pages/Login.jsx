@@ -48,176 +48,245 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToHome = () => 
             y: 0
         }
     };
-    return (<div className="flex flex-col min-h-screen bg-wellness-bg">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={onNavigateToHome}
-            className="flex items-center gap-2 hover:opacity-80 transition"
-          >
-            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-              M
+    return (
+      <div className="flex flex-col min-h-screen bg-white">
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-white border-b border-slate-100">
+          <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+            <button
+              onClick={onNavigateToHome}
+              className="flex items-center gap-2 hover:opacity-80 transition"
+            >
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: '#7BAE7F' }}>
+                M
+              </div>
+              <span className="text-xl font-bold text-slate-900">MindMate</span>
+            </button>
+
+            <nav className="hidden md:flex items-center gap-8">
+              <a 
+                href="#features" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigateToHome();
+                  setTimeout(() => {
+                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="text-sm font-medium text-slate-600 transition"
+                style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                Features
+              </a>
+              <a 
+                href="#how-it-works" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigateToHome();
+                  setTimeout(() => {
+                    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="text-sm font-medium text-slate-600 transition"
+                style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                How It Works
+              </a>
+              <a 
+                href="#benefits" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigateToHome();
+                  setTimeout(() => {
+                    document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="text-sm font-medium text-slate-600 transition"
+                style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                Benefits
+              </a>
+            </nav>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onNavigateToHome}
+                className="px-4 py-2 text-sm font-medium text-slate-700 transition" style={{ color: '#5F705F' }}
+                onMouseEnter={(e) => e.target.style.color = '#7BAE7F'}
+                onMouseLeave={(e) => e.target.style.color = '#5F705F'}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={onNavigateToRegister}
+                className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition" style={{ backgroundColor: '#7BAE7F' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
+              >
+                Sign Up
+              </button>
             </div>
-            <span className="text-xl font-bold text-slate-900">MindMate</span>
-          </button>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <a 
-              href="#features" 
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToHome();
-                setTimeout(() => {
-                  document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
-            >
-              Features
-            </a>
-            <a 
-              href="#how-it-works" 
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToHome();
-                setTimeout(() => {
-                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
-            >
-              How It Works
-            </a>
-            <a 
-              href="#benefits" 
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateToHome();
-                setTimeout(() => {
-                  document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
-            >
-              Benefits
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-slate-600 hidden sm:inline">
-              Don't have an account?
-            </span>
-            <button
-              onClick={onNavigateToRegister}
-              className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
-            >
-              Sign Up
-            </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <div className="flex flex-1 bg-wellness-bg">
-      {/* Right Login Panel */}
-      <div className="w-full flex items-center justify-center p-6 sm:p-12 relative">
+        {/* Main Content */}
+        <div className="flex flex-1 items-center justify-center px-6 py-12">
+          <motion.div 
+            className="w-full max-w-md"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants} className="mb-8 text-center">
+              <h1 className="text-4xl font-bold text-slate-900 mb-2">
+                Welcome <span style={{ color: '#7BAE7F' }}>Back</span>
+              </h1>
+              <p className="text-slate-600">
+                Sign in to your account to continue
+              </p>
+            </motion.div>
 
-        <motion.div className="w-full max-w-md" variants={containerVariants} initial="hidden" animate="visible">
-
-          <motion.div variants={itemVariants} className="mb-8">
-            <h2 className="text-3xl font-bold text-wellness-text mb-2">
-              Welcome back
-            </h2>
-            <p className="text-wellness-text-sec">
-              Enter your credentials to continue your journey.
-            </p>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="bg-white p-8 rounded-3xl shadow-xl shadow-wellness-blue/5 border border-wellness-border/50">
-
-            <form onSubmit={handleLogin} className="space-y-5">
-              {error &&
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
-                  {error}
-                </div>}
-
-              <div>
-                <label className="block text-sm font-medium text-wellness-text mb-1.5">
-                  University Email
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-wellness-text-muted group-focus-within:text-wellness-blue transition-colors"/>
+            <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+              <form onSubmit={handleLogin} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
+                    {error}
                   </div>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="student@university.edu" className="w-full pl-11 pr-4 py-3 bg-wellness-bg/50 border border-wellness-border rounded-xl focus:bg-white focus:border-wellness-blue focus:ring-4 focus:ring-wellness-blue/10 outline-none transition-all text-sm"/>
+                )}
 
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-wellness-text mb-1.5">
-                  Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-wellness-text-muted group-focus-within:text-wellness-blue transition-colors"/>
+                {/* Email Field */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@university.edu"
+                      className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg outline-none transition-all text-slate-900" style={{ '--tw-ring-color': '#7BAE7F' }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#7BAE7F';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e2e8f0';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
                   </div>
-                  <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full pl-11 pr-12 py-3 bg-wellness-bg/50 border border-wellness-border rounded-xl focus:bg-white focus:border-wellness-blue focus:ring-4 focus:ring-wellness-blue/10 outline-none transition-all text-sm"/>
-
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-wellness-text-muted hover:text-wellness-text transition-colors">
-
-                    {showPassword ?
-            <EyeOff className="h-5 w-5"/> :
-            <Eye className="h-5 w-5"/>}
-                  </button>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" className="w-4 h-4 rounded border-wellness-border text-wellness-blue focus:ring-wellness-blue/20 cursor-pointer"/>
+                {/* Password Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-slate-900">
+                      Password
+                    </label>
+                    <a href="#" className="text-sm font-medium" style={{ color: '#7BAE7F' }}
+                      onMouseEnter={(e) => e.target.style.color = '#4F7D5C'}
+                      onMouseLeave={(e) => e.target.style.color = '#7BAE7F'}>
+                      Forgot?
+                    </a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-12 py-3 border border-slate-200 rounded-lg outline-none transition-all text-slate-900" style={{ '--tw-ring-color': '#7BAE7F' }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#7BAE7F';
+                        e.target.style.boxShadow = '0 0 0 2px rgba(123, 174, 127, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e2e8f0';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
 
-                  <span className="text-sm text-wellness-text-sec group-hover:text-wellness-text transition-colors">
-                    Remember me
-                  </span>
-                </label>
-                <button type="button" className="text-sm text-wellness-blue hover:text-blue-600 font-medium transition-colors">
-
-                  Forgot password?
+                {/* Sign In Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full text-white font-semibold py-3 rounded-lg transition-all inline-flex items-center justify-center gap-2"
+                  style={{ 
+                    backgroundColor: isLoading ? '#B8D0B8' : '#7BAE7F'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.target.style.backgroundColor = '#4F7D5C';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLoading) {
+                      e.target.style.backgroundColor = '#7BAE7F';
+                    }
+                  }}
+                >
+                  Sign in
+                  <ArrowRight size={18} />
                 </button>
-              </div>
+              </form>
 
-              <button type="submit" disabled={isLoading} className="btn-primary w-full py-3.5 mt-4 flex justify-center items-center gap-2 text-base shadow-lg shadow-wellness-blue/20 disabled:opacity-70 disabled:cursor-not-allowed">
-
-                {isLoading ?
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/> :
-            <>
-                    Sign In <ArrowRight className="w-4 h-4"/>
-                  </>}
+              {/* Chat with Bot */}
+              <button
+                type="button"
+                onClick={() => setShowChatbot(true)}
+                className="w-full text-white font-medium py-3 rounded-lg transition-all inline-flex items-center justify-center gap-2 mt-6"
+                style={{ background: 'linear-gradient(to right, #7BAE7F, #4F7D5C)' }}
+                onMouseEnter={(e) => e.target.style.background = 'linear-gradient(to right, #4F7D5C, #3D5F48)'}
+                onMouseLeave={(e) => e.target.style.background = 'linear-gradient(to right, #7BAE7F, #4F7D5C)'}
+              >
+                <MessageCircle size={18} />
+                Chat with our bot first
               </button>
-            </form>
-          </motion.div>
 
-          <motion.div variants={itemVariants} className="mt-8 space-y-4">
-            <button
-              onClick={() => setShowChatbot(true)}
-              className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-medium hover:from-purple-700 hover:to-purple-800 transition-all inline-flex items-center justify-center gap-2 text-sm"
-            >
-              <MessageCircle size={18} />
-              Chat with our bot first
-            </button>
+              {/* Sign Up Link */}
+              <p className="text-center text-sm text-slate-600 mt-6">
+                Don't have an account?{' '}
+                <button 
+                  onClick={onNavigateToRegister}
+                  className="font-semibold" style={{ color: '#7BAE7F' }}
+                  onMouseEnter={(e) => e.target.style.color = '#4F7D5C'}
+                  onMouseLeave={(e) => e.target.style.color = '#7BAE7F'}
+                >
+                  Sign up
+                </button>
+              </p>
+            </motion.div>
 
-            <p className="text-center text-sm text-wellness-text-sec">
-              Don't have an account?{' '}
-              <button onClick={onNavigateToRegister} className="text-wellness-blue font-semibold hover:text-blue-600 transition-colors">
-                Sign up for free
+            {/* Back to Home */}
+            <div className="text-center mt-6">
+              <button
+                onClick={onNavigateToHome}
+                className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                ← Back to Home
               </button>
-            </p>
+            </div>
           </motion.div>
-        </motion.div>
-      </div>
+        </div>
 
         <PreLoginChatbot
           isOpen={showChatbot}
@@ -227,9 +296,9 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToHome = () => 
             onNavigateToRegister(chatbotData);
           }}
         />
-      </div>
 
-      {/* Footer */}
-      <Footer />
-    </div>);
+        {/* Footer */}
+        <Footer />
+      </div>
+    );
 }

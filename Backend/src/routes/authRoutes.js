@@ -188,6 +188,10 @@ router.get("/me", protect, async (req, res) => {
   return res.json({ user: sanitizeUser(req.user) });
 });
 
+router.get("/profile", protect, async (req, res) => {
+  return res.json({ user: sanitizeUser(req.user) });
+});
+
 router.post("/logout", (req, res) => {
   clearAuthCookie(res);
   return res.json({ message: "Logged out successfully." });

@@ -41,11 +41,11 @@ const categoryIcons = {
 };
 
 const categoryColors = {
-  Stress: 'bg-wellness-peach-light text-wellness-peach border-wellness-peach/20',
-  Exams: 'bg-wellness-blue-light text-wellness-blue border-wellness-blue/20',
-  Relationships: 'bg-wellness-lavender/30 text-purple-600 border-purple-200',
-  'Academic Difficulty': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  'Personal Growth': 'bg-wellness-green-light text-wellness-green border-wellness-green/20',
+  Stress: 'bg-app-stress/10 text-app-stress border-app-stress/20',
+  Exams: 'bg-app-primary/10 text-app-primary border-app-primary/20',
+  Relationships: 'bg-blue-100 text-blue-600 border-blue-200',
+  'Academic Difficulty': 'bg-app-energy/10 text-app-energy border-app-energy/20',
+  'Personal Growth': 'bg-app-mood/10 text-app-mood border-app-mood/20',
 };
 
 function createInitialPostForm() {
@@ -86,11 +86,11 @@ function formatTimeLabel(dateString) {
 
 function getAvatarGradient(seed) {
   const gradients = [
-    'from-wellness-blue-light to-wellness-blue-mid',
-    'from-wellness-peach-light to-wellness-peach',
-    'from-wellness-green-light to-wellness-green',
-    'from-wellness-lavender/50 to-purple-300',
-    'from-yellow-100 to-yellow-300',
+    'from-app-primary-light to-app-primary',
+    'from-app-stress/20 to-app-stress',
+    'from-app-mood/20 to-app-mood',
+    'from-blue-200 to-blue-600',
+    'from-app-energy/20 to-app-energy',
   ];
 
   const value = typeof seed === 'string' ? seed.length : Number(seed);
@@ -382,13 +382,13 @@ export function PeerSupport({ user }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-6xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-6">
-          <div className="card p-6 md:p-8 border-t-4 border-t-wellness-lavender shadow-md">
+          <div className="card p-6 md:p-8 border-t-4 border-t-app-primary shadow-md">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-              <div className="bg-wellness-blue-light/50 text-wellness-blue text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-bold w-fit border border-wellness-blue/10">
+              <div className="bg-app-primary/10 text-app-primary text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 font-bold w-fit border border-app-primary/20">
                 <Lock className="w-3.5 h-3.5" />
                 You are posting anonymously inside {user.faculty}
               </div>
-              <p className="text-xs text-wellness-text-sec max-w-md">{overview.moderationNotice}</p>
+              <p className="text-xs text-app-text-secondary max-w-md">{overview.moderationNotice}</p>
             </div>
 
             <div className="relative mb-4">
@@ -397,14 +397,14 @@ export function PeerSupport({ user }) {
                 onChange={(event) => setPostForm((current) => ({ ...current, content: event.target.value }))}
                 maxLength={500}
                 placeholder="Share a concern, ask a question, or describe what you are dealing with."
-                className="w-full p-5 bg-wellness-bg border border-transparent rounded-2xl focus:bg-white focus:border-wellness-lavender focus:ring-4 focus:ring-wellness-lavender/10 outline-none resize-none h-32 text-sm transition-all shadow-inner"
+                className="w-full p-5 bg-app-background border border-transparent rounded-2xl focus:bg-white focus:border-app-primary focus:ring-4 focus:ring-app-primary/10 outline-none resize-none h-32 text-sm transition-all shadow-inner"
               />
-              <span className="absolute bottom-4 right-4 text-xs font-medium text-wellness-text-muted">
+              <span className="absolute bottom-4 right-4 text-xs font-medium text-app-text-secondary">
                 {postForm.content.length}/500
               </span>
             </div>
 
-            {postErrors.content ? <p className="text-xs text-wellness-peach mb-3">{postErrors.content}</p> : null}
+            {postErrors.content ? <p className="text-xs text-app-stress mb-3">{postErrors.content}</p> : null}
 
             <div className="flex flex-col gap-5">
               <div className="flex flex-wrap gap-2">
@@ -418,7 +418,7 @@ export function PeerSupport({ user }) {
                       className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
                         postForm.category === name
                           ? `${categoryColors[name]} shadow-sm scale-105`
-                          : 'bg-white text-wellness-text-sec hover:bg-wellness-bg border-wellness-border'
+                          : 'bg-white text-app-text-secondary hover:bg-app-background border-app-primary-light'
                       }`}
                     >
                       {categoryIcons[name]} {name}
@@ -437,7 +437,7 @@ export function PeerSupport({ user }) {
                   type="button"
                   onClick={handlePostSubmit}
                   disabled={isSaving}
-                  className="btn-primary bg-wellness-lavender hover:bg-purple-400 focus:ring-wellness-lavender text-white px-8 py-3 shadow-lg shadow-wellness-lavender/30 disabled:opacity-60"
+                  className="btn-primary bg-app-primary hover:bg-app-primary-dark focus:ring-app-primary text-white px-8 py-3 shadow-lg shadow-app-primary/30 disabled:opacity-60"
                 >
                   {isSaving ? 'Saving...' : editingPostId ? 'Update Post' : 'Post Anonymously'}
                 </button>
@@ -445,13 +445,13 @@ export function PeerSupport({ user }) {
             </div>
 
             {statusMessage ? (
-              <div className="mt-4 rounded-2xl border border-wellness-green/30 bg-wellness-green-light/40 px-4 py-3 text-sm text-wellness-green">
+              <div className="mt-4 rounded-2xl border border-app-mood/30 bg-app-mood/10 px-4 py-3 text-sm text-app-mood">
                 {statusMessage}
               </div>
             ) : null}
 
             {errorMessage ? (
-              <div className="mt-4 rounded-2xl border border-wellness-peach/30 bg-wellness-peach-light/30 px-4 py-3 text-sm text-wellness-peach">
+              <div className="mt-4 rounded-2xl border border-app-stress/30 bg-app-stress/10 px-4 py-3 text-sm text-app-stress">
                 {errorMessage}
               </div>
             ) : null}
@@ -465,8 +465,8 @@ export function PeerSupport({ user }) {
                   onClick={() => setActiveCategory(category.name)}
                   className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all shadow-sm ${
                     activeCategory === category.name
-                      ? 'bg-wellness-text text-white scale-105'
-                      : 'bg-white border border-wellness-border text-wellness-text-sec hover:bg-wellness-bg hover:text-wellness-text'
+                      ? 'bg-app-primary-dark text-white scale-105'
+                      : 'bg-white border border-app-primary-light text-app-text-secondary hover:bg-app-background hover:text-app-text-primary'
                   }`}
                 >
                   {categoryIcons[category.name]} {category.name} ({category.count})
@@ -476,20 +476,20 @@ export function PeerSupport({ user }) {
 
             <div className="space-y-5">
               {isLoading ? (
-                <div className="card p-12 text-center text-sm text-wellness-text-sec">Loading discussions...</div>
+                <div className="card p-12 text-center text-sm text-app-text-secondary">Loading discussions...</div>
               ) : overview.posts.length === 0 ? (
                 <div className="card p-12 text-center flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 bg-wellness-bg rounded-full flex items-center justify-center mb-4">
-                    <MessageCircle className="w-10 h-10 text-wellness-text-muted" />
+                  <div className="w-20 h-20 bg-app-background rounded-full flex items-center justify-center mb-4">
+                    <MessageCircle className="w-10 h-10 text-app-text-secondary" />
                   </div>
-                  <h3 className="text-lg font-bold text-wellness-text mb-2">No discussions yet</h3>
-                  <p className="text-wellness-text-sec text-sm">Be the first to start a conversation in this category.</p>
+                  <h3 className="text-lg font-bold text-app-text-primary mb-2">No discussions yet</h3>
+                  <p className="text-app-text-secondary text-sm">Be the first to start a conversation in this category.</p>
                 </div>
               ) : (
                 overview.posts.map((post) => {
                   const isExpanded = expandedThreads.includes(post.id);
                   return (
-                    <div key={post.id} className="card p-0 transition-all duration-300 hover:shadow-lg border border-wellness-border/50">
+                    <div key={post.id} className="card p-0 transition-all duration-300 hover:shadow-lg border border-app-primary-light/50">
                       <div className="p-6">
                         <div className="flex items-center justify-between mb-4 gap-4">
                           <div className="flex items-center gap-3">
@@ -497,8 +497,8 @@ export function PeerSupport({ user }) {
                               <Lock className="w-4 h-4" />
                             </div>
                             <div>
-                              <span className="block text-sm font-bold text-wellness-text">Anonymous Student</span>
-                              <span className="block text-xs font-medium text-wellness-text-muted">{formatTimeLabel(post.createdAt)}</span>
+                              <span className="block text-sm font-bold text-app-text-primary">Anonymous Student</span>
+                              <span className="block text-xs font-medium text-app-text-secondary">{formatTimeLabel(post.createdAt)}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -507,10 +507,10 @@ export function PeerSupport({ user }) {
                             </span>
                             {post.isOwn ? (
                               <>
-                                <button type="button" onClick={() => startEditingPost(post)} className="p-2 rounded-lg bg-wellness-bg text-wellness-text-sec hover:text-wellness-blue">
+                                <button type="button" onClick={() => startEditingPost(post)} className="p-2 rounded-lg bg-app-background text-app-text-secondary hover:text-app-primary">
                                   <Pencil className="w-4 h-4" />
                                 </button>
-                                <button type="button" onClick={() => handleDeletePost(post.id)} className="p-2 rounded-lg bg-wellness-bg text-wellness-text-sec hover:text-wellness-peach">
+                                <button type="button" onClick={() => handleDeletePost(post.id)} className="p-2 rounded-lg bg-app-background text-app-text-secondary hover:text-app-stress">
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </>
@@ -518,23 +518,23 @@ export function PeerSupport({ user }) {
                           </div>
                         </div>
 
-                        <p className="text-wellness-text text-base leading-relaxed mb-6 font-medium">{post.content}</p>
+                        <p className="text-app-text-primary text-base leading-relaxed mb-6 font-medium">{post.content}</p>
 
-                        <div className="flex items-center gap-6 border-t border-wellness-border/50 pt-4">
+                        <div className="flex items-center gap-6 border-t border-app-primary-light/50 pt-4">
                           <button
                             onClick={() => handleLikePost(post.id)}
                             className={`flex items-center gap-2 text-sm font-bold transition-colors group ${
                               likedPosts.has(post.id)
-                                ? 'text-wellness-peach'
-                                : 'text-wellness-text-sec hover:text-wellness-peach'
+                                ? 'text-app-stress'
+                                : 'text-app-text-secondary hover:text-app-stress'
                             }`}
                             type="button"
                             title="Like this post"
                           >
                             <div className={`p-1.5 rounded-full transition-colors ${
                               likedPosts.has(post.id)
-                                ? 'bg-wellness-peach-light'
-                                : 'group-hover:bg-wellness-peach-light'
+                                ? 'bg-app-stress/10'
+                                : 'group-hover:bg-app-stress/10'
                             }`}>
                               <Heart className="w-5 h-5" fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
                             </div>
@@ -545,16 +545,16 @@ export function PeerSupport({ user }) {
                             onClick={() => handleBookmarkPost(post.id)}
                             className={`flex items-center gap-2 text-sm font-bold transition-colors group ${
                               bookmarkedPosts.has(post.id)
-                                ? 'text-wellness-blue'
-                                : 'text-wellness-text-sec hover:text-wellness-blue'
+                                ? 'text-app-primary'
+                                : 'text-app-text-secondary hover:text-app-primary'
                             }`}
                             type="button"
                             title="Bookmark this post"
                           >
                             <div className={`p-1.5 rounded-full transition-colors ${
                               bookmarkedPosts.has(post.id)
-                                ? 'bg-wellness-blue/10'
-                                : 'group-hover:bg-wellness-blue/10'
+                                ? 'bg-app-primary/10'
+                                : 'group-hover:bg-app-primary/10'
                             }`}>
                               <Bookmark className="w-5 h-5" fill={bookmarkedPosts.has(post.id) ? 'currentColor' : 'none'} />
                             </div>
@@ -565,8 +565,8 @@ export function PeerSupport({ user }) {
                             onClick={() => handleReportPost(post.id)}
                             className={`flex items-center gap-2 text-sm font-bold transition-colors group ${
                               reportedPosts.has(post.id)
-                                ? 'text-wellness-peach'
-                                : 'text-wellness-text-sec hover:text-wellness-peach'
+                                ? 'text-app-stress'
+                                : 'text-app-text-secondary hover:text-app-stress'
                             }`}
                             type="button"
                             title="Report this post"
@@ -574,8 +574,8 @@ export function PeerSupport({ user }) {
                           >
                             <div className={`p-1.5 rounded-full transition-colors ${
                               reportedPosts.has(post.id)
-                                ? 'bg-wellness-peach-light'
-                                : 'group-hover:bg-wellness-peach-light'
+                                ? 'bg-app-stress/10'
+                                : 'group-hover:bg-app-stress/10'
                             }`}>
                               <Flag className="w-5 h-5" />
                             </div>
@@ -588,10 +588,10 @@ export function PeerSupport({ user }) {
                                 current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id]
                               )
                             }
-                            className="flex items-center gap-2 text-sm text-wellness-text-sec hover:text-wellness-blue font-bold transition-colors group ml-auto"
+                            className="flex items-center gap-2 text-sm text-app-text-secondary hover:text-app-primary font-bold transition-colors group ml-auto"
                             type="button"
                           >
-                            <div className="p-1.5 rounded-full group-hover:bg-wellness-blue-light transition-colors">
+                            <div className="p-1.5 rounded-full group-hover:bg-app-primary/10 transition-colors">
                               <MessageCircle className="w-5 h-5" />
                             </div>
                             {post.replyCount} {post.replyCount === 1 ? 'Reply' : 'Replies'}
@@ -601,35 +601,35 @@ export function PeerSupport({ user }) {
                       </div>
 
                       {isExpanded ? (
-                        <div className="overflow-hidden bg-wellness-bg/30 border-t border-wellness-border">
+                        <div className="overflow-hidden bg-app-background/30 border-t border-app-primary-light">
                           <div className="p-6 space-y-5">
                             {post.replies.map((reply) => (
                               <div key={reply.id} className="flex gap-4">
                                 <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarGradient(reply.id)} flex items-center justify-center shrink-0 mt-1 shadow-inner`}>
                                   <Lock className="w-3 h-3 text-white" />
                                 </div>
-                                <div className="flex-1 bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-wellness-border/50">
+                                <div className="flex-1 bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-app-primary-light/50">
                                   <div className="flex items-center justify-between mb-2 gap-3">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-xs font-bold text-wellness-text">Anonymous</span>
-                                      <span className="text-[10px] font-medium text-wellness-text-muted">{formatTimeLabel(reply.createdAt)}</span>
+                                      <span className="text-xs font-bold text-app-text-primary">Anonymous</span>
+                                      <span className="text-[10px] font-medium text-app-text-secondary">{formatTimeLabel(reply.createdAt)}</span>
                                     </div>
                                     {reply.isOwn ? (
                                       <div className="flex items-center gap-2">
-                                        <button type="button" onClick={() => startEditingReply(reply)} className="p-1.5 rounded-lg bg-wellness-bg text-wellness-text-sec hover:text-wellness-blue">
+                                        <button type="button" onClick={() => startEditingReply(reply)} className="p-1.5 rounded-lg bg-app-background text-app-text-secondary hover:text-app-primary">
                                           <Pencil className="w-3.5 h-3.5" />
                                         </button>
-                                        <button type="button" onClick={() => handleDeleteReply(reply.id)} className="p-1.5 rounded-lg bg-wellness-bg text-wellness-text-sec hover:text-wellness-peach">
+                                        <button type="button" onClick={() => handleDeleteReply(reply.id)} className="p-1.5 rounded-lg bg-app-background text-app-text-secondary hover:text-app-stress">
                                           <Trash2 className="w-3.5 h-3.5" />
                                         </button>
                                       </div>
                                     ) : null}
                                   </div>
-                                  <p className="text-sm text-wellness-text-sec leading-relaxed mb-3">{reply.content}</p>
+                                  <p className="text-sm text-app-text-secondary leading-relaxed mb-3">{reply.content}</p>
                                   <button
                                     type="button"
                                     onClick={() => setReplyingToReplyId(reply.id)}
-                                    className="text-xs font-bold text-wellness-blue hover:text-wellness-lavender transition-colors flex items-center gap-1"
+                                    className="text-xs font-bold text-app-primary hover:text-app-primary-dark transition-colors flex items-center gap-1"
                                   >
                                     <MessageCircle className="w-3.5 h-3.5" />
                                     Reply
@@ -640,12 +640,12 @@ export function PeerSupport({ user }) {
 
                             <div className="mt-6 pt-2">
                               {replyingToReplyId && (
-                                <div className="mb-3 p-3 bg-wellness-blue-light/40 border border-wellness-blue/30 rounded-lg flex items-center justify-between">
-                                  <span className="text-xs font-bold text-wellness-blue">↳ Replying to Anonymous</span>
+                                <div className="mb-3 p-3 bg-app-primary/10 border border-app-primary-light rounded-lg flex items-center justify-between">
+                                  <span className="text-xs font-bold text-app-primary">↳ Replying to Anonymous</span>
                                   <button
                                     type="button"
                                     onClick={() => setReplyingToReplyId('')}
-                                    className="p-1 hover:bg-wellness-blue/10 rounded text-wellness-blue"
+                                    className="p-1 hover:bg-app-primary/10 rounded text-app-primary"
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
@@ -662,19 +662,19 @@ export function PeerSupport({ user }) {
                                     }))
                                   }
                                   placeholder="Write an anonymous reply..."
-                                  className="flex-1 px-5 py-3 text-sm bg-white border border-wellness-border rounded-full focus:outline-none focus:border-wellness-lavender focus:ring-4 focus:ring-wellness-lavender/10 transition-all shadow-sm"
+                                  className="flex-1 px-5 py-3 text-sm bg-white border border-app-primary-light rounded-full focus:outline-none focus:border-app-primary focus:ring-4 focus:ring-app-primary/10 transition-all shadow-sm"
                                 />
                                 <button
                                   type="button"
                                   onClick={() => handleReplySubmit(post.id)}
-                                  className="w-12 h-12 rounded-full bg-wellness-lavender text-white flex items-center justify-center hover:bg-purple-400 transition-all shadow-md shadow-wellness-lavender/30 shrink-0"
+                                  className="w-12 h-12 rounded-full bg-app-primary text-white flex items-center justify-center hover:bg-app-primary-dark transition-all shadow-md shadow-app-primary/30 shrink-0"
                                 >
                                   <Send className="w-5 h-5 ml-1" />
                                 </button>
                               </div>
-                              {replyErrors[post.id] ? <p className="text-xs text-wellness-peach mt-2">{replyErrors[post.id]}</p> : null}
+                              {replyErrors[post.id] ? <p className="text-xs text-app-stress mt-2">{replyErrors[post.id]}</p> : null}
                               {editingReplyId && (replyTexts[post.id] || '') ? (
-                                <button type="button" onClick={() => cancelReplyEdit(post.id)} className="text-xs text-wellness-text-muted mt-2 hover:text-wellness-text">
+                                <button type="button" onClick={() => cancelReplyEdit(post.id)} className="text-xs text-app-text-secondary mt-2 hover:text-app-text-primary">
                                   Cancel reply edit
                                 </button>
                               ) : null}
@@ -691,16 +691,16 @@ export function PeerSupport({ user }) {
         </div>
 
         <div className="hidden lg:block lg:col-span-4 space-y-6">
-          <div className="card p-6 bg-gradient-to-br from-wellness-blue-light/50 to-white border-wellness-blue/10">
+          <div className="card p-6 bg-gradient-to-br from-app-primary/10 to-white border-app-primary/10">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-wellness-text flex items-center gap-2 text-lg">
-                <div className="bg-wellness-blue p-1.5 rounded-lg text-white">
+              <h3 className="font-bold text-app-text-primary flex items-center gap-2 text-lg">
+                <div className="bg-app-primary p-1.5 rounded-lg text-white">
                   <Bell className="w-4 h-4" />
                 </div>
                 Reply Notifications
               </h3>
               {overview.unreadNotificationCount ? (
-                <button type="button" onClick={handleMarkNotificationsRead} className="text-xs font-bold text-wellness-blue">
+                <button type="button" onClick={handleMarkNotificationsRead} className="text-xs font-bold text-app-primary">
                   Mark all read
                 </button>
               ) : null}
@@ -709,62 +709,62 @@ export function PeerSupport({ user }) {
             <div className="space-y-3">
               {overview.notifications.length ? (
                 overview.notifications.map((notification) => (
-                  <div key={notification.id} className={`p-3 rounded-xl border ${notification.isRead ? 'bg-white border-wellness-border/50' : 'bg-wellness-blue-light/40 border-wellness-blue/20'}`}>
+                  <div key={notification.id} className={`p-3 rounded-xl border ${notification.isRead ? 'bg-white border-app-primary-light/50' : 'bg-app-primary/10 border-app-primary-light'}`}>
                     <div className="flex items-center justify-between gap-3 mb-1">
-                      <span className="text-xs font-bold text-wellness-text">{notification.category || 'Discussion reply'}</span>
-                      {!notification.isRead ? <span className="text-[10px] font-bold text-wellness-blue">New</span> : null}
+                      <span className="text-xs font-bold text-app-text-primary">{notification.category || 'Discussion reply'}</span>
+                      {!notification.isRead ? <span className="text-[10px] font-bold text-app-primary">New</span> : null}
                     </div>
-                    <p className="text-sm text-wellness-text-sec">{notification.replyPreview}</p>
-                    <p className="text-[10px] text-wellness-text-muted mt-2">{formatTimeLabel(notification.createdAt)}</p>
+                    <p className="text-sm text-app-text-secondary">{notification.replyPreview}</p>
+                    <p className="text-[10px] text-app-text-secondary mt-2">{formatTimeLabel(notification.createdAt)}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-wellness-text-sec">No reply notifications yet.</p>
+                <p className="text-sm text-app-text-secondary">No reply notifications yet.</p>
               )}
             </div>
           </div>
 
-          <div className="card p-6 bg-gradient-to-b from-wellness-peach-light/30 to-white border-wellness-peach/10">
-            <h3 className="font-bold text-wellness-text mb-2 flex items-center gap-2 text-lg">
-              <div className="bg-wellness-peach p-1.5 rounded-lg text-white">
+          <div className="card p-6 bg-gradient-to-b from-app-stress/10 to-white border-app-stress/10">
+            <h3 className="font-bold text-app-text-primary mb-2 flex items-center gap-2 text-lg">
+              <div className="bg-app-stress p-1.5 rounded-lg text-white">
                 <UserPlus className="w-4 h-4" />
               </div>
               Suggested Connections
             </h3>
-            <p className="text-xs font-medium text-wellness-text-sec mb-5 leading-relaxed">
+            <p className="text-xs font-medium text-app-text-secondary mb-5 leading-relaxed">
               Anonymous peer matching is based on overlapping categories and keywords inside your faculty community.
             </p>
 
             <div className="space-y-4">
               {overview.suggestedConnections.length ? (
                 overview.suggestedConnections.map((connection) => (
-                  <div key={connection.id} className="bg-white p-4 rounded-2xl border border-wellness-border/50 shadow-sm">
+                  <div key={connection.id} className="bg-white p-4 rounded-2xl border border-app-primary-light/50 shadow-sm">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-wellness-peach-light to-wellness-peach flex items-center justify-center text-white shadow-inner">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-stress/30 to-app-stress flex items-center justify-center text-white shadow-inner">
                         <Lock className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-wellness-text">{connection.label}</p>
-                        <p className="text-[10px] font-bold text-wellness-text-muted uppercase tracking-wider mt-0.5">{user.faculty} Community</p>
+                        <p className="text-sm font-bold text-app-text-primary">{connection.label}</p>
+                        <p className="text-[10px] font-bold text-app-text-secondary uppercase tracking-wider mt-0.5">{user.faculty} Community</p>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {connection.overlapCategories.map((item) => (
-                        <span key={item} className="px-2.5 py-1 bg-wellness-bg text-wellness-text-sec font-bold rounded-md text-[10px]">
+                        <span key={item} className="px-2.5 py-1 bg-app-background text-app-text-secondary font-bold rounded-md text-[10px]">
                           {item}
                         </span>
                       ))}
                       {connection.overlapKeywords.map((item) => (
-                        <span key={item} className="px-2.5 py-1 bg-wellness-bg text-wellness-text-sec font-bold rounded-md text-[10px]">
+                        <span key={item} className="px-2.5 py-1 bg-app-background text-app-text-secondary font-bold rounded-md text-[10px]">
                           {item}
                         </span>
                       ))}
                     </div>
-                    <p className="text-xs text-wellness-text-muted">Active recently: {formatTimeLabel(connection.latestAt)}</p>
+                    <p className="text-xs text-app-text-secondary">Active recently: {formatTimeLabel(connection.latestAt)}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-wellness-text-sec">Create a few posts first to unlock anonymous matching suggestions.</p>
+                <p className="text-sm text-app-text-secondary">Create a few posts first to unlock anonymous matching suggestions.</p>
               )}
             </div>
           </div>

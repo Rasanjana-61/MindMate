@@ -7,7 +7,7 @@ function UserAvatar({ user, className = '' }) {
   }
 
   return (
-    <div className={`rounded-full bg-wellness-blue-light flex items-center justify-center text-wellness-blue font-bold border border-wellness-blue/20 ${className}`}>
+    <div className={`rounded-full flex items-center justify-center font-bold border ${className}`} style={{ backgroundColor: 'rgba(123, 174, 127, 0.2)', color: '#7BAE7F', borderColor: 'rgba(123, 174, 127, 0.2)' }}>
       {user.avatar}
     </div>
   );
@@ -96,12 +96,21 @@ export function Header({
       <div className="flex-1 max-w-md mx-8">
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-wellness-text-muted group-focus-within:text-wellness-blue transition-colors" />
+              <Search className="h-4 w-4 text-wellness-text-muted" />
           </div>
           <input
             type="text"
             placeholder="Search anything..."
-            className="w-full pl-10 pr-4 py-2 bg-wellness-bg border border-transparent rounded-full focus:bg-white focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/20 outline-none transition-all text-sm"
+            className="w-full pl-10 pr-4 py-2 bg-wellness-bg border border-transparent rounded-full focus:bg-white focus:ring-2 outline-none transition-all text-sm"
+            style={{ '--tw-ring-color': '#7BAE7F', '--tw-ring-offset-color': 'transparent' }}
+            onFocus={(e) => {
+              e.target.style.backgroundColor = 'white';
+              e.target.style.borderColor = '#7BAE7F';
+            }}
+            onBlur={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.borderColor = 'transparent';
+            }}
           />
         </div>
       </div>
@@ -110,7 +119,7 @@ export function Header({
         <div className="relative" ref={notificationRef}>
           <button
             onClick={() => setIsNotificationsOpen((prev) => !prev)}
-            className="relative p-2 text-wellness-text-sec hover:text-wellness-blue transition-colors rounded-full hover:bg-wellness-blue-light"
+            className="relative p-2 text-wellness-text-sec transition-colors rounded-full hover:bg-wellness-blue-light" style={{ '--hover-color': '#7BAE7F' }}
           >
             <Bell className="w-5 h-5" />
             {unreadNotificationCount > 0 ? (
@@ -128,7 +137,7 @@ export function Header({
                   <p className="text-xs text-wellness-text-sec">Live updates from mood, focus, peer, and AI modules</p>
                 </div>
                 {unreadNotificationCount > 0 ? (
-                  <button onClick={onMarkAllNotificationsRead} className="text-xs font-bold text-wellness-blue">
+                  <button onClick={onMarkAllNotificationsRead} className="text-xs font-bold" style={{ color: '#7BAE7F' }}>
                     Mark all read
                   </button>
                 ) : null}
@@ -142,16 +151,14 @@ export function Header({
                         setIsNotificationsOpen(false);
                         onOpenNotification(notification);
                       }}
-                      className={`w-full text-left px-3 py-3 rounded-xl transition-colors ${
-                        notification.isRead ? 'hover:bg-wellness-bg' : 'bg-wellness-blue-light/30 hover:bg-wellness-blue-light/50'
-                      }`}
+                      className={(notification.isRead ? 'hover:bg-wellness-bg' : 'hover:') + ' w-full text-left px-3 py-3 rounded-xl transition-colors'} style={!notification.isRead ? { backgroundColor: 'rgba(123, 174, 127, 0.15)' } : {}}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-bold text-wellness-text">{notification.title}</p>
                           <p className="text-xs text-wellness-text-sec mt-1 leading-5">{notification.message}</p>
                         </div>
-                        {!notification.isRead ? <span className="mt-1 w-2.5 h-2.5 rounded-full bg-wellness-blue shrink-0" /> : null}
+                        {!notification.isRead ? <span className="mt-1 w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: '#7BAE7F' }} /> : null}
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-wellness-text-muted">{notification.module}</span>
@@ -193,7 +200,7 @@ export function Header({
               </div>
               <div className="p-2">
                 <button onClick={openProfileMenuPage} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-wellness-bg text-sm text-wellness-text">
-                  <UserCircle2 className="w-4 h-4 text-wellness-blue" />
+                  <UserCircle2 className="w-4 h-4" style={{ color: '#7BAE7F' }} />
                   View Profile
                 </button>
                 <button onClick={openProfileMenuPage} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-wellness-bg text-sm text-wellness-text">
