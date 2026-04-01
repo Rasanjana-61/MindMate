@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, User, BookOpen, Calendar, GraduationCap, ShieldCheck, Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, BookOpen, Calendar, GraduationCap, ShieldCheck, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Chatbot from '../components/Chatbot';
 import { getChatbotData, clearChatbotData } from '../lib/preLoginChatbot';
-import logo from '../assets/logo.svg';
+import { Footer } from '../components/Footer';
 
-export function Register({ onRegister, onNavigateToLogin, chatbotData = null, onBackHome = () => {} }) {
+export function Register({ onRegister, onNavigateToLogin, chatbotData = null, onNavigateToHome = () => {} }) {
     const [formData, setFormData] = useState({
         studentId: '',
         universityMail: '',
@@ -233,64 +233,80 @@ export function Register({ onRegister, onNavigateToLogin, chatbotData = null, on
             y: 0
         }
     };
-    return (<div className="min-h-screen flex bg-wellness-bg">
-      {/* Left Branding Panel (Desktop) */}
-      <div className="hidden lg:flex lg:w-5/12 xl:w-1/3 bg-gradient-to-br from-wellness-blue to-blue-600 p-12 flex-col justify-between relative overflow-hidden fixed h-screen">
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-wellness-peach/20 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 text-white font-bold text-2xl mb-16">
-            <img src={logo} alt="MindMate" className="w-10 h-10" />
-              MindMadte
-          </div>
-
-          <h1 className="text-4xl font-bold text-white leading-tight mb-6">
-            Join the community.
-          </h1>
-          <p className="text-blue-100 text-lg max-w-md mb-12">
-            Create an account to access personalized productivity tools and
-            anonymous peer support.
-          </p>
-
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 text-white">
-              <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
-                <Sparkles className="w-6 h-6 text-wellness-peach-light"/>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">AI-Powered Insights</h3>
-                <p className="text-blue-100 text-sm">
-                  Get smart summaries of your notes.
-                </p>
-              </div>
+    return (<div className="flex flex-col min-h-screen bg-wellness-bg">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+          <button
+            onClick={onNavigateToHome}
+            className="flex items-center gap-2 hover:opacity-80 transition"
+          >
+            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+              M
             </div>
+            <span className="text-xl font-bold text-slate-900">MindMate</span>
+          </button>
+
+          <nav className="hidden md:flex items-center gap-8">
+            <a 
+              href="#features" 
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToHome();
+                setTimeout(() => {
+                  document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
+              Features
+            </a>
+            <a 
+              href="#how-it-works" 
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToHome();
+                setTimeout(() => {
+                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
+              How It Works
+            </a>
+            <a 
+              href="#benefits" 
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToHome();
+                setTimeout(() => {
+                  document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
+              Benefits
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-slate-600 hidden sm:inline">
+              Already have an account?
+            </span>
+            <button
+              onClick={onNavigateToLogin}
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition"
+            >
+              Sign In
+            </button>
           </div>
         </div>
+      </header>
 
-        <div className="relative z-10 text-blue-200 text-sm mt-12">
-          &copy; 2026 MindMadte. All rights reserved.
-        </div>
-      </div>
-
+      {/* Main Content */}
+      <div className="flex flex-1 bg-wellness-bg">
       {/* Right Register Panel */}
-      <div className="w-full lg:w-7/12 xl:w-2/3 lg:ml-auto flex items-center justify-center p-6 sm:p-12 min-h-screen relative">
-        {/* Back to Home Button - visible on desktop, mobile logo replaces it on mobile */}
-        <button
-          onClick={onBackHome}
-          className="absolute top-8 left-8 hidden lg:flex items-center gap-2 text-slate-600 hover:text-blue-600 font-medium text-sm transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </button>
-
-        {/* Mobile logo with back button on mobile */}
-        <div className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-slate-600 font-medium text-sm hover:text-blue-600 transition cursor-pointer" onClick={onBackHome}>
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </div>
+      <div className="w-full flex items-center justify-center p-6 sm:p-12 min-h-screen relative">
 
         <motion.div className="w-full max-w-2xl mt-12 lg:mt-0" variants={containerVariants} initial="hidden" animate="visible">
 
@@ -547,5 +563,9 @@ export function Register({ onRegister, onNavigateToLogin, chatbotData = null, on
           </motion.p>
         </motion.div>
       </div>
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>);
 }
