@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, User, BookOpen, Calendar, GraduationCap, ShieldCheck, Sparkles, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, BookOpen, Calendar, GraduationCap, ShieldCheck, Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Chatbot from '../components/Chatbot';
 import { getChatbotData, clearChatbotData } from '../lib/preLoginChatbot';
 import logo from '../assets/logo.svg';
 
-export function Register({ onRegister, onNavigateToLogin, chatbotData = null }) {
+export function Register({ onRegister, onNavigateToLogin, chatbotData = null, onBackHome = () => {} }) {
     const [formData, setFormData] = useState({
         studentId: '',
         universityMail: '',
@@ -276,11 +276,20 @@ export function Register({ onRegister, onNavigateToLogin, chatbotData = null }) 
       </div>
 
       {/* Right Register Panel */}
-      <div className="w-full lg:w-7/12 xl:w-2/3 lg:ml-auto flex items-center justify-center p-6 sm:p-12 min-h-screen">
-        {/* Mobile logo */}
-        <div className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-wellness-blue font-bold text-xl">
-          <img src={logo} alt="MindMate" className="w-6 h-6" />
-          MindMadte
+      <div className="w-full lg:w-7/12 xl:w-2/3 lg:ml-auto flex items-center justify-center p-6 sm:p-12 min-h-screen relative">
+        {/* Back to Home Button - visible on desktop, mobile logo replaces it on mobile */}
+        <button
+          onClick={onBackHome}
+          className="absolute top-8 left-8 hidden lg:flex items-center gap-2 text-slate-600 hover:text-blue-600 font-medium text-sm transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Home
+        </button>
+
+        {/* Mobile logo with back button on mobile */}
+        <div className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-slate-600 font-medium text-sm hover:text-blue-600 transition cursor-pointer" onClick={onBackHome}>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
         </div>
 
         <motion.div className="w-full max-w-2xl mt-12 lg:mt-0" variants={containerVariants} initial="hidden" animate="visible">

@@ -3,6 +3,7 @@ const { protect } = require("../middleware/authMiddleware");
 const { PeerPost, PEER_CATEGORIES } = require("../models/PeerPost");
 const { PeerReply } = require("../models/PeerReply");
 const { Notification } = require("../models/Notification");
+const { PeerMatch } = require("../models/PeerMatch");
 const { createNotification, formatNotification } = require("../utils/notifications");
 
 const router = express.Router();
@@ -141,69 +142,143 @@ function formatPost(post, replies, currentUserId) {
   };
 }
 
-async function buildSuggestedConnections(userId, faculty) {
-  const recentPosts = await PeerPost.find({
-    user: userId,
-    faculty,
-    moderationStatus: "visible",
-  })
-    .sort({ createdAt: -1 })
-    .limit(5);
+// Advanced peer matching algorithm
+function calculateCompatibilityScore(userCategories, userKeywords, peerCategories, peerKeywords) {
+  let score = 0;
 
-  const categories = [...new Set(recentPosts.map((post) => post.category))];
-  const keywords = [...new Set(recentPosts.flatMap((post) => post.keywords || []))];
+  // Category overlap (40% weight)
+  const categoryOverlap = userCategories.filter(cat => peerCategories.includes(cat)).length;
+  const categoryScore = (categoryOverlap / Math.max(userCategories.length, 1)) * 40;
+  score += categoryScore;
 
-  if (!categories.length && !keywords.length) {
+  // Keyword overlap (40% weight)
+  const keywordOverlap = userKeywords.filter(kw => peerKeywords.includes(kw)).length;
+  const keywordScore = (keywordOverlap / Math.max(userKeywords.length, 1)) * 40;
+  score += keywordScore;
+
+  // Diversity bonus (20% weight) - ensure both have multiple interests
+  const diversityBonus = Math.min(userCategories.length, peerCategories.length) > 1 ? 20 : 10;
+  score += diversityBonus;
+
+  return Math.round(score);
+}
+
+async function buildSuggestedConnections(userId, faculty, userDoc) {
+  try {
+    // Get user's recent posts and interactions
+    const recentPosts = await PeerPost.find({
+      user: userId,
+      faculty,
+      moderationStatus: "visible",
+    })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    if (!recentPosts.length) {
+      return [];
+    }
+
+    const userCategories = [...new Set(recentPosts.map(post => post.category))];
+    const userKeywords = [...new Set(recentPosts.flatMap(post => post.keywords || []))];
+
+    // Get all candidate peers
+    const candidatePeers = await PeerPost.aggregate([
+      {
+        $match: {
+          user: { $ne: userId },
+          faculty,
+          moderationStatus: "visible",
+          $or: [
+            userCategories.length ? { category: { $in: userCategories } } : null,
+            userKeywords.length ? { keywords: { $in: userKeywords } } : null,
+          ].filter(Boolean),
+        },
+      },
+      {
+        $group: {
+          _id: "$user",
+          categories: { $push: "$category" },
+          keywords: { $push: "$keywords" },
+          replyCount: { $sum: 1 },
+          latestAt: { $max: "$createdAt" },
+        },
+      },
+      {
+        $limit: 50,
+      },
+    ]);
+
+    // Calculate compatibility scores
+    const matchScores = await Promise.all(
+      candidatePeers.map(async (peer) => {
+        const peerCategories = [...new Set(peer.categories)];
+        const peerKeywords = [...new Set(peer.keywords.flat())];
+
+        const compatibilityScore = calculateCompatibilityScore(
+          userCategories,
+          userKeywords,
+          peerCategories,
+          peerKeywords
+        );
+
+        // Check for existing match record
+        let existingMatch = await PeerMatch.findOne({
+          userId,
+          matchedUserId: peer._id,
+        }).lean();
+
+        // Update or create match record
+        if (existingMatch && !existingMatch.dismissedAt) {
+          await PeerMatch.findByIdAndUpdate(existingMatch._id, {
+            compatibilityScore,
+            categoryOverlap: peerCategories.filter(cat => userCategories.includes(cat)),
+            keywordOverlap: peerKeywords.filter(kw => userKeywords.includes(kw)),
+            lastInteractionAt: new Date(),
+          });
+        } else if (!existingMatch) {
+          await PeerMatch.create({
+            userId,
+            matchedUserId: peer._id,
+            faculty,
+            compatibilityScore,
+            categoryOverlap: peerCategories.filter(cat => userCategories.includes(cat)),
+            keywordOverlap: peerKeywords.filter(kw => userKeywords.includes(kw)),
+            sharedChallenges: userCategories.filter(cat => peerCategories.includes(cat)),
+          }).catch(() => null); // Ignore duplicates
+        }
+
+        return {
+          peerId: String(peer._id),
+          compatibilityScore,
+          peerCategories,
+          peerKeywords,
+          replyCount: peer.replyCount,
+          latestAt: peer.latestAt,
+          categoryOverlap: peerCategories.filter(cat => userCategories.includes(cat)),
+          keywordOverlap: peerKeywords.filter(kw => userKeywords.includes(kw)),
+        };
+      })
+    );
+
+    // Sort by compatibility score and return top matches
+    return matchScores
+      .filter(match => match.compatibilityScore >= 30) // Minimum 30% compatibility
+      .sort((a, b) => b.compatibilityScore - a.compatibilityScore)
+      .slice(0, 5)
+      .map((match, index) => ({
+        id: `peer-${match.peerId}-${index}`,
+        label: `Peer #${match.peerId.slice(-4)}`,
+        compatibilityScore: match.compatibilityScore,
+        overlapCategories: match.categoryOverlap.slice(0, 2),
+        overlapKeywords: match.keywordOverlap.slice(0, 3),
+        latestAt: match.latestAt,
+        reason: `${match.categoryOverlap.length} shared interest${match.categoryOverlap.length !== 1 ? 's' : ''}`,
+      }));
+  } catch (error) {
+    console.error("Error building suggested connections:", error);
     return [];
   }
-
-  const peerPosts = await PeerPost.find({
-    user: { $ne: userId },
-    faculty,
-    moderationStatus: "visible",
-    $or: [
-      categories.length ? { category: { $in: categories } } : null,
-      keywords.length ? { keywords: { $in: keywords } } : null,
-    ].filter(Boolean),
-  }).sort({ createdAt: -1 });
-
-  const grouped = new Map();
-
-  peerPosts.forEach((post) => {
-    const key = String(post.user);
-    if (!grouped.has(key)) {
-      grouped.set(key, {
-        peerKey: `Peer-${key.slice(-4)}`,
-        overlapCategories: new Set(),
-        overlapKeywords: new Set(),
-        latestAt: post.createdAt,
-      });
-    }
-
-    const entry = grouped.get(key);
-    if (categories.includes(post.category)) {
-      entry.overlapCategories.add(post.category);
-    }
-    post.keywords.forEach((keyword) => {
-      if (keywords.includes(keyword)) {
-        entry.overlapKeywords.add(keyword);
-      }
-    });
-  });
-
-  return [...grouped.values()]
-    .sort(
-      (a, b) =>
-        b.overlapCategories.size + b.overlapKeywords.size - (a.overlapCategories.size + a.overlapKeywords.size)
-    )
-    .slice(0, 3)
-    .map((entry, index) => ({
-      id: `${entry.peerKey}-${index}`,
-      label: `Peer #${entry.peerKey.slice(-4)}`,
-      overlapCategories: [...entry.overlapCategories].slice(0, 2),
-      overlapKeywords: [...entry.overlapKeywords].slice(0, 3),
-      latestAt: entry.latestAt,
-    }));
 }
 
 async function buildOverview(req, category) {
@@ -783,6 +858,69 @@ router.post("/posts/:postId/report", async (req, res) => {
   } catch (error) {
     console.error("Report post error:", error);
     return res.status(500).json({ message: "Server error while reporting post." });
+  }
+});
+
+// POST /api/peer/matches/:matchedPeerId/dismiss - Dismiss a peer match suggestion
+router.post("/matches/:matchedPeerId/dismiss", async (req, res) => {
+  try {
+    const { matchedPeerId } = req.params;
+
+    // Find and update the match record to mark as dismissed
+    const match = await PeerMatch.findOneAndUpdate(
+      {
+        userId: req.user._id,
+        matchedUserId: matchedPeerId,
+      },
+      {
+        dismissedAt: new Date(),
+      },
+      { new: true }
+    );
+
+    if (!match) {
+      return res.status(404).json({ message: "Match not found." });
+    }
+
+    return res.json({ 
+      message: "Peer suggestion dismissed. It won't appear again.",
+      dismissedAt: match.dismissedAt
+    });
+  } catch (error) {
+    console.error("Dismiss peer match error:", error);
+    return res.status(500).json({ message: "Server error while dismissing suggestion." });
+  }
+});
+
+// GET /api/peer/matches/stats - Get peer matching statistics
+router.get("/matches/stats", async (req, res) => {
+  try {
+    const stats = await PeerMatch.aggregate([
+      {
+        $match: { userId: req.user._id },
+      },
+      {
+        $group: {
+          _id: null,
+          totalMatches: { $sum: 1 },
+          avgCompatibilityScore: { $avg: "$compatibilityScore" },
+          dismissedCount: {
+            $sum: { $cond: ["$dismissedAt", 1, 0] },
+          },
+        },
+      },
+    ]);
+
+    const matchStats = stats[0] || {
+      totalMatches: 0,
+      avgCompatibilityScore: 0,
+      dismissedCount: 0,
+    };
+
+    return res.json(matchStats);
+  } catch (error) {
+    console.error("Get match stats error:", error);
+    return res.status(500).json({ message: "Server error while fetching statistics." });
   }
 });
 

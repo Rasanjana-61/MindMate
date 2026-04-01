@@ -1,415 +1,690 @@
-import { useState } from 'react';
-import { ArrowRight, Leaf, Sparkles, Clock, Users, BookOpen, Smile, Timer, MessageCircle, ChevronDown } from 'lucide-react';
-import { motion } from 'framer-motion';
-import logo from '../assets/logo.svg';
+import React from "react";
+import { useAuthStore } from "../lib/auth";
+import { Footer } from "../components/Footer";
 
-export function HomePage({ onNavigateToLogin, onNavigateToRegister }) {
-  const [activeTab, setActiveTab] = useState('wellness');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  const useCases = [
-    { id: 'wellness', label: 'Mental Wellness', icon: Smile },
-    { id: 'focus', label: 'Focus & Productivity', icon: Timer },
-    { id: 'community', label: 'Peer Support', icon: Users },
-    { id: 'resources', label: 'Learning', icon: BookOpen },
-  ];
-
-  const features = {
-    wellness: {
-      title: 'Track Your Mental Wellness',
-      description: 'Daily mood tracking and mental health insights tailored for students. Understand your emotional patterns and take control of your wellbeing.',
-      benefits: ['Daily mood tracking', 'Emotion pattern analysis', 'Personalized insights'],
-    },
-    focus: {
-      title: 'Stay Focused & Productive',
-      description: 'Pomodoro timer, task management, and focus sessions designed to help you manage your academic workload effectively.',
-      benefits: ['Pomodoro timer', 'Task management', 'Focus analytics'],
-    },
-    community: {
-      title: 'Connect with Peers',
-      description: 'Safe, anonymous peer support community where students help students. Share experiences and find support among your peers.',
-      benefits: ['Anonymous support', 'Peer advice', 'Community posts'],
-    },
-    resources: {
-      title: 'AI-Powered Learning',
-      description: 'Access curated mental health resources, academic support materials, and wellness guides powered by AI recommendations.',
-      benefits: ['Curated resources', 'AI suggestions', 'Expert content'],
-    },
-  };
-
-  const stats = [
-    { number: '10K+', label: 'Active Students' },
-    { number: '50K+', label: 'Mood Entries' },
-    { number: '100+', label: 'Resources' },
-  ];
-
-  const benefits = [
-    {
-      icon: Sparkles,
-      title: 'Smart Tracking',
-      description: 'AI-powered mood and focus tracking with actionable insights',
-    },
-    {
-      icon: Clock,
-      title: 'Time Management',
-      description: 'Built-in Pomodoro timer and productivity tools for academics',
-    },
-    {
-      icon: Users,
-      title: 'Community Support',
-      description: 'Connect anonymously with peers who understand your journey',
-    },
-    {
-      icon: Leaf,
-      title: 'Holistic Wellness',
-      description: 'Comprehensive mental health platform designed for students',
-    },
-  ];
+export function HomePage({ onNavigateToLogin = () => {}, onNavigateToRegister = () => {} }) {
+  const { isAuthenticated } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-wellness-bg to-white overflow-hidden">
-      {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-wellness-border/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-2 text-wellness-blue font-bold text-xl">
-              <img src={logo} alt="MindMate" className="w-10 h-10" />
-              <span>MindMate</span>
+    <main className="bg-white overflow-hidden">
+      {/* =====================================
+         Header Navigation
+      ====================================== */}
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+              M
             </div>
+            <span className="text-xl font-bold text-slate-900">MindMate</span>
+          </div>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-wellness-text-sec hover:text-wellness-text transition-colors text-sm font-medium">
-                Features
-              </a>
-              <a href="#benefits" className="text-wellness-text-sec hover:text-wellness-text transition-colors text-sm font-medium">
-                About
-              </a>
-              <a href="#" className="text-wellness-text-sec hover:text-wellness-text transition-colors text-sm font-medium">
-                Pricing
-              </a>
-            </div>
+          <nav className="hidden md:flex items-center gap-8">
+            <a href="#features" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+              Features
+            </a>
+            <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+              How It Works
+            </a>
+            <a href="#benefits" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+              Benefits
+            </a>
+            <a href="#" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition">
+              About
+            </a>
+          </nav>
 
-            {/* Right Section */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onNavigateToLogin}
-                className="hidden md:block text-wellness-text hover:text-wellness-blue font-medium text-sm transition-colors"
-              >
-                Log In
-              </button>
-              <button
-                onClick={onNavigateToRegister}
-                className="px-6 py-2 bg-wellness-blue text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-all shadow-sm hover:shadow-md"
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+              onClick={onNavigateToLogin}
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition"
             >
-              <ChevronDown className={`w-5 h-5 transition-transform ${mobileMenuOpen ? 'rotate-180' : ''}`} />
+              Sign In
+            </button>
+            <button
+              onClick={onNavigateToRegister}
+              className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+            >
+              Sign Up
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-wellness-border bg-white">
-            <div className="px-4 py-3 space-y-2">
-              <a href="#features" className="block text-wellness-text-sec hover:text-wellness-text py-2">
-                Features
-              </a>
-              <a href="#benefits" className="block text-wellness-text-sec hover:text-wellness-text py-2">
-                About
-              </a>
-              <button
-                onClick={onNavigateToLogin}
-                className="w-full text-left text-wellness-text hover:text-wellness-blue py-2"
-              >
-                Log In
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Hero Section */}
-      <motion.section
-        className="relative pt-20 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
+      {/* =====================================
+         Part 1: Hero Section
+      ====================================== */}
+      <section
+        className="relative"
+        style={{
+          backgroundImage: "radial-gradient(#d1d5db 1.5px, transparent 1.5px)",
+          backgroundSize: "22px 22px",
+        }}
       >
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <motion.div variants={itemVariants} className="max-w-lg">
-              <div className="inline-flex items-center gap-2 bg-wellness-blue/10 px-4 py-2 rounded-full mb-6 border border-wellness-blue/20">
-                <img src={logo} alt="MindMate" className="w-5 h-5" />
-                <span className="text-wellness-blue font-semibold text-sm">For Students, By Wellness Experts</span>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-wellness-text leading-tight mb-6">
-                Your Wellness{' '}
-                <span className="bg-gradient-to-r from-wellness-blue to-blue-600 bg-clip-text text-transparent">
-                  Companion
-                </span>
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-24 lg:py-32">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div>
+              <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl">
+                Your Student <span className="text-blue-600">Wellness</span>
+                <br />
+                Hub
               </h1>
 
-              <p className="text-lg text-wellness-text-sec mb-8 leading-relaxed">
-                Balance your academic life with mental wellbeing. Track moods, manage focus, find peer support, and access personalized resources—all in one platform designed for students like you.
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                Balance academics, mental health, and productivity in one intelligent platform. Track moods, manage tasks, connect with peers, and access AI-powered resources.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
+              <div className="mt-10 flex flex-wrap items-center gap-4">
+                {!isAuthenticated ? (
+                  <>
+                    <button
+                      onClick={onNavigateToLogin}
+                      className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                    >
+                      Get Started
+                      <svg
+                        className="ml-2 h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="M12 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    <a
+                      href="#features"
+                      className="inline-flex items-center rounded-xl border border-blue-300 px-6 py-3 text-base font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                    >
+                      <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-blue-400">
+                        <svg
+                          className="h-3.5 w-3.5 text-blue-600"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M8 5v14l11-7L8 5z" />
+                        </svg>
+                      </span>
+                      Learn More
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {}}
+                      className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                    >
+                      Go to Dashboard
+                      <svg
+                        className="ml-2 h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="M12 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    <a
+                      href="#features"
+                      className="inline-flex items-center rounded-xl border border-blue-300 px-6 py-3 text-base font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                    >
+                      Explore Features
+                    </a>
+                  </>
+                )}
+              </div>
+
+              <div className="mt-14 grid max-w-xl grid-cols-3 gap-6">
+                <div>
+                  <div className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
+                    1000+
+                  </div>
+                  <div className="mt-1 text-sm text-slate-500">
+                    Active Students
+                  </div>
+                </div>
+                <div>
+                  <div className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
+                    4
+                  </div>
+                  <div className="mt-1 text-sm text-slate-500">
+                    Core Modules
+                  </div>
+                </div>
+                <div>
+                  <div className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
+                    24/7
+                  </div>
+                  <div className="mt-1 text-sm text-slate-500">
+                    Peer Support
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -top-6 left-6 z-10 rounded-xl bg-white px-4 py-2 shadow-md ring-1 ring-slate-200">
+                <span className="flex items-center text-sm font-semibold text-slate-700">
+                  <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                  Wellness Active
+                </span>
+              </div>
+
+              <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50 p-8 shadow-xl ring-1 ring-slate-200">
+                <div className="space-y-4">
+                  <div className="flex items-center rounded-lg bg-white p-4 shadow-sm">
+                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-xl">
+                      😊
+                    </div>
+                    <div className="ml-4">
+                      <div className="font-semibold text-slate-900">Mood Tracking</div>
+                      <div className="text-sm text-slate-500">Daily wellness logs</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center rounded-lg bg-white p-4 shadow-sm">
+                    <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-xl">
+                      ⏱️
+                    </div>
+                    <div className="ml-4">
+                      <div className="font-semibold text-slate-900">Focus Timer</div>
+                      <div className="text-sm text-slate-500">Pomodoro sessions</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center rounded-lg bg-white p-4 shadow-sm">
+                    <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center text-xl">
+                      🤝
+                    </div>
+                    <div className="ml-4">
+                      <div className="font-semibold text-slate-900">Peer Support</div>
+                      <div className="text-sm text-slate-500">Anonymous Q&A</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute -bottom-4 right-6 z-10 rounded-xl bg-blue-600 px-5 py-3 text-white shadow-lg">
+                <div className="text-sm font-semibold">Always Here</div>
+                <div className="text-xs text-blue-100">For Your Wellness</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-linear-to-l from-white/60 to-transparent"></div>
+      </section>
+
+      {/* =====================================
+         Part 2: Key Features/Modules
+      ====================================== */}
+      <section className="relative bg-white" id="features"
+        style={{
+          backgroundImage: "radial-gradient(#e5e7eb 1px, transparent 1px)",
+          backgroundSize: "30px 30px",
+        }}
+      >
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:py-24">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+              Core Features
+            </p>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+              Everything You Need for Student Success
+            </h2>
+            <div className="mx-auto mt-4 h-1 w-24 rounded bg-blue-600" />
+          </div>
+
+          <div className="mt-12 grid gap-6 md:mt-16 md:grid-cols-2 lg:grid-cols-4">
+            {/* Module 1: Mood Tracker */}
+            <div className="rounded-2xl bg-slate-50 p-8 shadow-sm ring-1 ring-slate-200 hover:shadow-md transition">
+              <div className="flex items-start">
+                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
+                  <svg className="h-7 w-7 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                    <line x1="9" y1="9" x2="9.01" y2="9" />
+                    <line x1="15" y1="9" x2="15.01" y2="9" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Mood Tracker
+                  </h3>
+                  <p className="mt-3 text-slate-600">
+                    Log daily moods, stress levels, and emotions. Get AI-powered insights and personalized wellness recommendations.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Module 2: Focus Timer */}
+            <div className="rounded-2xl bg-slate-50 p-8 shadow-sm ring-1 ring-slate-200 hover:shadow-md transition">
+              <div className="flex items-start">
+                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
+                  <svg className="h-7 w-7 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Focus Timer
+                  </h3>
+                  <p className="mt-3 text-slate-600">
+                    Pomodoro timer with task management. Track productivity streaks and get focus analytics.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Module 3: Peer Support */}
+            <div className="rounded-2xl bg-slate-50 p-8 shadow-sm ring-1 ring-slate-200 hover:shadow-md transition">
+              <div className="flex items-start">
+                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
+                  <svg className="h-7 w-7 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Peer Support
+                  </h3>
+                  <p className="mt-3 text-slate-600">
+                    Anonymous Q&A platform. Connect with peers, share experiences, and get real-time support.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Module 4: AI Resource Hub */}
+            <div className="rounded-2xl bg-slate-50 p-8 shadow-sm ring-1 ring-slate-200 hover:shadow-md transition">
+              <div className="flex items-start">
+                <div className="mr-4 flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
+                  <svg className="h-7 w-7 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Resource Hub
+                  </h3>
+                  <p className="mt-3 text-slate-600">
+                    AI-powered note summarizer. Upload materials and get auto-generated key points and summary PDFs.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================
+         Part 3: How It Works
+      ====================================== */}
+      <section className="relative bg-slate-50" id="how-it-works">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:py-24">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">
+              Simple Process
+            </p>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
+              How MindMate Works
+            </h2>
+            <div className="mx-auto mt-4 h-1 w-24 rounded bg-blue-600" />
+          </div>
+
+          <div className="mt-12 grid gap-8 md:grid-cols-4">
+            {/* Step 1 */}
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+                1
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Sign In</h3>
+              <p className="mt-2 text-slate-600">
+                Quick Google OAuth authentication for easy access.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+                2
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Explore</h3>
+              <p className="mt-2 text-slate-600">
+                Choose features that suit your wellness needs.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+                3
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Track or Share</h3>
+              <p className="mt-2 text-slate-600">
+                Log moods, manage tasks, or connect with peers.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+                4
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Get Insights</h3>
+              <p className="mt-2 text-slate-600">
+                Receive AI recommendations and wellness advice.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================
+         Part 4: Stats Ribbon
+      ====================================== */}
+      <section className="bg-blue-600">
+        <div className="mx-auto max-w-7xl px-6 py-12 sm:py-14 lg:py-16">
+          <div className="grid grid-cols-2 gap-y-10 text-center text-white sm:grid-cols-4">
+            <div>
+              <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                1000+
+              </div>
+              <div className="mt-2 text-sm text-blue-100">Active Students</div>
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                50K+
+              </div>
+              <div className="mt-2 text-sm text-blue-100">Mood Logs</div>
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                100K+
+              </div>
+              <div className="mt-2 text-sm text-blue-100">Focus Sessions</div>
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                500+
+              </div>
+              <div className="mt-2 text-sm text-blue-100">Peer Q&As</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================
+         Part 5: Benefits Section
+      ====================================== */}
+      <section className="relative bg-white" id="benefits"
+        style={{
+          backgroundImage: "radial-gradient(#e5e7eb 1.2px, transparent 1.2px)",
+          backgroundSize: "28px 28px",
+        }}
+      >
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:py-24">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div>
+              <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 ring-1 ring-inset ring-blue-100">
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M12 2l2.09 6.26L20 9l-5 3.64L16.18 20 12 16.9 7.82 20 9 12.64 4 9l5.91-.74L12 2z" />
+                </svg>
+                Student Wellness
+              </span>
+
+              <h2 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">
+                Transform Your <span className="text-blue-600">Student Life</span>
+              </h2>
+
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                Balance academics and mental health. Track your wellness journey, boost productivity, connect with peers, and unlock your full potential.
+              </p>
+
+              <div className="mt-10 space-y-4">
+                <div className="flex items-start">
+                  <svg
+                    className="h-6 w-6 flex-shrink-0 text-green-600"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                  <span className="ml-3 text-lg text-slate-700">
+                    Reduce stress with daily mood tracking and insights
+                  </span>
+                </div>
+                <div className="flex items-start">
+                  <svg
+                    className="h-6 w-6 flex-shrink-0 text-green-600"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                  <span className="ml-3 text-lg text-slate-700">
+                    Boost productivity with Pomodoro timer and analytics
+                  </span>
+                </div>
+                <div className="flex items-start">
+                  <svg
+                    className="h-6 w-6 flex-shrink-0 text-green-600"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                  <span className="ml-3 text-lg text-slate-700">
+                    Find peer support anonymously whenever you need it
+                  </span>
+                </div>
+                <div className="flex items-start">
+                  <svg
+                    className="h-6 w-6 flex-shrink-0 text-green-600"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                  <span className="ml-3 text-lg text-slate-700">
+                    Access AI-summarized study materials and resources
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-10 flex flex-wrap gap-4">
+                {!isAuthenticated ? (
+                  <button
+                    onClick={onNavigateToRegister}
+                    className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                  >
+                    Start Free Today
+                    <svg
+                      className="ml-2 h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M5 12h14" />
+                      <path d="M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {}}
+                    className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                  >
+                    Go to Dashboard
+                    <svg
+                      className="ml-2 h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M5 12h14" />
+                      <path d="M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-slate-50 p-8 shadow-xl ring-1 ring-slate-200">
+                <div className="space-y-6">
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm text-slate-500">Wellness Score</div>
+                        <div className="mt-1 text-2xl font-bold text-slate-900">7.5/10</div>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-xl">
+                        📈
+                      </div>
+                    </div>
+                    <div className="mt-4 h-2 w-full rounded-full bg-slate-100">
+                      <div
+                        className="h-full rounded-full bg-green-500"
+                        style={{ width: "75%" }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm text-slate-500">Focus Streak</div>
+                        <div className="mt-1 text-2xl font-bold text-slate-900">12 days</div>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-xl">
+                        🔥
+                      </div>
+                    </div>
+                    <div className="mt-4 text-xs text-slate-500">
+                      Keep the momentum going!
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm text-slate-500">Peer Connections</div>
+                        <div className="mt-1 text-2xl font-bold text-slate-900">23 helped</div>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center text-xl">
+                        🤝
+                      </div>
+                    </div>
+                    <div className="mt-4 flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < 4 ? "text-yellow-400" : "text-slate-300"
+                          }`}
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 2l2.09 6.26L20 9l-5 3.64L16.18 20 12 16.9 7.82 20 9 12.64 4 9l5.91-.74L12 2z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================
+         Part 6: CTA Section
+      ====================================== */}
+      <section className="bg-gradient-to-r from-blue-600 to-blue-800">
+        <div className="mx-auto max-w-4xl px-6 py-16 sm:py-20 lg:py-24 text-center">
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl md:text-5xl">
+            Ready to Transform Your Student Journey?
+          </h2>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-blue-100">
+            Join thousands of students already using MindMate to balance academics, mental health, and productivity in one intelligent platform.
+          </p>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            {!isAuthenticated ? (
+              <>
                 <button
                   onClick={onNavigateToRegister}
-                  className="px-8 py-4 bg-gradient-to-r from-wellness-blue to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-wellness-blue/30 transition-all flex items-center justify-center gap-2"
+                  className="inline-flex items-center rounded-xl bg-white px-8 py-3 text-base font-semibold text-blue-600 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
                 >
-                  Start Creating Free <ArrowRight className="w-5 h-5" />
+                  Get Started Now
+                  <svg
+                    className="ml-2 h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="M12 5l7 7-7 7" />
+                  </svg>
                 </button>
+
+                <a
+                  href="#features"
+                  className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+                >
+                  Learn More
+                </a>
+              </>
+            ) : (
+              <>
                 <button
-                  onClick={onNavigateToLogin}
-                  className="px-8 py-4 bg-white border-2 border-wellness-border text-wellness-blue rounded-xl font-semibold hover:bg-wellness-bg transition-all"
+                  onClick={() => {}}
+                  className="inline-flex items-center rounded-xl bg-white px-8 py-3 text-base font-semibold text-blue-600 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
                 >
-                  Explore Demo
+                  Go to Dashboard
+                  <svg
+                    className="ml-2 h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="M12 5l7 7-7 7" />
+                  </svg>
                 </button>
-              </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-wellness-border/50">
-                {stats.map((stat, idx) => (
-                  <div key={idx}>
-                    <div className="text-2xl font-bold text-wellness-blue">{stat.number}</div>
-                    <p className="text-sm text-wellness-text-muted">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Right Content - Featured Image */}
-            <motion.div
-              variants={itemVariants}
-              className="relative h-96 md:h-full rounded-2xl overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-wellness-blue-light via-blue-50 to-purple-50 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-white/80 flex items-center justify-center shadow-lg">
-                    <img src={logo} alt="MindMate" className="w-20 h-20" />
-                  </div>
-                  <p className="text-wellness-text-sec font-medium">Student Wellness Platform</p>
-                </div>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Use Cases / Features Section */}
-      <motion.section
-        id="features"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-white"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-wellness-text mb-4">
-              Everything you need for student wellness
-            </h2>
-            <p className="text-lg text-wellness-text-sec max-w-2xl mx-auto">
-              Designed specifically for the unique challenges students face in balancing academics and mental health
-            </p>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {useCases.map((useCase) => {
-              const Icon = useCase.icon;
-              return (
-                <button
-                  key={useCase.id}
-                  onClick={() => setActiveTab(useCase.id)}
-                  className={`px-6 py-3 rounded-full font-medium transition-all flex items-center gap-2 ${
-                    activeTab === useCase.id
-                      ? 'bg-wellness-blue text-white shadow-lg'
-                      : 'bg-gray-100 text-wellness-text hover:bg-gray-200'
-                  }`}
+                <a
+                  href="#features"
+                  className="inline-flex items-center rounded-xl border-2 border-white px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
                 >
-                  <Icon className="w-4 h-4" />
-                  {useCase.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Feature Content */}
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="grid md:grid-cols-2 gap-12 items-center"
-          >
-            <div>
-              <h3 className="text-3xl md:text-4xl font-bold text-wellness-text mb-6">
-                {features[activeTab].title}
-              </h3>
-              <p className="text-lg text-wellness-text-sec mb-8 leading-relaxed">
-                {features[activeTab].description}
-              </p>
-              <ul className="space-y-3">
-                {features[activeTab].benefits.map((benefit, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-wellness-blue/20 flex items-center justify-center">
-                      <span className="text-wellness-blue text-sm font-bold">✓</span>
-                    </div>
-                    <span className="text-wellness-text font-medium">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="h-96 rounded-2xl bg-gradient-to-br from-wellness-blue-light to-purple-50 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">
-                  {activeTab === 'wellness'
-                    ? '😌'
-                    : activeTab === 'focus'
-                      ? '⏱️'
-                      : activeTab === 'community'
-                        ? '🤝'
-                        : '📚'}
-                </div>
-                <p className="text-wellness-text-sec font-medium">{features[activeTab].title}</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* Benefits Grid Section */}
-      <motion.section
-        id="benefits"
-        className="py-20 px-4 sm:px-6 lg:px-8"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-wellness-text mb-4">
-              Why students choose MindMate
-            </h2>
-            <p className="text-lg text-wellness-text-sec max-w-2xl mx-auto">
-              Built by understanding real student challenges
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {benefits.map((benefit, idx) => {
-              const Icon = benefit.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: idx * 0.1 }}
-                  className="p-8 rounded-2xl bg-white border border-wellness-border hover:border-wellness-blue/30 hover:shadow-lg transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-wellness-blue/10 flex items-center justify-center group-hover:bg-wellness-blue/20 transition-colors mb-4">
-                    <Icon className="w-6 h-6 text-wellness-blue" />
-                  </div>
-                  <h3 className="text-xl font-bold text-wellness-text mb-3">{benefit.title}</h3>
-                  <p className="text-wellness-text-sec leading-relaxed">{benefit.description}</p>
-                </motion.div>
-              );
-            })}
+                  Explore Features
+                </a>
+              </>
+            )}
           </div>
         </div>
-      </motion.section>
-
-      {/* CTA Section */}
-      <motion.section
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-wellness-blue to-blue-600 text-white"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to transform your student wellness journey?
-          </h2>
-          <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of students already using MindMate to balance academics and mental health.
-          </p>
-          <button
-            onClick={onNavigateToRegister}
-            className="px-10 py-4 bg-white text-wellness-blue rounded-xl font-semibold hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mx-auto"
-          >
-            Get Started Free <ArrowRight className="w-5 h-5" />
-          </button>
-        </div>
-      </motion.section>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-wellness-border py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 text-wellness-blue font-bold text-lg mb-4">
-                <img src={logo} alt="MindMate" className="w-6 h-6" />
-                MindMate
-              </div>
-              <p className="text-sm text-wellness-text-sec">Student wellness platform for better balance.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-wellness-text mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-wellness-text-sec">
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-wellness-text mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-wellness-text-sec">
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-wellness-text mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-wellness-text-sec">
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-wellness-blue transition-colors">Terms</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-wellness-border pt-8 text-center text-sm text-wellness-text-muted">
-            <p>&copy; 2026 MindMate. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+      <Footer />
+    </main>
   );
 }

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, Clock, Users, MessageCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, Clock, Users, MessageCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PreLoginChatbot from '../components/PreLoginChatbot';
 import logo from '../assets/logo.svg';
 
-export function Login({ onLogin, onNavigateToRegister }) {
+export function Login({ onLogin, onNavigateToRegister, onBackHome = () => {} }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -116,11 +116,23 @@ export function Login({ onLogin, onNavigateToRegister }) {
 
       {/* Right Login Panel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
-        {/* Mobile logo */}
-        <div className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-wellness-blue font-bold text-xl">
-          <img src={logo} alt="MindMate" className="w-6 h-6" />
-          MindMadte
-        </div>
+        {/* Back to Home Button - visible on desktop */}
+        <button
+          onClick={onBackHome}
+          className="absolute top-8 left-8 hidden lg:flex items-center gap-2 text-slate-600 hover:text-blue-600 font-medium text-sm transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Home
+        </button>
+
+        {/* Mobile back button */}
+        <button
+          onClick={onBackHome}
+          className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-slate-600 hover:text-blue-600 font-medium text-sm transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
 
         <motion.div className="w-full max-w-md" variants={containerVariants} initial="hidden" animate="visible">
 
