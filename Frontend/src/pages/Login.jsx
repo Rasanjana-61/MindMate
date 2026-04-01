@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, Clock, Users, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PreLoginChatbot from '../components/PreLoginChatbot';
-import logo from '../assets/logo.svg';
+import { Footer } from '../components/Footer';
 
-export function Login({ onLogin, onNavigateToRegister, onBackHome = () => {} }) {
+export function Login({ onLogin, onNavigateToRegister, onNavigateToHome = () => {} }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -48,91 +48,80 @@ export function Login({ onLogin, onNavigateToRegister, onBackHome = () => {} }) 
             y: 0
         }
     };
-    return (<div className="min-h-screen flex bg-wellness-bg">
-      {/* Left Branding Panel (Desktop) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-wellness-blue to-blue-600 p-12 flex-col justify-between relative overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-wellness-peach/20 rounded-full blur-3xl"></div>
-        </div>
+    return (<div className="flex flex-col min-h-screen bg-wellness-bg">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+          <button
+            onClick={onNavigateToHome}
+            className="flex items-center gap-2 hover:opacity-80 transition"
+          >
+            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+              M
+            </div>
+            <span className="text-xl font-bold text-slate-900">MindMate</span>
+          </button>
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 text-white font-bold text-2xl mb-16">
-            <img src={logo} alt="MindMate" className="w-10 h-10" />
-            MindMadte
+          <nav className="hidden md:flex items-center gap-8">
+            <a 
+              href="#features" 
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToHome();
+                setTimeout(() => {
+                  document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
+              Features
+            </a>
+            <a 
+              href="#how-it-works" 
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToHome();
+                setTimeout(() => {
+                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
+              How It Works
+            </a>
+            <a 
+              href="#benefits" 
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateToHome();
+                setTimeout(() => {
+                  document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition"
+            >
+              Benefits
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-slate-600 hidden sm:inline">
+              Don't have an account?
+            </span>
+            <button
+              onClick={onNavigateToRegister}
+              className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+            >
+              Sign Up
+            </button>
           </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
-            Your wellness journey <br />
-            starts here.
-          </h1>
-          <p className="text-blue-100 text-lg max-w-md mb-12">
-            Balance your academic life with mental wellbeing. The all-in-one
-            platform designed specifically for students.
-          </p>
-
-          <div className="space-y-6">
-            <div className="flex items-center gap-4 text-white">
-              <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
-                <Sparkles className="w-6 h-6 text-wellness-peach-light"/>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Track your mood daily</h3>
-                <p className="text-blue-100 text-sm">
-                  Understand your emotional patterns over time.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 text-white">
-              <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
-                <Clock className="w-6 h-6 text-wellness-green-light"/>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Stay focused</h3>
-                <p className="text-blue-100 text-sm">
-                  Built-in Pomodoro timer and task management.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 text-white">
-              <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
-                <Users className="w-6 h-6 text-wellness-lavender"/>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Connect anonymously</h3>
-                <p className="text-blue-100 text-sm">
-                  Safe peer support from fellow students.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
+      </header>
 
-        <div className="relative z-10 text-blue-200 text-sm mt-12">
-          &copy; 2026 MindMadte. All rights reserved.
-        </div>
-      </div>
-
+      {/* Main Content */}
+      <div className="flex flex-1 bg-wellness-bg">
       {/* Right Login Panel */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative">
-        {/* Back to Home Button - visible on desktop */}
-        <button
-          onClick={onBackHome}
-          className="absolute top-8 left-8 hidden lg:flex items-center gap-2 text-slate-600 hover:text-blue-600 font-medium text-sm transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </button>
-
-        {/* Mobile back button */}
-        <button
-          onClick={onBackHome}
-          className="absolute top-8 left-8 lg:hidden flex items-center gap-2 text-slate-600 hover:text-blue-600 font-medium text-sm transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
-        </button>
+      <div className="w-full flex items-center justify-center p-6 sm:p-12 relative">
 
         <motion.div className="w-full max-w-md" variants={containerVariants} initial="hidden" animate="visible">
 
@@ -230,13 +219,17 @@ export function Login({ onLogin, onNavigateToRegister, onBackHome = () => {} }) 
         </motion.div>
       </div>
 
-      <PreLoginChatbot
-        isOpen={showChatbot}
-        onClose={() => setShowChatbot(false)}
-        onComplete={(chatbotData) => {
-          setShowChatbot(false);
-          onNavigateToRegister(chatbotData);
-        }}
-      />
+        <PreLoginChatbot
+          isOpen={showChatbot}
+          onClose={() => setShowChatbot(false)}
+          onComplete={(chatbotData) => {
+            setShowChatbot(false);
+            onNavigateToRegister(chatbotData);
+          }}
+        />
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>);
 }
