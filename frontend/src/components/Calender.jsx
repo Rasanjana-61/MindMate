@@ -264,7 +264,7 @@ function DeleteConfirmPopup({ onCancel, onConfirm, isDeleting }) {
   )
 }
 
-export function Calendar({ entries = [], loading = false, onEntryDeleted }) {
+export function Calendar({ entries = [], loading = false, onEntryDeleted, onDateSelect }) {
   const today = new Date()
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
@@ -299,10 +299,23 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted }) {
     currentMonth === today.getMonth() &&
     currentYear === today.getFullYear()
 
+  const isFutureDay = (day) => {
+    const dayDate = new Date(currentYear, currentMonth, day)
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    return dayDate > todayStart
+  }
+
   const handleDayClick = (day) => {
     const key = formatDate(currentYear, currentMonth, day)
     const entry = entryMap[key]
-    if (entry) setSelectedEntry(toPopupEntry(entry))
+    if (entry) {
+      setSelectedEntry(toPopupEntry(entry))
+      return
+    }
+
+    if (!isFutureDay(day) && onDateSelect) {
+      onDateSelect(key)
+    }
   }
 
   const handleDeleteEntry = async () => {
@@ -365,19 +378,22 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted }) {
             const key = formatDate(currentYear, currentMonth, day)
             const hasEntry = !!entryMap[key]
             const isTodayDate = isToday(day)
+            const futureDay = isFutureDay(day)
 
             return (
               <button
                 key={day}
                 onClick={() => handleDayClick(day)}
-                disabled={!hasEntry}
-                title={hasEntry ? `View entry for ${key}` : undefined}
+                disabled={futureDay}
+                title={hasEntry ? `View entry for ${key}` : futureDay ? 'Future dates are unavailable' : `Write entry for ${key}`}
                 className={`relative aspect-square max-h-14 rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 z-0
                   ${hasEntry
                     ? 'bg-sage text-white hover:bg-sage/90 cursor-pointer shadow-sm hover:scale-105 hover:z-50 hover:shadow-md active:scale-95'
                     : isTodayDate
-                      ? 'bg-olive text-white'
-                      : 'text-stone/40 cursor-default'
+                      ? 'bg-olive text-white hover:bg-olive/90 cursor-pointer shadow-sm hover:scale-105 active:scale-95'
+                      : futureDay
+                        ? 'text-stone/40 cursor-not-allowed bg-transparent'
+                        : 'bg-warm-white border border-sage-light/40 text-forest hover:bg-sage-wash cursor-pointer shadow-sm hover:scale-105 active:scale-95'
                   }
                 `}
               >

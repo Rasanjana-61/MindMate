@@ -24,8 +24,15 @@ const pageVariants = {
 function App() {
   const [activeScreen, setActiveScreen] = useState('dashboard')
   const [analysisResult, setAnalysisResult] = useState(null)
+  const [selectedJournalDate, setSelectedJournalDate] = useState(null)
 
-  const handleNavigate = (screen) => {
+  const handleNavigate = (screen, options = {}) => {
+    if (screen === 'journal') {
+      setSelectedJournalDate(options.entryDate ?? null)
+    } else {
+      setSelectedJournalDate(null)
+    }
+
     setActiveScreen(screen)
   }
 
@@ -39,11 +46,11 @@ function App() {
       case 'dashboard':
         return <Dashboard onNavigate={handleNavigate} />
       case 'journal':
-        return <JournalEntry onAnalysisComplete={handleAnalysisComplete} />
+        return <JournalEntry onAnalysisComplete={handleAnalysisComplete} initialEntryDate={selectedJournalDate} />
       case 'results':
         return <Results analysisResult={analysisResult} onNavigate={handleNavigate} />
       case 'history':
-        return <MoodHistory />
+        return <MoodHistory onNavigate={handleNavigate} />
       case 'encouragement':
         return <Encouragement />
       default:

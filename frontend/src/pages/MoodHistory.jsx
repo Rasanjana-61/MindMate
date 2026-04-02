@@ -17,7 +17,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-export function MoodHistory() {
+export function MoodHistory({ onNavigate }) {
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -56,7 +56,12 @@ export function MoodHistory() {
       >
         {/* Left Column - Calendar */}
         <div className="h-full min-h-0">
-          <Calendar entries={entries} loading={loading} onEntryDeleted={handleEntryDeleted} />
+          <Calendar
+            entries={entries}
+            loading={loading}
+            onEntryDeleted={handleEntryDeleted}
+            onDateSelect={(date) => onNavigate?.('journal', { entryDate: date })}
+          />
         </div>
 
         {/* Right Column - Recent Days Feed */}

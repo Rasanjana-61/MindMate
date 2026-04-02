@@ -1,15 +1,76 @@
 import JournalEntry from "../models/JournalEntry.model.js";
 import { analyzeEmotion } from "../services/aiService.js";
 
+function getLocalDayBounds(date) {
+  const start = new Date(date)
+  start.setHours(0, 0, 0, 0)
+
+  const end = new Date(date)
+  end.setHours(23, 59, 59, 999)
+
+  return { start, end }
+}
+
+function parseRequestedEntryDate(entryDate) {
+  const referenceTime = new Date()
+
+  if (!entryDate) {
+    return referenceTime
+  }
+
+  if (typeof entryDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(entryDate)) {
+    const [year, month, day] = entryDate.split('-').map(Number)
+    return new Date(
+      year,
+      month - 1,
+      day,
+      referenceTime.getHours(),
+      referenceTime.getMinutes(),
+      referenceTime.getSeconds(),
+      referenceTime.getMilliseconds()
+    )
+  }
+
+  const parsed = new Date(entryDate)
+
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error('Invalid entryDate.')
+  }
+
+  return parsed
+}
+
 // 1. Submit Journal Entry
 export async function submitEntry(req, res) {
   try {
-    const { userId, text } = req.body;
+    const { userId, text, entryDate } = req.body;
+    let normalizedEntryDate;
+
+    try {
+      normalizedEntryDate = parseRequestedEntryDate(entryDate)
+    } catch (parseError) {
+      return res.status(400).json({ status: 'error', message: parseError.message });
+    }
+
+    if (normalizedEntryDate > new Date()) {
+      return res.status(400).json({ status: 'error', message: 'Entry date cannot be in the future.' });
+    }
+
+    const { start, end } = getLocalDayBounds(normalizedEntryDate)
+    const existingEntry = await JournalEntry.findOne({
+      userId,
+      entryDate: { $gte: start, $lte: end },
+    })
+
+    if (existingEntry) {
+      return res.status(409).json({ status: 'error', message: 'An entry already exists for that date.' });
+    }
+
     const aiResult = await analyzeEmotion(text);
     const entry = new JournalEntry({
       userId,
       text,
-      entryDate: new Date(),
+      entryDate: normalizedEntryDate,
       emotion: aiResult.emotion,
       emotionScores: new Map(Object.entries(aiResult.emotionScores)),
       moodScore: aiResult.moodScore,
@@ -22,6 +83,7 @@ export async function submitEntry(req, res) {
       entryId: entry._id,
       status: "success",
       message: "Journal entry saved and analyzed.",
+      entryDate: entry.entryDate,
       emotion: aiResult.emotion,
       emotionScores: aiResult.emotionScores,
       moodScore: aiResult.moodScore,
@@ -223,10 +285,20 @@ export async function getMoodHistory(req, res) {
 export async function getEntryDetailsByDate(req, res) {
   try {
     const { userId, entryDate } = req.params;
-    const entries = await JournalEntry.find({ userId, entryDate: new Date(entryDate) });
+    let requestedDate;
+
+    try {
+      requestedDate = parseRequestedEntryDate(entryDate);
+    } catch (parseError) {
+      return res.status(400).json({ status: 'error', message: parseError.message });
+    }
+
+    const { start, end } = getLocalDayBounds(requestedDate);
+    const entries = await JournalEntry.find({ userId, entryDate: { $gte: start, $lte: end } });
     res.json({
       entryDate,
       entries: entries.map(entry => ({
+        entryDate: entry.entryDate,
         text: entry.text,
         moodScore: entry.moodScore,
         stressScore: entry.stressScore,

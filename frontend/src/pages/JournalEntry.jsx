@@ -6,6 +6,39 @@ import { getMoodEmoji } from '../data/moodData'
 const API_URL = import.meta.env.VITE_API_BASE_URL
 const USER_ID = 'testUser123'
 
+function getTodayInputValue() {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function parseDateInputValue(value) {
+  if (!value) return null
+
+  const parsed = new Date(`${value}T12:00:00`)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+function formatReadableDate(value) {
+  const parsed = parseDateInputValue(value)
+
+  if (!parsed) return ''
+
+  return parsed.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+function isSameCalendarDay(left, right) {
+  if (!left || !right) return false
+  return left.toDateString() === right.toDateString()
+}
+
 function validateJournalContent(text) {
   const trimmed = text.trim()
 
@@ -190,38 +223,10 @@ function EntryCard({ entry, index, defaultExpanded = false, hideToggle = false }
   )
 }
 
-function TodayEntriesSidebar({ refreshKey, onEditEntry, onLatestEntryLoaded }) {
-  const [latestEntry, setLatestEntry] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchTodayEntries = async () => {
-      setLoading(true)
-      try {
-        const response = await fetch(`${API_URL}/api/history/${USER_ID}`)
-        if (response.ok) {
-          const data = await response.json()
-          const today = new Date().toDateString()
-          const todayEntries = data.filter(
-            (entry) => new Date(entry.entryDate).toDateString() === today
-          )
-          // The history is already sorted descending by backend. Pick the most recent.
-          if (todayEntries.length > 0) {
-            setLatestEntry(todayEntries[0])
-            if (onLatestEntryLoaded) onLatestEntryLoaded(todayEntries[0])
-          } else {
-            setLatestEntry(null)
-            if (onLatestEntryLoaded) onLatestEntryLoaded(null)
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load today entries:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchTodayEntries()
-  }, [refreshKey])
+function TodayEntriesSidebar({ entries, loading, onEditEntry }) {
+  const latestEntry = entries.find((entry) =>
+    isSameCalendarDay(new Date(entry.entryDate), new Date())
+  ) ?? null
 
   return (
     <div className="bg-warm-white rounded-card shadow-card p-6 flex flex-col h-full min-h-0 overflow-hidden">
@@ -280,28 +285,72 @@ function TodayEntriesSidebar({ refreshKey, onEditEntry, onLatestEntryLoaded }) {
   )
 }
 
-export function JournalEntry({ onAnalysisComplete }) {
+export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
   const [journalText, setJournalText] = useState('')
   const [originalText, setOriginalText] = useState('')
   const [editingEntryId, setEditingEntryId] = useState(null)
-  const [hasTodayEntry, setHasTodayEntry] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(() => initialEntryDate || getTodayInputValue())
+  const [historyEntries, setHistoryEntries] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(true)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState(null)
   const [warning, setWarning] = useState(null)
   const [forceSubmit, setForceSubmit] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
+  const todayInputValue = getTodayInputValue()
+  const selectedDateLabel = formatReadableDate(selectedDate)
+  const selectedDateObject = parseDateInputValue(selectedDate)
+  const selectedDateEntry = selectedDateObject
+    ? historyEntries.find((entry) => isSameCalendarDay(new Date(entry.entryDate), selectedDateObject)) ?? null
+    : null
+  const selectedDateLocked = !!selectedDateEntry && !editingEntryId
+  const isFutureSelectedDate = selectedDate > todayInputValue
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setHistoryLoading(true)
+
+      try {
+        const response = await fetch(`${API_URL}/api/history/${USER_ID}`)
+        if (!response.ok) {
+          throw new Error(`Failed to load history (${response.status})`)
+        }
+
+        const data = await response.json()
+        setHistoryEntries(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error('Failed to load journal history:', err)
+        setHistoryEntries([])
+      } finally {
+        setHistoryLoading(false)
+      }
+    }
+
+    fetchHistory()
+  }, [refreshKey])
+
+  useEffect(() => {
+    setSelectedDate(initialEntryDate || getTodayInputValue())
+  }, [initialEntryDate])
+
   const handleEditEntry = (entry) => {
     setJournalText(entry.text)
     setOriginalText(entry.text)
     setEditingEntryId(entry.entryId)
+    setSelectedDate(getTodayInputValue())
     setError(null)
     setWarning(null)
     setForceSubmit(false)
   }
 
-  const handleLatestEntryLoaded = (entry) => {
-    setHasTodayEntry(!!entry)
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value)
+    if (error) setError(null)
+    if (warning) {
+      setWarning(null)
+      setForceSubmit(false)
+    }
   }
 
   const handleTextChange = (e) => {
@@ -315,6 +364,11 @@ export function JournalEntry({ onAnalysisComplete }) {
 
   const handleAnalyze = async () => {
     if (!journalText.trim()) return
+
+    if (isFutureSelectedDate) {
+      setError('You can only write entries for today or earlier dates.')
+      return
+    }
 
     const validation = validateJournalContent(journalText)
 
@@ -347,7 +401,7 @@ export function JournalEntry({ onAnalysisComplete }) {
         response = await fetch(`${API_URL}/api/entries`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: USER_ID, text: journalText }),
+          body: JSON.stringify({ userId: USER_ID, text: journalText, entryDate: selectedDate }),
         })
       }
 
@@ -359,8 +413,9 @@ export function JournalEntry({ onAnalysisComplete }) {
       const data = await response.json()
       setJournalText('')
       setEditingEntryId(null)
+      setSelectedDate(getTodayInputValue())
       setRefreshKey((k) => k + 1)
-      onAnalysisComplete({ ...data, text: submittedText })
+      onAnalysisComplete({ ...data, text: submittedText, entryDate: selectedDate })
     } catch (err) {
       console.error('Error submitting entry:', err)
       setError(err.message || 'Failed to analyze. Please try again.')
@@ -445,13 +500,45 @@ export function JournalEntry({ onAnalysisComplete }) {
               variants={itemVariants}
               className="bg-warm-white rounded-card shadow-card p-6"
             >
+              <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone mb-1">
+                    Entry Date
+                  </p>
+                  <p className="font-lora text-lg text-ink">
+                    {selectedDateLabel || 'Select a date'}
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-start gap-1 md:items-end">
+                  <label htmlFor="journal-entry-date" className="text-xs font-medium text-olive">
+                    Write for a different day
+                  </label>
+                  <input
+                    id="journal-entry-date"
+                    type="date"
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    max={todayInputValue}
+                    disabled={!!editingEntryId}
+                    className="rounded-lg border border-sage-light/40 bg-cream/60 px-3 py-2 text-sm text-forest focus:outline-none focus:ring-2 focus:ring-sage/30 disabled:cursor-not-allowed disabled:opacity-70"
+                  />
+                </div>
+              </div>
+
+              {selectedDateLocked && (
+                <div className="mb-4 rounded-xl border border-sage-light/30 bg-sage-wash/40 px-4 py-3 text-sm text-olive">
+                  You already have an entry for {selectedDateLabel}. Open it from History to review or edit.
+                </div>
+              )}
+
               <div className="relative">
                 <textarea
                   value={journalText}
                   onChange={handleTextChange}
-                  disabled={hasTodayEntry && !editingEntryId}
-                  placeholder={hasTodayEntry && !editingEntryId ? "You have already written a beautiful entry for today. Click 'Modify Entry' on the right to review or add to it! ✨" : "Today I felt... I noticed... Something that made me smile was... I'm grateful for..."}
-                  className={`w-full min-h-64 p-5 bg-cream/50 border-2 border-transparent focus:border-sage-light rounded-xl resize-none text-forest placeholder:text-stone/60 focus:outline-none transition-colors font-sans leading-relaxed ${hasTodayEntry && !editingEntryId ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  disabled={selectedDateLocked}
+                  placeholder={selectedDateLocked ? `You already have an entry for ${selectedDateLabel}.` : `On ${selectedDateLabel || 'this day'} I felt... I noticed... Something that made me smile was... I'm grateful for...`}
+                  className={`w-full min-h-64 p-5 bg-cream/50 border-2 border-transparent focus:border-sage-light rounded-xl resize-none text-forest placeholder:text-stone/60 focus:outline-none transition-colors font-sans leading-relaxed ${selectedDateLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
                 />
                 <div className="absolute bottom-3 right-3 text-xs text-stone">
                   {characterCount}/{maxCharacters}
@@ -496,7 +583,7 @@ export function JournalEntry({ onAnalysisComplete }) {
             <motion.div variants={itemVariants} className="flex justify-center">
               {(() => {
                 const isUnchanged = editingEntryId && journalText.trim() === originalText.trim();
-                const isDisabled = !journalText.trim() || isUnchanged || (hasTodayEntry && !editingEntryId);
+                const isDisabled = !journalText.trim() || isUnchanged || selectedDateLocked || isFutureSelectedDate;
 
                 return (
                   <motion.button
@@ -535,9 +622,9 @@ export function JournalEntry({ onAnalysisComplete }) {
           {/* Right Column — Today's Entries */}
           <motion.div variants={itemVariants} className="h-full min-h-0 md:h-[calc(100vh-6rem)]">
             <TodayEntriesSidebar 
-              refreshKey={refreshKey} 
+              entries={historyEntries}
+              loading={historyLoading}
               onEditEntry={handleEditEntry} 
-              onLatestEntryLoaded={handleLatestEntryLoaded}
             />
           </motion.div>
         </motion.div>
