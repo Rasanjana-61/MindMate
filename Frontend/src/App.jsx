@@ -13,6 +13,10 @@ import { Profile } from './pages/Profile';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
+import { SummarizerDashboard } from './pages/summarizer/SummarizerDashboard';
+import { VideoSummary } from './pages/summarizer/VideoSummary';
+import { TextSummary } from './pages/summarizer/TextSummary';
+import { FileSummary } from './pages/summarizer/FileSummary';
 import {
   API_BASE_URL,
   clearToken,
@@ -28,6 +32,7 @@ import {
 } from './lib/auth';
 
 export function App() {
+  console.log("App component is rendering...");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showHome, setShowHome] = useState(true);
   const [authPage, setAuthPage] = useState('login');
@@ -205,7 +210,7 @@ export function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard setPage={setCurrentPage} userName={user.name} />;
+        return <Dashboard setPage={setCurrentPage} userName={user?.name || 'User'} />;
       case 'mood':
         return <MoodTracker />;
       case 'focus':
@@ -219,9 +224,17 @@ export function App() {
       case 'profile':
         return <Profile user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
       case 'admin':
-        return user.role === 'admin' ? <AdminDashboard /> : <Dashboard setPage={setCurrentPage} userName={user.name} />;
+        return user?.role === 'admin' ? <AdminDashboard /> : <Dashboard setPage={setCurrentPage} userName={user?.name || 'User'} />;
+      case 'summarizer':
+        return <SummarizerDashboard setPage={setCurrentPage} />;
+      case 'video-summary':
+        return <VideoSummary setPage={setCurrentPage} />;
+      case 'text-summary':
+        return <TextSummary setPage={setCurrentPage} />;
+      case 'file-summary':
+        return <FileSummary setPage={setCurrentPage} />;
       default:
-        return <Dashboard setPage={setCurrentPage} userName={user.name} />;
+        return <Dashboard setPage={setCurrentPage} userName={user?.name || 'User'} />;
     }
   };
 

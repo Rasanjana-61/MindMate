@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Bell, ChevronDown, LogOut, Search, Settings, ShieldCheck, UserCircle2 } from 'lucide-react';
 
 function UserAvatar({ user, className = '' }) {
-  if (user.avatarUrl) {
-    return <img src={user.avatarUrl} alt={user.name} className={`rounded-full object-cover ${className}`} />;
+  if (user?.avatarUrl) {
+    return <img src={user.avatarUrl} alt={user?.name} className={`rounded-full object-cover ${className}`} />;
   }
 
   return (
     <div className={`rounded-full flex items-center justify-center font-bold border ${className}`} style={{ backgroundColor: 'rgba(123, 174, 127, 0.2)', color: '#7BAE7F', borderColor: 'rgba(123, 174, 127, 0.2)' }}>
-      {user.avatar}
+      {user?.avatar || 'U'}
     </div>
   );
 }
@@ -178,7 +178,7 @@ export function Header({
           <button onClick={() => setIsMenuOpen((prev) => !prev)} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
             <UserAvatar user={user} className="w-8 h-8 text-sm" />
             <div className="flex items-center gap-1">
-              <span className="text-sm font-medium text-wellness-text">{user.name.split(' ')[0]}</span>
+              <span className="text-sm font-medium text-wellness-text">{(user?.name || 'User').split(' ')[0]}</span>
               <ChevronDown className={`w-4 h-4 text-wellness-text-muted transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
             </div>
           </button>
@@ -189,13 +189,13 @@ export function Header({
                 <div className="flex items-center gap-3">
                   <UserAvatar user={user} className="w-11 h-11" />
                   <div>
-                    <p className="text-sm font-bold text-wellness-text">{user.name}</p>
-                    <p className="text-xs text-wellness-text-sec">{user.email}</p>
+                    <p className="text-sm font-bold text-wellness-text">{user?.name || 'User'}</p>
+                    <p className="text-xs text-wellness-text-sec">{user?.email || ''}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <span className="px-2.5 py-1 rounded-full bg-white text-[10px] font-bold text-wellness-text-sec border border-wellness-border">{user.faculty}</span>
-                  <span className="px-2.5 py-1 rounded-full bg-white text-[10px] font-bold text-wellness-text-sec border border-wellness-border">{user.role}</span>
+                  <span className="px-2.5 py-1 rounded-full bg-white text-[10px] font-bold text-wellness-text-sec border border-wellness-border">{user?.faculty || ''}</span>
+                  <span className="px-2.5 py-1 rounded-full bg-white text-[10px] font-bold text-wellness-text-sec border border-wellness-border">{user?.role || ''}</span>
                 </div>
               </div>
               <div className="p-2">

@@ -16,15 +16,20 @@ const resourceRoutes = require("./routes/resourceRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const summarizerRoutes = require("./routes/summarizer/summarizerRoutes");
 const { setIO } = require("./utils/socket");
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const LOCALHOST_ORIGIN = /^http:\/\/localhost:\d+$/;
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [FRONTEND_URL, LOCALHOST_ORIGIN],
     credentials: true,
   },
 });
@@ -33,7 +38,13 @@ setIO(io);
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || origin === FRONTEND_URL || LOCALHOST_ORIGIN.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS policy does not allow access from ${origin}`));
+      }
+    },
     credentials: true,
   })
 );
@@ -54,6 +65,7 @@ app.use("/api/resources", resourceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/summarizer", summarizerRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found." });

@@ -1,14 +1,14 @@
-import { BookOpen, LayoutDashboard, LogOut, MessageCircle, Smile, Timer, User, Bookmark, Shield } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LogOut, MessageCircle, Smile, Timer, User, Bookmark, Shield, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function SidebarAvatar({ user }) {
-  if (user.avatarUrl) {
-    return <img src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full object-cover" />;
+  if (user?.avatarUrl) {
+    return <img src={user.avatarUrl} alt={user?.name} className="w-8 h-8 rounded-full object-cover" />;
   }
 
   return (
     <div className="w-8 h-8 rounded-full bg-wellness-blue-light flex items-center justify-center text-wellness-blue font-bold text-xs">
-      {user.avatar}
+      {user?.avatar || 'U'}
     </div>
   );
 }
@@ -16,6 +16,7 @@ function SidebarAvatar({ user }) {
 export function Sidebar({ currentPage, setPage, user, onLogout }) {
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'summarizer', label: 'AI Summarizer', icon: Sparkles, badge: 'New' },
     { id: 'mood', label: 'Mood Tracker', icon: Smile },
     { id: 'focus', label: 'Focus & Tasks', icon: Timer },
   ];
@@ -70,7 +71,7 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
           {communityNavItems.map(renderNavItem)}
         </nav>
 
-        {user.role === 'admin' && (
+        {user?.role === 'admin' && (
           <nav className="space-y-1 border-t border-wellness-border pt-4">
             <p className="px-4 text-xs font-semibold text-red-500 uppercase tracking-wider mb-2">Administration</p>
             {[{ id: 'admin', label: 'Admin Dashboard', icon: Shield }].map(renderNavItem)}
@@ -91,8 +92,8 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
           <div className="flex items-center gap-3">
             <SidebarAvatar user={user} />
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-wellness-text leading-tight">{user.name}</span>
-              <span className="text-[10px] text-wellness-text-muted">{user.role}</span>
+              <span className="text-sm font-medium text-wellness-text leading-tight">{user?.name || 'User'}</span>
+              <span className="text-[10px] text-wellness-text-muted">{user?.role || ''}</span>
             </div>
           </div>
           <button onClick={onLogout} className="p-2 text-wellness-text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Log out">
