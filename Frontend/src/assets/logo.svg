@@ -1,0 +1,31 @@
+<svg width="40" height="40" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Purple background -->
+  <rect width="200" height="200" fill="#B88FFF"/>
+  
+  <!-- Head profile outline (left side) -->
+  <g id="head">
+    <!-- Face contour -->
+    <path d="M 65 85 Q 60 95 60 115 Q 60 135 70 155 L 80 170" fill="none" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 65 85 Q 65 65 80 60 Q 95 55 105 60" fill="none" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 105 60 Q 120 65 125 85" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Brain circle with leaves -->
+  <g id="brain">
+    <!-- Outer circle for mind/brain -->
+    <circle cx="105" cy="95" r="45" fill="none" stroke="white" stroke-width="6"/>
+    
+    <!-- Left leaf -->
+    <path d="M 90 75 Q 75 65 70 75 Q 68 80 80 85 Q 90 82 90 75" fill="white"/>
+    
+    <!-- Right leaf (top) -->
+    <path d="M 120 70 Q 135 60 140 72 Q 140 80 128 82 Q 120 80 120 70" fill="white"/>
+    
+    <!-- Right leaf (bottom) -->
+    <path d="M 128 105 Q 145 100 150 115 Q 147 125 132 122 Q 125 120 128 105" fill="white"/>
+    
+    <!-- Center top leaf/sprout -->
+    <path d="M 105 50 Q 100 35 105 30 Q 110 35 105 50" fill="white"/>
+    <path d="M 105 50 Q 110 40 108 35" fill="white"/>
+  </g>
+</svg>
