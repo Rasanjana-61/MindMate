@@ -375,6 +375,13 @@ async function fetchDashboardOverview() {
   return request("/dashboard/overview");
 }
 
+async function summarizeText(text) {
+  return request("/summarizer/summarize", {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
+}
+
 function useAuthStore() {
   const isAuthenticated = !!getToken();
   return { isAuthenticated };
@@ -425,5 +432,7 @@ export {
   updateMoodLog,
   updateProfile,
   uploadProfileAvatar,
+  summarizeText,
   useAuthStore,
+  request,
 };

@@ -275,7 +275,6 @@ export default function Chatbot({ isOpen = true, onClose, onComplete }) {
               onMouseEnter={(e) => e.target.style.backgroundColor = '#4F7D5C'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#7BAE7F'}
             >
-            >
               Go to Dashboard
             </button>
           </div>
