@@ -19,7 +19,10 @@ import {
   ArrowLeft,
   Calendar,
   Layers,
-  GraduationCap
+  GraduationCap,
+  Clock,
+  ShieldAlert,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -29,6 +32,7 @@ import {
   fetchResources,
   uploadResource,
 } from '../lib/auth';
+import toast from 'react-hot-toast';
 
 const RESOURCE_TYPES = [
   { id: 'all', label: 'All Resources', icon: Layers },
@@ -63,6 +67,7 @@ export function ResourceHub({ user }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
   
   // Upload Form State
   const [formData, setFormData] = useState({
@@ -125,7 +130,7 @@ export function ResourceHub({ user }) {
 
     try {
       await uploadResource(selectedFile, formData);
-      setStatusMessage("Resource uploaded successfully!");
+      setStatusMessage("Resource uploaded! It will be visible once approved by an admin.");
       setView('explore');
       setSelectedFile(null);
       setFormData({
@@ -160,11 +165,17 @@ export function ResourceHub({ user }) {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this resource?")) return;
+    
+    setDeletingId(id);
     try {
       await deleteResource(id);
+      toast.success("Resource deleted successfully!");
       loadResources();
     } catch (error) {
+      toast.error(error.message || "Failed to delete resource");
       setErrorMessage(error.message);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -270,14 +281,43 @@ export function ResourceHub({ user }) {
                         alt={res.originalFileName}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
-                      <div className="absolute top-4 right-4 backdrop-blur-md bg-white/30 p-2 rounded-xl border border-white/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button 
-                           onClick={() => handleDelete(res.id)}
-                           className="text-white hover:text-red-300"
-                          >
-                           <Trash2 className="w-5 h-5" />
-                         </button>
+                      
+                      {/* Status Badges for Owner/Admin */}
+                      <div className="absolute top-4 left-4 flex flex-col gap-2">
+                        {res.status === 'pending' && (
+                          <div className="bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg border border-amber-400/50">
+                            <Clock className="w-3 h-3" />
+                            Pending Approval
+                          </div>
+                        )}
+                        {res.status === 'rejected' && (
+                          <div className="bg-red-500/90 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg border border-red-400/50">
+                            <ShieldAlert className="w-3 h-3" />
+                            Rejected
+                          </div>
+                        )}
+                        {res.status === 'approved' && user?.id === res.userId && (
+                           <div className="bg-green-500/90 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg border border-green-400/50">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Published
+                          </div>
+                        )}
                       </div>
+
+                      {(user?.role === 'admin' || user?.id === res.userId) && (
+                        <div className="absolute top-4 right-4 z-20 backdrop-blur-md bg-white/30 p-2 rounded-xl border border-white/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button 
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               handleDelete(res.id);
+                             }}
+                             disabled={deletingId === res.id}
+                             className="text-white hover:text-red-300 disabled:opacity-50"
+                            >
+                             {deletingId === res.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                           </button>
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                         <p className="text-white text-xs font-medium line-clamp-2">
                           {res.description || "No additional description provided."}
@@ -304,10 +344,15 @@ export function ResourceHub({ user }) {
                       <div className="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-2">
                         <button
                           onClick={() => handleDownload(res.id, res.originalFileName)}
-                          className="w-full bg-[#6EB544] hover:bg-[#5da038] text-white py-3 rounded-xl font-extrabold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-colors shadow-md hover:shadow-lg active:scale-[0.98]"
+                          disabled={res.status !== 'approved'}
+                          className={`w-full py-3 rounded-xl font-extrabold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-[0.98] ${
+                            res.status === 'approved' 
+                              ? 'bg-[#6EB544] hover:bg-[#5da038] text-white' 
+                              : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                          }`}
                         >
                           <Download className="w-4 h-4 mt-[-2px]" />
-                          Download
+                          {res.status === 'approved' ? 'Download' : 'Locked'}
                         </button>
                       </div>
                     </div>

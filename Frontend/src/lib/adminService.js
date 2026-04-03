@@ -55,4 +55,9 @@ export const adminAPI = {
   // Users
   getUsers: () => request("/admin/users"),
   toggleUser: (userId) => request(`/admin/users/${userId}/toggle`, { method: "PUT" }),
+
+  // Resource Moderation
+  getPendingResources: () => request("/admin/resources/pending"),
+  approveResource: (resourceId) => request(`/admin/resources/${resourceId}/approve`, { method: "PUT" }),
+  rejectResource: (resourceId) => request(`/admin/resources/${resourceId}/reject`, { method: "PUT" }),
 };
