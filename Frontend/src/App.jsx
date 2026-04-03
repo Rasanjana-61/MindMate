@@ -220,7 +220,7 @@ export function App() {
       case 'bookmarks':
         return <BookmarkedQuestions />;
       case 'resources':
-        return <ResourceHub />;
+        return <ResourceHub user={user} />;
       case 'profile':
         return <Profile user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
       case 'admin':

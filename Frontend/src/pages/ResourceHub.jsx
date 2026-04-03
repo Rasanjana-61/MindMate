@@ -6,150 +6,116 @@ import {
   Download,
   FileText,
   Loader2,
+  Plus,
   RefreshCcw,
   Search,
   Sparkles,
   Trash2,
   UploadCloud,
+  Video,
+  Music,
+  Book,
+  Filter,
+  ArrowLeft,
+  Calendar,
+  Layers,
+  GraduationCap
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   deleteResource,
   downloadResourceSummary,
   fetchResource,
   fetchResources,
-  regenerateResource,
   uploadResource,
 } from '../lib/auth';
 
-function formatDateLabel(dateString) {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+const RESOURCE_TYPES = [
+  { id: 'all', label: 'All Resources', icon: Layers },
+  { id: 'pdf', label: 'PDF Notes', icon: FileText },
+  { id: 'video', label: 'Video Lessons', icon: Video },
+  { id: 'audio', label: 'Audio Material', icon: Music },
+  { id: 'ebook', label: 'E-Books', icon: Book },
+];
+
+const FACULTIES = ["FOC", "FOB", "FOE", "FAS", "FOL"];
+const YEARS = ["Year 1", "Year 2", "Year 3", "Year 4"];
+const SEMESTERS = ["Semester 1", "Semester 2"];
+
+// Helper to get a random cover image based on type
+function getPlaceholderCover(type) {
+  const covers = {
+    pdf: 'https://images.unsplash.com/photo-1544377193-33dcf4d68fb5?w=500&auto=format&fit=crop&q=60',
+    video: 'https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=500&auto=format&fit=crop&q=60',
+    audio: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=60',
+    ebook: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=60',
+    all: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&auto=format&fit=crop&q=60'
+  };
+  return covers[type] || covers.all;
 }
 
-export function ResourceHub() {
+export function ResourceHub({ user }) {
+  const [view, setView] = useState('explore'); // 'explore' or 'upload'
   const [search, setSearch] = useState('');
-  const [subject, setSubject] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
   const [resources, setResources] = useState([]);
-  const [selectedResourceId, setSelectedResourceId] = useState('');
-  const [selectedResource, setSelectedResource] = useState(null);
-  const [uploadState, setUploadState] = useState('idle');
-  const [expandedSections, setExpandedSections] = useState({
-    keyPoints: true,
-    definitions: true,
-    keywords: false,
-  });
-  const [isLoadingList, setIsLoadingList] = useState(true);
-  const [isLoadingResource, setIsLoadingResource] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [selectedFileName, setSelectedFileName] = useState('');
+  
+  // Upload Form State
+  const [formData, setFormData] = useState({
+    subject: '',
+    resourceType: 'pdf',
+    faculty: user?.faculty || 'FOC',
+    year: user?.year || 'Year 1',
+    semester: user?.semester || 'Semester 1',
+    description: ''
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  async function loadResources(nextSearch = search) {
-    setIsLoadingList(true);
-
+  // Load Resources
+  async function loadResources() {
+    setIsLoading(true);
     try {
-      const data = await fetchResources(nextSearch);
+      const typeParam = selectedType === 'all' ? '' : selectedType;
+      const data = await fetchResources(search, typeParam);
       setResources(data.resources);
-
-      if (!selectedResourceId && data.resources.length) {
-        setSelectedResourceId(data.resources[0].id);
-      }
-
-      if (selectedResourceId && !data.resources.some((item) => item.id === selectedResourceId)) {
-        setSelectedResourceId(data.resources[0]?.id || '');
-        setSelectedResource(data.resources[0] || null);
-      }
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
-      setIsLoadingList(false);
-    }
-  }
-
-  async function loadResource(resourceId) {
-    if (!resourceId) {
-      setSelectedResource(null);
-      return;
-    }
-
-    setIsLoadingResource(true);
-
-    try {
-      const data = await fetchResource(resourceId);
-      setSelectedResource(data.resource);
-    } catch (error) {
-      setErrorMessage(error.message);
-    } finally {
-      setIsLoadingResource(false);
+      setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    loadResources('');
-  }, []);
+    loadResources();
+  }, [selectedType]);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      loadResources(search);
-    }, 250);
-
-    return () => window.clearTimeout(timeout);
+    const timeout = setTimeout(() => {
+      loadResources();
+    }, 500);
+    return () => clearTimeout(timeout);
   }, [search]);
 
-  useEffect(() => {
-    loadResource(selectedResourceId);
-  }, [selectedResourceId]);
-
-  const selectedTags = useMemo(() => selectedResource?.tags || [], [selectedResource]);
-
-  function toggleSection(section) {
-    setExpandedSections((current) => ({
-      ...current,
-      [section]: !current[section],
-    }));
-  }
-
-  async function handleFileSelection(event) {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMessage('');
-    setStatusMessage('');
-    setSelectedFileName(file.name);
-    setUploadState('uploading');
-
-    try {
-      setUploadState('processing');
-      const response = await uploadResource(file, subject);
-      setStatusMessage(response.message);
-      setUploadState('done');
-      setSubject('');
-      setSelectedFileName('');
-      await loadResources(search);
-      setSelectedResourceId(response.resource.id);
-      setSelectedResource(response.resource);
-    } catch (error) {
-      setErrorMessage(error.message);
-      setUploadState('idle');
-    } finally {
-      setIsSubmitting(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+  // Handle Upload
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!formData.subject) {
+        setFormData(prev => ({ ...prev, subject: file.name.split('.')[0] }));
       }
     }
-  }
+  };
 
-  async function handleRegenerate() {
-    if (!selectedResource) {
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      setErrorMessage("Please select a file to upload.");
       return;
     }
 
@@ -158,315 +124,382 @@ export function ResourceHub() {
     setStatusMessage('');
 
     try {
-      const response = await regenerateResource(selectedResource.id, { subject: selectedResource.subject });
-      setSelectedResource(response.resource);
-      setStatusMessage(response.message);
-      await loadResources(search);
+      await uploadResource(selectedFile, formData);
+      setStatusMessage("Resource uploaded successfully!");
+      setView('explore');
+      setSelectedFile(null);
+      setFormData({
+        subject: '',
+        resourceType: 'pdf',
+        faculty: user?.faculty || 'FOC',
+        year: user?.year || 'Year 1',
+        semester: user?.semester || 'Semester 1',
+        description: ''
+      });
+      loadResources();
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
-  async function handleDelete() {
-    if (!selectedResource) {
-      return;
-    }
-
-    setErrorMessage('');
-    setStatusMessage('');
-
+  const handleDownload = async (id, fileName) => {
     try {
-      await deleteResource(selectedResource.id);
-      setStatusMessage('Resource deleted successfully.');
-      const deletedId = selectedResource.id;
-      setSelectedResource(null);
-      setSelectedResourceId('');
-      await loadResources(search);
-      if (selectedResourceId === deletedId) {
-        const nextResource = resources.find((item) => item.id !== deletedId);
-        setSelectedResourceId(nextResource?.id || '');
-      }
-    } catch (error) {
-      setErrorMessage(error.message);
-    }
-  }
-
-  async function handleDownload() {
-    if (!selectedResource) {
-      return;
-    }
-
-    try {
-      const { blob, filename } = await downloadResourceSummary(selectedResource.id);
+      const { blob, filename } = await downloadResourceSummary(id);
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = filename;
+      link.download = filename || fileName;
       link.click();
       URL.revokeObjectURL(url);
     } catch (error) {
       setErrorMessage(error.message);
     }
-  }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this resource?")) return;
+    try {
+      await deleteResource(id);
+      loadResources();
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
+  };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-6xl mx-auto">
-      <div className="relative mb-8 max-w-2xl">
-        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-wellness-text-muted" />
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+        <div>
+          <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+            <div className="p-3 bg-wellness-blue/10 rounded-2xl">
+              <BookOpen className="w-8 h-8 text-wellness-blue" />
+            </div>
+            Resource Hub
+          </h1>
+          <p className="mt-2 text-slate-500 font-medium flex items-center gap-2">
+            <GraduationCap className="w-4 h-4" />
+            Showing materials for {user?.faculty} • {user?.year} • {user?.semester}
+          </p>
         </div>
-        <input
-          type="text"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search summaries, subjects, tags, or keywords..."
-          className="w-full pl-12 pr-6 py-4 bg-white border border-wellness-border rounded-full shadow-sm focus:outline-none focus:ring-4 focus:ring-wellness-blue/10 focus:border-wellness-blue text-sm transition-all font-medium"
-        />
+
+        <button
+          onClick={() => setView(view === 'explore' ? 'upload' : 'explore')}
+          className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl active:scale-95 ${
+            view === 'explore' 
+              ? 'bg-wellness-blue text-white hover:bg-wellness-blue/90' 
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+          }`}
+        >
+          {view === 'explore' ? (
+            <>
+              <Plus className="w-5 h-5" />
+              Upload Resource
+            </>
+          ) : (
+            <>
+              <ArrowLeft className="w-5 h-5" />
+              Back to Hub
+            </>
+          )}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-6">
-          {uploadState === 'uploading' || uploadState === 'processing' ? (
-            <div className="card p-16 text-center flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-wellness-blue-light/30 to-transparent pointer-events-none" />
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="relative mb-8">
-                  <div className="w-24 h-24 bg-wellness-blue-light rounded-full flex items-center justify-center">
-                    <Sparkles className="w-10 h-10 text-wellness-blue animate-pulse" />
-                  </div>
-                  <svg className="absolute inset-0 w-full h-full animate-spin" style={{ animationDuration: '3s' }} viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="48" fill="none" stroke="#6FA5A5" strokeWidth="2" strokeDasharray="75 225" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-wellness-text mb-3">
-                  {uploadState === 'uploading' ? 'Uploading document...' : 'AI is analyzing your document...'}
-                </h3>
-                <p className="text-base text-wellness-text-sec max-w-md mx-auto font-medium leading-relaxed">
-                  {selectedFileName || 'Your file'} is being processed into an exam-focused summary with key points, definitions, keywords, and topic tags.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="card p-8 border-t-4 border-t-wellness-blue shadow-md">
-              <div
-                className="p-10 dashed-border-animate bg-wellness-blue-light/10 text-center hover:bg-wellness-blue-light/20 transition-colors cursor-pointer group rounded-3xl"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 text-wellness-blue shadow-md group-hover:scale-110 transition-transform duration-300">
-                  <UploadCloud className="w-10 h-10" />
-                </div>
-                <h3 className="text-xl font-bold text-wellness-text mb-3">Drop your notes, PDFs, or documents here</h3>
-                <p className="text-base text-wellness-text-sec mb-6 font-medium">
-                  or <span className="text-wellness-blue font-bold hover:underline">click to browse</span>
-                </p>
-                <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-wellness-border shadow-sm">
-                  <FileText className="w-4 h-4 text-wellness-text-muted" />
-                  <p className="text-xs font-bold text-wellness-text-muted uppercase tracking-wider">Supported: PDF, DOCX, TXT up to 10MB</p>
-                </div>
-                <input ref={fileInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileSelection} />
-              </div>
-
-              <div className="mt-5">
-                <label className="block text-sm font-semibold text-wellness-text mb-2">Subject or module label</label>
+      <AnimatePresence mode="wait">
+        {view === 'explore' ? (
+          <motion.div
+            key="explore"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            {/* Filters & Search */}
+            <div className="flex flex-col lg:flex-row gap-6 items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
-                  value={subject}
-                  onChange={(event) => setSubject(event.target.value)}
-                  placeholder="Optional, for example Biology or CS Fundamentals"
-                  className="w-full px-4 py-3 bg-wellness-bg border border-transparent rounded-xl focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/20 outline-none text-sm transition-all shadow-sm"
+                  placeholder="Search resources, subjects, topics..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-wellness-blue/10 focus:border-wellness-blue outline-none transition-all font-medium"
                 />
               </div>
-
-              {statusMessage ? (
-                <div className="mt-4 rounded-2xl border border-wellness-green/30 bg-wellness-green-light/40 px-4 py-3 text-sm text-wellness-green">
-                  {statusMessage}
-                </div>
-              ) : null}
-              {errorMessage ? (
-                <div className="mt-4 rounded-2xl border border-wellness-peach/30 bg-wellness-peach-light/30 px-4 py-3 text-sm text-wellness-peach">
-                  {errorMessage}
-                </div>
-              ) : null}
-            </div>
-          )}
-
-          {isLoadingResource ? (
-            <div className="card p-16 flex flex-col items-center justify-center text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-wellness-blue mb-4" />
-              <p className="text-sm text-wellness-text-sec">Loading summary...</p>
-            </div>
-          ) : selectedResource ? (
-            <div className="card overflow-hidden">
-              <div className="bg-gradient-to-r from-wellness-blue-light/50 to-white p-8 border-b border-wellness-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="bg-white p-2 rounded-lg shadow-sm">
-                      <FileText className="w-6 h-6 text-wellness-blue" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-wellness-text">{selectedResource.originalFileName}</h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-wellness-green-light text-wellness-green text-xs font-bold rounded-md">
-                      {selectedResource.subject || 'General'}
-                    </span>
-                    {selectedTags.map((tag) => (
-                      <span key={tag} className="px-3 py-1 bg-wellness-peach-light/50 text-wellness-peach text-xs font-bold rounded-md">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <button type="button" onClick={handleRegenerate} disabled={isSubmitting} className="btn-secondary flex items-center gap-2 text-sm">
-                    <RefreshCcw className={`w-4 h-4 ${isSubmitting ? 'animate-spin' : ''}`} />
-                    Regenerate
-                  </button>
-                  <button type="button" onClick={handleDownload} className="btn-primary flex items-center gap-2 text-sm shadow-md shadow-wellness-blue/20">
-                    <Download className="w-4 h-4" />
-                    Download PDF
-                  </button>
-                  <button type="button" onClick={handleDelete} className="px-4 py-2 rounded-xl border border-wellness-peach/20 text-wellness-peach hover:bg-wellness-peach-light/30 transition-colors flex items-center gap-2 text-sm font-medium">
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-8 space-y-6 bg-wellness-bg/30">
-                <div className="bg-white border border-wellness-border rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-wellness-text mb-3">Concise Summary</h3>
-                  <p className="text-base text-wellness-text-sec font-medium leading-relaxed">{selectedResource.summary}</p>
-                </div>
-
-                <div className="bg-white border border-wellness-border rounded-2xl overflow-hidden shadow-sm">
-                  <button type="button" onClick={() => toggleSection('keyPoints')} className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors">
-                    <h3 className="text-lg font-bold text-wellness-text flex items-center gap-3">
-                      <div className="bg-wellness-peach-light/50 p-1.5 rounded-lg">📌</div>
-                      Key Points
-                    </h3>
-                    {expandedSections.keyPoints ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
-                  </button>
-                  {expandedSections.keyPoints ? (
-                    <div className="p-6 pt-0 border-t border-wellness-border/50">
-                      <ul className="space-y-4 mt-4">
-                        {selectedResource.keyPoints.map((point) => (
-                          <li key={point} className="flex items-start gap-3">
-                            <div className="w-1.5 h-1.5 rounded-full bg-wellness-blue mt-2 shrink-0" />
-                            <span className="text-base text-wellness-text-sec font-medium leading-relaxed">{point}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="bg-white border border-wellness-border rounded-2xl overflow-hidden shadow-sm">
-                  <button type="button" onClick={() => toggleSection('definitions')} className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors">
-                    <h3 className="text-lg font-bold text-wellness-text flex items-center gap-3">
-                      <div className="bg-wellness-blue-light p-1.5 rounded-lg">📖</div>
-                      Important Definitions
-                    </h3>
-                    {expandedSections.definitions ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
-                  </button>
-                  {expandedSections.definitions ? (
-                    <div className="p-6 pt-0 border-t border-wellness-border/50 grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      {selectedResource.definitions.map((item) => (
-                        <div key={`${item.term}-${item.definition}`} className="bg-wellness-bg/50 p-4 rounded-xl border border-wellness-border/50">
-                          <span className="font-bold text-wellness-blue text-sm block mb-1">{item.term}</span>
-                          <p className="text-sm text-wellness-text-sec font-medium leading-relaxed">{item.definition}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="bg-white border border-wellness-border rounded-2xl overflow-hidden shadow-sm">
-                  <button type="button" onClick={() => toggleSection('keywords')} className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors">
-                    <h3 className="text-lg font-bold text-wellness-text flex items-center gap-3">
-                      <div className="bg-wellness-green-light p-1.5 rounded-lg">🔑</div>
-                      Keywords
-                    </h3>
-                    {expandedSections.keywords ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
-                  </button>
-                  {expandedSections.keywords ? (
-                    <div className="p-6 pt-0 border-t border-wellness-border/50 mt-4">
-                      <div className="flex flex-wrap gap-2">
-                        {selectedResource.keywords.map((keyword) => (
-                          <span key={keyword} className="px-3 py-1.5 bg-wellness-bg border border-wellness-border text-wellness-text-sec text-xs font-bold rounded-lg">
-                            {keyword}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="card p-16 text-center text-sm text-wellness-text-sec">
-              Upload a document to generate your first AI summary.
-            </div>
-          )}
-        </div>
-
-        <div className="lg:col-span-4 space-y-6">
-          <div className="card p-6 bg-gradient-to-b from-white to-wellness-bg/50">
-            <h3 className="font-bold text-wellness-text mb-5 flex items-center gap-2 text-lg">
-              <div className="bg-wellness-blue-light p-1.5 rounded-lg text-wellness-blue">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              Stored Summaries
-            </h3>
-
-            <div className="space-y-4">
-              {isLoadingList ? (
-                <div className="text-sm text-wellness-text-sec">Loading resources...</div>
-              ) : resources.length ? (
-                resources.map((resource) => (
+              
+              <div className="flex overflow-x-auto pb-2 gap-2 w-full lg:w-auto scrollbar-hide">
+                {RESOURCE_TYPES.map((type) => (
                   <button
-                    key={resource.id}
-                    type="button"
-                    onClick={() => setSelectedResourceId(resource.id)}
-                    className={`w-full text-left p-4 bg-white border rounded-xl transition-all group ${
-                      selectedResourceId === resource.id
-                        ? 'border-wellness-blue shadow-md'
-                        : 'border-wellness-border hover:border-wellness-blue/50 hover:shadow-md'
+                    key={type.id}
+                    onClick={() => setSelectedType(type.id)}
+                    className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold whitespace-nowrap transition-all border ${
+                      selectedType === type.id
+                        ? 'bg-wellness-blue/10 border-wellness-blue text-wellness-blue'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-wellness-blue/30'
                     }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="bg-wellness-bg p-2 rounded-lg group-hover:bg-wellness-blue-light transition-colors shrink-0">
-                        <FileText className="w-5 h-5 text-wellness-text-muted group-hover:text-wellness-blue transition-colors" />
+                    <type.icon className="w-4 h-4" />
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Resources Grid */}
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="w-10 h-10 animate-spin text-wellness-blue" />
+                <p className="text-slate-500 font-medium">Fetching the best resources for you...</p>
+              </div>
+            ) : resources.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {resources.map((res) => (
+                  <motion.div
+                    layout
+                    key={res.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 group flex flex-col h-full"
+                  >
+                    {/* Cover Image */}
+                    <div className="relative aspect-square overflow-hidden bg-slate-100">
+                      <img
+                        src={res.thumbnailUrl || getPlaceholderCover(res.resourceType)}
+                        alt={res.originalFileName}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute top-4 right-4 backdrop-blur-md bg-white/30 p-2 rounded-xl border border-white/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <button 
+                           onClick={() => handleDelete(res.id)}
+                           className="text-white hover:text-red-300"
+                          >
+                           <Trash2 className="w-5 h-5" />
+                         </button>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-wellness-text line-clamp-1 mb-1 group-hover:text-wellness-blue transition-colors">
-                          {resource.originalFileName}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <p className="text-white text-xs font-medium line-clamp-2">
+                          {res.description || "No additional description provided."}
                         </p>
-                        <p className="text-[10px] font-bold text-wellness-text-muted uppercase tracking-wider mb-2">
-                          {formatDateLabel(resource.createdAt)}
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="text-[10px] font-bold px-2 py-0.5 bg-wellness-bg text-wellness-text-sec rounded-md border border-wellness-border/50">
-                            {resource.subject || 'General'}
-                          </span>
-                          {resource.tags.slice(0, 2).map((tag) => (
-                            <span key={tag} className="text-[10px] font-bold px-2 py-0.5 bg-wellness-bg text-wellness-text-sec rounded-md border border-wellness-border/50">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
                       </div>
                     </div>
-                  </button>
-                ))
-              ) : (
-                <div className="text-sm text-wellness-text-sec">No summaries saved yet.</div>
-              )}
+
+                    {/* Info */}
+                    <div className="p-6 flex flex-col flex-grow text-center">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                         {res.resourceType === 'video' && <Video className="w-4 h-4 text-wellness-blue" />}
+                         {res.resourceType === 'audio' && <Music className="w-4 h-4 text-wellness-blue" />}
+                         {res.resourceType === 'pdf' && <FileText className="w-4 h-4 text-wellness-blue" />}
+                         {res.resourceType === 'ebook' && <Book className="w-4 h-4 text-wellness-blue" />}
+                         <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                           {res.resourceType}
+                         </span>
+                      </div>
+                      
+                      <h3 className="text-lg font-bold text-slate-800 line-clamp-2 mb-6 group-hover:text-wellness-blue transition-colors leading-tight min-h-[3.5rem]">
+                        {res.subject || res.originalFileName}
+                      </h3>
+
+                      <div className="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-2">
+                        <button
+                          onClick={() => handleDownload(res.id, res.originalFileName)}
+                          className="w-full bg-[#6EB544] hover:bg-[#5da038] text-white py-3 rounded-xl font-extrabold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-colors shadow-md hover:shadow-lg active:scale-[0.98]"
+                        >
+                          <Download className="w-4 h-4 mt-[-2px]" />
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white border-2 border-dashed border-slate-200 rounded-[3rem] p-20 text-center flex flex-col items-center max-w-2xl mx-auto">
+                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                  <Layers className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-700 mb-2">Shelf is currently empty</h3>
+                <p className="text-slate-400 font-medium">Be the first to share resources with your batchmates!</p>
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="upload"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="max-w-3xl mx-auto"
+          >
+            <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100">
+              <div className="bg-wellness-blue p-8 flex items-center gap-4">
+                 <div className="p-3 bg-white/20 rounded-2xl border border-white/30">
+                   <UploadCloud className="w-8 h-8 text-white" />
+                 </div>
+                 <div>
+                   <h2 className="text-2xl font-extrabold text-white">Share Resource</h2>
+                   <p className="text-white/70 font-medium">Upload material for your faculty & batch</p>
+                 </div>
+              </div>
+
+              <form onSubmit={handleUpload} className="p-8 lg:p-12 space-y-8">
+                {/* File Dropzone */}
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative dashed-border-animate p-10 bg-slate-50 text-center cursor-pointer group rounded-3xl hover:bg-slate-100/50 transition-colors"
+                >
+                  <input 
+                    ref={fileInputRef} 
+                    type="file" 
+                    onChange={handleFileSelect}
+                    className="hidden" 
+                  />
+                  
+                  {selectedFile ? (
+                    <div className="flex flex-col items-center">
+                      <div className="w-16 h-16 bg-wellness-green-light/50 text-wellness-green rounded-full flex items-center justify-center mb-4">
+                        <FileText className="w-8 h-8" />
+                      </div>
+                      <p className="font-bold text-slate-700">{selectedFile.name}</p>
+                      <p className="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Ready to upload
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center">
+                       <div className="w-16 h-16 bg-white text-wellness-blue rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                        <Plus className="w-8 h-8" />
+                      </div>
+                      <p className="font-bold text-slate-700 text-lg">Choose a file or drag it here</p>
+                      <p className="text-slate-400 font-medium mt-1">PDF, Video (MP4), Audio (MP3), or E-Books</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Subject / Title</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Operating Systems Final Prep"
+                      value={formData.subject}
+                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                      className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-wellness-blue/10 outline-none font-medium transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Resource Category</label>
+                    <div className="relative">
+                      <select
+                        value={formData.resourceType}
+                        onChange={(e) => setFormData({...formData, resourceType: e.target.value})}
+                        className="w-full appearance-none px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-wellness-blue/10 outline-none font-medium transition-all"
+                      >
+                        <option value="pdf">📄 PDF Notes</option>
+                        <option value="video">🎥 Video Lesson</option>
+                        <option value="audio">🔊 Audio Material</option>
+                        <option value="ebook">📚 E-Book</option>
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                   <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Faculty</label>
+                    <select
+                      value={formData.faculty}
+                      onChange={(e) => setFormData({...formData, faculty: e.target.value})}
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-wellness-blue shadow-sm font-medium"
+                    >
+                      {FACULTIES.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                   <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Year</label>
+                    <select
+                      value={formData.year}
+                      onChange={(e) => setFormData({...formData, year: e.target.value})}
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-wellness-blue shadow-sm font-medium"
+                    >
+                      {YEARS.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                   <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Semester</label>
+                    <select
+                      value={formData.semester}
+                      onChange={(e) => setFormData({...formData, semester: e.target.value})}
+                      className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-wellness-blue shadow-sm font-medium"
+                    >
+                      {SEMESTERS.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 ml-1">Description (Optional)</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Briefly describe what's in this resource..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-4 focus:ring-wellness-blue/10 outline-none font-medium transition-all resize-none"
+                  />
+                </div>
+
+                {errorMessage && (
+                  <div className="p-4 bg-peach-50 text-wellness-peach rounded-2xl flex items-center gap-3 font-medium text-sm border border-wellness-peach/20">
+                     <Sparkles className="w-5 h-5 shrink-0" />
+                     {errorMessage}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-wellness-blue text-white py-5 rounded-[2rem] font-extrabold text-lg shadow-xl shadow-wellness-blue/20 hover:shadow-2xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      Uploading & Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-6 h-6" />
+                      Confirm & Upload
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style jsx>{`
+        .dashed-border-animate {
+          background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23CBD5E1' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+          border-radius: 24px;
+        }
+        
+        .dashed-border-animate:hover {
+          background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%236FA5A5' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+    </div>
   );
 }

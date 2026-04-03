@@ -79,8 +79,33 @@ const resourceSchema = new mongoose.Schema(
     },
     processingStatus: {
       type: String,
-      enum: ["completed", "failed"],
+      enum: ["pending", "completed", "failed"],
       default: "completed",
+    },
+    year: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    semester: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    resourceType: {
+      type: String,
+      enum: ["video", "audio", "pdf", "ebook"],
+      required: true,
+      index: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    thumbnailUrl: {
+      type: String,
+      default: "",
     },
     errorMessage: {
       type: String,

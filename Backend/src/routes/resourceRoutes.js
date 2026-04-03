@@ -19,6 +19,11 @@ function formatResource(resource) {
     subject: resource.subject,
     studentId: resource.studentId,
     faculty: resource.faculty,
+    year: resource.year,
+    semester: resource.semester,
+    resourceType: resource.resourceType,
+    description: resource.description,
+    thumbnailUrl: resource.thumbnailUrl,
     summary: resource.summary,
     keyPoints: resource.keyPoints,
     definitions: resource.definitions,
@@ -188,15 +193,32 @@ router.use(protect);
 router.get("/", async (req, res) => {
   try {
     const search = req.query.search?.trim();
-    const filter = { user: req.user._id };
+    const type = req.query.type?.trim(); // video, audio, pdf, ebook
+    
+    // Default filter: match user's faculty, year, and semester
+    let filter = { 
+       faculty: req.user.faculty,
+       year: req.user.year,
+       semester: req.user.semester
+    };
+
+    // If user is admin, they can see everything unless they search/filter specifically
+    if (req.user.role === "admin") {
+      filter = {};
+    }
 
     if (search) {
       filter.$or = [
         { originalFileName: { $regex: search, $options: "i" } },
         { subject: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
         { tags: { $elemMatch: { $regex: search, $options: "i" } } },
         { keywords: { $elemMatch: { $regex: search, $options: "i" } } },
       ];
+    }
+
+    if (type) {
+      filter.resourceType = type;
     }
 
     const resources = await Resource.find(filter).sort({ createdAt: -1 });
@@ -218,45 +240,69 @@ router.post(
 
     try {
       if (!req.file) {
-        return res.status(400).json({ message: "Please upload a PDF, DOCX, or TXT file." });
+        return res.status(400).json({ message: "Please upload a file." });
       }
 
       filePath = req.file.path;
       const extension = path.extname(req.file.originalname).toLowerCase();
-      const extractedText = (await extractTextFromFile(filePath, extension)).trim();
+      
+      let extractedText = "";
+      let aiSummary = {
+        summary: "",
+        keyPoints: [],
+        definitions: [],
+        keywords: [],
+        tags: [],
+      };
 
-      if (!extractedText) {
-        throw new Error("No readable text could be extracted from this file.");
-      }
-
+      const resourceType = req.body.resourceType || "pdf";
+      const faculty = req.body.faculty || req.user.faculty;
+      const year = req.body.year || req.user.year;
+      const semester = req.body.semester || req.user.semester;
+      const description = req.body.description || "";
       const subject = validateSubject(req.body.subject);
-      const aiSummary = await generateGeminiSummary(extractedText, subject);
+
+      // Only attempt text extraction for text-based files
+      if ([".txt", ".docx", ".pdf"].includes(extension)) {
+        try {
+          extractedText = (await extractTextFromFile(filePath, extension)).trim();
+          if (extractedText) {
+            aiSummary = await generateGeminiSummary(extractedText, subject);
+          }
+        } catch (err) {
+          console.warn("AI generation failed or file not readable, saving without AI processing:", err.message);
+        }
+      }
 
       const resource = await Resource.create({
         user: req.user._id,
         studentId: req.user.studentId,
-        faculty: req.user.faculty,
+        faculty,
+        year,
+        semester,
+        resourceType,
+        description,
         originalFileName: req.file.originalname,
         storedFilePath: req.file.path,
         mimeType: req.file.mimetype || "application/octet-stream",
         subject,
-        extractedText,
+        extractedText: extractedText || "N/A",
         ...aiSummary,
-        processingStatus: "completed",
+        processingStatus: extractedText ? "completed" : "pending",
       });
 
       await createNotification({
         user: req.user._id,
         type: "resource_ready",
         module: "resources",
-        title: "Summary ready",
-        message: `${resource.originalFileName} was summarized successfully.`,
+        title: "Resource uploaded",
+        message: `${resource.originalFileName} is now available in the hub.`,
         linkPage: "resources",
         resource: resource._id,
       });
 
       return res.status(201).json({
-        message: "Resource summarized successfully.",
+        message: "Resource uploaded successfully.",
         resource: formatResource(resource),
       });
     } catch (error) {

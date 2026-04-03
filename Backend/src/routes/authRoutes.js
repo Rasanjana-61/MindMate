@@ -84,6 +84,18 @@ function validateProfileUpdate(payload) {
     }
   }
 
+  if (payload.faculty && !FACULTIES.includes(payload.faculty)) {
+    errors.faculty = "Select a valid faculty.";
+  }
+
+  if (payload.year && !YEARS.includes(payload.year)) {
+    errors.year = "Select a valid academic year.";
+  }
+
+  if (payload.semester && !SEMESTERS.includes(payload.semester)) {
+    errors.semester = "Select a valid semester.";
+  }
+
   return errors;
 }
 
@@ -215,6 +227,10 @@ router.put("/profile", protect, async (req, res) => {
     req.user.fullName = req.body.fullName.trim();
     req.user.phone = req.body.phone?.trim() || "";
     req.user.bio = req.body.bio?.trim() || "";
+    
+    if (req.body.faculty) req.user.faculty = req.body.faculty;
+    if (req.body.year) req.user.year = req.body.year;
+    if (req.body.semester) req.user.semester = req.body.semester;
 
     req.user.preferences = {
       ...currentPreferences,
