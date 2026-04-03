@@ -297,15 +297,23 @@ async function markPeerNotificationsRead() {
   });
 }
 
-async function fetchResources(search = "") {
-  const query = encodeURIComponent(search);
-  return request(`/resources?search=${query}`);
+async function fetchResources(search = "", type = "") {
+  const query = new URLSearchParams();
+  if (search) query.append("search", search);
+  if (type) query.append("type", type);
+  return request(`/resources?${query.toString()}`);
 }
 
-async function uploadResource(file, subject = "") {
+async function uploadResource(file, metadata = {}) {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("subject", subject);
+  
+  if (metadata.subject) formData.append("subject", metadata.subject);
+  if (metadata.resourceType) formData.append("resourceType", metadata.resourceType);
+  if (metadata.faculty) formData.append("faculty", metadata.faculty);
+  if (metadata.year) formData.append("year", metadata.year);
+  if (metadata.semester) formData.append("semester", metadata.semester);
+  if (metadata.description) formData.append("description", metadata.description);
 
   return request("/resources", {
     method: "POST",

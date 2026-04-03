@@ -17,6 +17,9 @@ export function Profile({ user, onLogout, onUserUpdate }) {
   const [profileForm, setProfileForm] = useState({
     fullName: user.fullName || '',
     bio: user.bio || '',
+    faculty: user.faculty || '',
+    year: user.year || '',
+    semester: user.semester || '',
   });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -37,6 +40,9 @@ export function Profile({ user, onLogout, onUserUpdate }) {
     setProfileForm({
       fullName: user.fullName || '',
       bio: user.bio || '',
+      faculty: user.faculty || '',
+      year: user.year || '',
+      semester: user.semester || '',
     });
   }, [user]);
 
@@ -55,6 +61,9 @@ export function Profile({ user, onLogout, onUserUpdate }) {
       const response = await updateProfile({
         fullName: profileForm.fullName,
         bio: profileForm.bio,
+        faculty: profileForm.faculty,
+        year: profileForm.year,
+        semester: profileForm.semester,
       });
       onUserUpdate(response.user);
       setProfileMessage(response.message);
@@ -207,11 +216,37 @@ export function Profile({ user, onLogout, onUserUpdate }) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-wellness-text mb-2">Academic Access</label>
+                <label className="block text-sm font-bold text-wellness-text mb-2">Academic Information</label>
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="p-3 bg-wellness-bg rounded-xl text-center text-xs font-bold text-wellness-text-sec">{user.faculty}</div>
-                  <div className="p-3 bg-wellness-bg rounded-xl text-center text-xs font-bold text-wellness-text-sec">{user.year}</div>
-                  <div className="p-3 bg-wellness-bg rounded-xl text-center text-xs font-bold text-wellness-text-sec">{user.semester}</div>
+                  <select
+                    value={profileForm.faculty}
+                    onChange={(e) => handleProfileFieldChange('faculty', e.target.value)}
+                    className="p-3 bg-wellness-bg rounded-xl text-center text-xs font-bold text-wellness-text-sec border-none outline-none focus:ring-2 focus:ring-wellness-blue/20"
+                  >
+                    <option value="FOC">FOC</option>
+                    <option value="FOB">FOB</option>
+                    <option value="FOE">FOE</option>
+                    <option value="FAS">FAS</option>
+                    <option value="FOL">FOL</option>
+                  </select>
+                  <select
+                    value={profileForm.year}
+                    onChange={(e) => handleProfileFieldChange('year', e.target.value)}
+                    className="p-3 bg-wellness-bg rounded-xl text-center text-xs font-bold text-wellness-text-sec border-none outline-none focus:ring-2 focus:ring-wellness-blue/20"
+                  >
+                    <option value="Year 1">Year 1</option>
+                    <option value="Year 2">Year 2</option>
+                    <option value="Year 3">Year 3</option>
+                    <option value="Year 4">Year 4</option>
+                  </select>
+                  <select
+                    value={profileForm.semester}
+                    onChange={(e) => handleProfileFieldChange('semester', e.target.value)}
+                    className="p-3 bg-wellness-bg rounded-xl text-center text-xs font-bold text-wellness-text-sec border-none outline-none focus:ring-2 focus:ring-wellness-blue/20"
+                  >
+                    <option value="Semester 1">Sem 1</option>
+                    <option value="Semester 2">Sem 2</option>
+                  </select>
                 </div>
               </div>
             </div>
