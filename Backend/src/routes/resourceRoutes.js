@@ -24,6 +24,7 @@ function formatResource(resource) {
     resourceType: resource.resourceType,
     description: resource.description,
     thumbnailUrl: resource.thumbnailUrl,
+    status: resource.status,
     summary: resource.summary,
     keyPoints: resource.keyPoints,
     definitions: resource.definitions,
@@ -31,6 +32,7 @@ function formatResource(resource) {
     tags: resource.tags,
     processingStatus: resource.processingStatus,
     errorMessage: resource.errorMessage,
+    userId: resource.user,
     createdAt: resource.createdAt,
     updatedAt: resource.updatedAt,
   };
@@ -195,26 +197,44 @@ router.get("/", async (req, res) => {
     const search = req.query.search?.trim();
     const type = req.query.type?.trim(); // video, audio, pdf, ebook
     
-    // Default filter: match user's faculty, year, and semester
-    let filter = { 
-       faculty: req.user.faculty,
-       year: req.user.year,
-       semester: req.user.semester
-    };
+    let filter = {};
 
-    // If user is admin, they can see everything unless they search/filter specifically
     if (req.user.role === "admin") {
+      // Admins see everything
       filter = {};
+    } else {
+      // Students see approved resources for their batch, 
+      // AND their own resources (regardless of status)
+      filter = {
+        $or: [
+          { 
+            faculty: req.user.faculty, 
+            year: req.user.year, 
+            semester: req.user.semester,
+            status: "approved" 
+          },
+          { user: req.user._id }
+        ]
+      };
     }
 
     if (search) {
-      filter.$or = [
-        { originalFileName: { $regex: search, $options: "i" } },
-        { subject: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { tags: { $elemMatch: { $regex: search, $options: "i" } } },
-        { keywords: { $elemMatch: { $regex: search, $options: "i" } } },
-      ];
+      const searchFilter = {
+        $or: [
+          { originalFileName: { $regex: search, $options: "i" } },
+          { subject: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+          { tags: { $elemMatch: { $regex: search, $options: "i" } } },
+          { keywords: { $elemMatch: { $regex: search, $options: "i" } } },
+        ]
+      };
+      
+      // Merge search filter with existing profile filter
+      if (Object.keys(filter).length === 0) {
+        filter = searchFilter;
+      } else {
+        filter = { $and: [filter, searchFilter] };
+      }
     }
 
     if (type) {
@@ -321,10 +341,15 @@ router.post(
 
 router.get("/:id", async (req, res) => {
   try {
-    const resource = await Resource.findOne({ _id: req.params.id, user: req.user._id });
+    const query = { _id: req.params.id };
+    if (req.user.role !== "admin") {
+      query.user = req.user._id;
+    }
+
+    const resource = await Resource.findOne(query);
 
     if (!resource) {
-      return res.status(404).json({ message: "Resource not found." });
+      return res.status(404).json({ message: "Resource not found or unauthorized." });
     }
 
     return res.json({ resource: formatResource(resource) });
@@ -370,20 +395,25 @@ router.put("/:id/regenerate", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const resource = await Resource.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    const query = { _id: req.params.id };
+    if (req.user.role !== "admin") {
+      query.user = req.user._id;
+    }
+
+    const resource = await Resource.findOneAndDelete(query);
 
     if (!resource) {
-      return res.status(404).json({ message: "Resource not found." });
+      return res.status(404).json({ message: "Resource not found or unauthorized." });
     }
 
     fs.promises.unlink(resource.storedFilePath).catch(() => {});
 
     await createNotification({
-      user: req.user._id,
+      user: resource.user, // Notify the original owner!
       type: "resource_deleted",
       module: "resources",
-      title: "Resource deleted",
-      message: `${resource.originalFileName} was removed from your library.`,
+      title: "Resource removed",
+      message: `${resource.originalFileName} was removed from the hub.`,
       linkPage: "resources",
     });
 
@@ -396,10 +426,15 @@ router.delete("/:id", async (req, res) => {
 
 router.get("/:id/download", async (req, res) => {
   try {
-    const resource = await Resource.findOne({ _id: req.params.id, user: req.user._id });
+    const query = { _id: req.params.id };
+    if (req.user.role !== "admin") {
+      query.user = req.user._id;
+    }
+
+    const resource = await Resource.findOne(query);
 
     if (!resource) {
-      return res.status(404).json({ message: "Resource not found." });
+      return res.status(404).json({ message: "Resource not found or unauthorized." });
     }
 
     const doc = new PDFDocument({ margin: 50 });

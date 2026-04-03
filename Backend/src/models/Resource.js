@@ -107,6 +107,12 @@ const resourceSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      index: true,
+    },
     errorMessage: {
       type: String,
       default: "",

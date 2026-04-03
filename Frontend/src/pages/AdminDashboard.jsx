@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { adminAPI } from '../lib/adminService'
 import toast from 'react-hot-toast'
-import { AlertCircle, BarChart3, Flag, Trash2, Users, TrendingUp, MessageSquare, UserCheck, Eye } from 'lucide-react'
+import { AlertCircle, BarChart3, Flag, Trash2, Users, TrendingUp, MessageSquare, UserCheck, Eye, BookOpen, Check, X } from 'lucide-react'
 
 // ── Mini bar chart component ────────────────────────────────────────────────
 function BarChart({ data, maxVal }) {
@@ -85,6 +85,10 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([])
   const [reportsLoading, setReportsLoading] = useState(false)
   const [usersLoading, setUsersLoading] = useState(false)
+  const [resources, setResources] = useState([])
+  const [resourcesLoading, setResourcesLoading] = useState(false)
+  const [approvingId, setApprovingId] = useState(null)
+  const [rejectingId, setRejectingId] = useState(null)
 
   useEffect(() => {
     adminAPI.getStats()
@@ -121,9 +125,22 @@ export default function AdminDashboard() {
     }
   }
 
+  const loadResources = async () => {
+    setResourcesLoading(true)
+    try {
+      const r = await adminAPI.getPendingResources()
+      setResources(r.data)
+    } catch {
+      toast.error('Failed to load pending resources')
+    } finally {
+      setResourcesLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (tab === 'reports' && !reports.length) loadReports()
     if (tab === 'users' && !users.length) loadUsers()
+    if (tab === 'resources' && !resources.length) loadResources()
   }, [tab])
 
   const handleResolve = async (postId) => {
@@ -172,6 +189,48 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleApproveResource = async (id) => {
+    setApprovingId(id)
+    try {
+      const r = await adminAPI.approveResource(id)
+      setResources(p => p.filter(res => res._id !== id))
+      toast.success(r.message)
+      // Update global stats
+      setStats(prev => ({
+        ...prev,
+        summary: {
+          ...prev.summary,
+          pendingResources: Math.max(0, prev.summary.pendingResources - 1)
+        }
+      }))
+    } catch {
+      toast.error('Failed to approve resource')
+    } finally {
+      setApprovingId(null)
+    }
+  }
+
+  const handleRejectResource = async (id) => {
+    setRejectingId(id)
+    try {
+      const r = await adminAPI.rejectResource(id)
+      setResources(p => p.filter(res => res._id !== id))
+      toast.success(r.message)
+      // Update global stats
+      setStats(prev => ({
+        ...prev,
+        summary: {
+          ...prev.summary,
+          pendingResources: Math.max(0, prev.summary.pendingResources - 1)
+        }
+      }))
+    } catch {
+      toast.error('Failed to reject resource')
+    } finally {
+      setRejectingId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -181,7 +240,8 @@ export default function AdminDashboard() {
   }
 
   const s = stats?.summary || {}
-  const pendingReports = s.reportedQuestions || 0
+  const pendingReports = s.reportedPosts || 0
+  const pendingResources = s.pendingResources || 0
 
   return (
     <div className="max-w-7xl mx-auto animate-fade-in">
@@ -204,6 +264,7 @@ export default function AdminDashboard() {
         <TabBtn active={tab === 'overview'} onClick={() => setTab('overview')} icon={BarChart3} label="Overview" />
         <TabBtn active={tab === 'activity'} onClick={() => setTab('activity')} icon={TrendingUp} label="Activity" />
         <TabBtn active={tab === 'reports'} onClick={() => setTab('reports')} icon={Flag} label="Reports" badge={pendingReports} />
+        <TabBtn active={tab === 'resources'} onClick={() => setTab('resources')} icon={BookOpen} label="Resources" badge={pendingResources} />
         <TabBtn active={tab === 'users'} onClick={() => setTab('users')} icon={Users} label="Users" />
       </div>
 
@@ -215,6 +276,7 @@ export default function AdminDashboard() {
             <StatCard icon={Users} label="Total Students" value={s.totalUsers || 0} color="blue" sub={`+${s.newUsersWeek || 0} this week`} trend={s.newUsersWeek} />
             <StatCard icon={MessageSquare} label="Total Posts" value={s.totalPosts || 0} color="purple" sub={`${s.postsWeek || 0} this week`} />
             <StatCard icon={UserCheck} label="Total Replies" value={s.totalReplies || 0} color="green" sub="all time" />
+            <StatCard icon={BookOpen} label="Pending Resources" value={s.pendingResources || 0} color={s.pendingResources > 0 ? 'amber' : 'green'} sub="need review" />
             <StatCard icon={Flag} label="Pending Reports" value={s.reportedPosts || 0} color={s.reportedPosts > 0 ? 'red' : 'amber'} sub="need review" />
           </div>
 
@@ -455,6 +517,101 @@ export default function AdminDashboard() {
                       {togglingId === u._id ? '...' : (u.isActive ? 'Deactivate' : 'Activate')}
                     </button>
                   )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── RESOURCES TAB ─────────────────────────────────────────────── */}
+      {tab === 'resources' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-wellness-text-sec">
+              {resourcesLoading ? 'Loading...' : `${resources.length} resources pending approval`}
+            </p>
+            <button onClick={loadResources} className="text-xs px-3 py-2 rounded-lg text-wellness-blue border border-wellness-blue/30 hover:bg-wellness-blue/10 transition">
+              Refresh
+            </button>
+          </div>
+
+          {resourcesLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="text-wellness-text-sec">Loading pending resources...</div>
+            </div>
+          ) : resources.length === 0 ? (
+            <div className="bg-surface-800 border border-surface-700 rounded-2xl text-center py-12">
+              <BookOpen className="text-green-400 mx-auto mb-3" size={48} />
+              <div className="font-bold text-white mb-1">Queue Empty</div>
+              <p className="text-wellness-text-muted text-sm">No materials awaiting approval</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {resources.map(res => (
+                <div key={res._id} className="bg-surface-800 border border-surface-700 rounded-2xl overflow-hidden hover:border-wellness-blue/30 transition-all group">
+                  <div className="p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-wellness-blue/10 flex items-center justify-center text-wellness-blue">
+                          <BookOpen size={20} />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white truncate max-w-[200px]">{res.subject || res.originalFileName}</h4>
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-wellness-text-muted">{res.resourceType}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-wellness-blue bg-wellness-blue/10 px-2 py-1 rounded-full">{res.faculty}</span>
+                        <p className="text-[10px] text-wellness-text-muted mt-1">{res.year} • {res.semester}</p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-wellness-text-sec mb-4 line-clamp-2 italic">
+                      "{res.description || 'No description provided'}"
+                    </p>
+
+                    <div className="flex items-center gap-3 p-3 bg-surface-700 rounded-xl mb-4 border border-surface-600">
+                      <div className="w-8 h-8 rounded-full bg-wellness-blue-light/20 flex items-center justify-center text-wellness-blue text-xs font-bold">
+                        {res.user?.fullName?.charAt(0) || 'S'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-white truncate">{res.user?.fullName}</p>
+                        <p className="text-[10px] text-wellness-text-muted truncate">{res.user?.studentId}</p>
+                      </div>
+                      <div className="text-[10px] text-wellness-text-muted">
+                        {new Date(res.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleApproveResource(res._id)}
+                        disabled={approvingId === res._id || rejectingId === res._id}
+                        className="flex-1 py-2 rounded-xl bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-all font-bold text-xs flex items-center justify-center gap-2"
+                      >
+                        {approvingId === res._id ? <div className="w-3 h-3 border-2 border-green-400 border-t-transparent rounded-full animate-spin" /> : <Check size={14} />}
+                        Approve
+                      </button>
+                      <button 
+                         onClick={() => handleRejectResource(res._id)}
+                         disabled={approvingId === res._id || rejectingId === res._id}
+                        className="flex-1 py-2 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all font-bold text-xs flex items-center justify-center gap-2"
+                      >
+                         {rejectingId === res._id ? <div className="w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin" /> : <X size={14} />}
+                        Reject
+                      </button>
+                      <a 
+                        href={`http://localhost:5000${res.fileUrl}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-xl bg-surface-700 text-wellness-text-muted hover:text-white border border-surface-600 transition-all"
+                        title="Preview File"
+                      >
+                        <Eye size={16} />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

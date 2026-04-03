@@ -2,6 +2,7 @@ const { User } = require("../models/User");
 const { PeerPost } = require("../models/PeerPost");
 const { PeerReply } = require("../models/PeerReply");
 const Notification = require("../models/Notification");
+const { Resource } = require("../models/Resource");
 
 // GET /api/admin/stats
 const getStats = async (req, res, next) => {
@@ -10,12 +11,13 @@ const getStats = async (req, res, next) => {
     const day7 = new Date(now - 7 * 86400000);
     const day30 = new Date(now - 30 * 86400000);
 
-    const [totalUsers, newUsersWeek, totalPosts, postsWeek, postsMonth] = await Promise.all([
+    const [totalUsers, newUsersWeek, totalPosts, postsWeek, postsMonth, pendingResources] = await Promise.all([
       User.countDocuments({ isActive: true }),
       User.countDocuments({ createdAt: { $gte: day7 } }),
       PeerPost.countDocuments({ isDeleted: false }),
       PeerPost.countDocuments({ isDeleted: false, createdAt: { $gte: day7 } }),
       PeerPost.countDocuments({ isDeleted: false, createdAt: { $gte: day30 } }),
+      Resource.countDocuments({ status: "pending" }),
     ]);
 
     // Total replies
@@ -84,7 +86,8 @@ const getStats = async (req, res, next) => {
           postsMonth, 
           totalReplies, 
           reportedPosts, 
-          engagementRate 
+          engagementRate,
+          pendingResources
         },
         activity,
         categoryBreakdown,
@@ -191,4 +194,57 @@ const toggleUser = async (req, res, next) => {
   }
 };
 
-module.exports = { getStats, getReports, resolveReport, forceDeletePost, getUsers, toggleUser };
+// GET /api/admin/resources/pending
+const getPendingResources = async (req, res, next) => {
+  try {
+    const resources = await Resource.find({ status: "pending" })
+      .sort({ createdAt: -1 })
+      .populate("user", "fullName email studentId faculty");
+    
+    res.json({ success: true, count: resources.length, data: resources });
+  } catch (e) {
+    next(e);
+  }
+};
+
+// PUT /api/admin/resources/:id/approve
+const approveResource = async (req, res, next) => {
+  try {
+    const resource = await Resource.findById(req.params.id);
+    if (!resource) return res.status(404).json({ success: false, message: "Resource not found" });
+
+    resource.status = "approved";
+    await resource.save();
+
+    res.json({ success: true, message: "Resource approved and published!" });
+  } catch (e) {
+    next(e);
+  }
+};
+
+// PUT /api/admin/resources/:id/reject
+const rejectResource = async (req, res, next) => {
+  try {
+    const resource = await Resource.findById(req.params.id);
+    if (!resource) return res.status(404).json({ success: false, message: "Resource not found" });
+
+    resource.status = "rejected";
+    await resource.save();
+
+    res.json({ success: true, message: "Resource rejected." });
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = { 
+  getStats, 
+  getReports, 
+  resolveReport, 
+  forceDeletePost, 
+  getUsers, 
+  toggleUser,
+  getPendingResources,
+  approveResource,
+  rejectResource
+};
