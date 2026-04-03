@@ -1,28 +1,28 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import {
-  LayoutDashboardIcon,
-  PenLineIcon,
-  CalendarDaysIcon,
-  UserIcon,
-  LogOutIcon,
+  LayoutDashboard,
+  PenLine,
+  CalendarDays,
+  User,
+  LogOut,
 } from 'lucide-react'
 
 const navItems = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    icon: LayoutDashboardIcon,
+    icon: LayoutDashboard,
   },
   {
     id: 'journal',
     label: 'Journal',
-    icon: PenLineIcon,
+    icon: PenLine,
   },
   {
     id: 'history',
     label: 'History',
-    icon: CalendarDaysIcon,
+    icon: CalendarDays,
   },
 ]
 
@@ -97,7 +97,7 @@ export function Sidebar({ activeScreen, onNavigate }) {
             whileTap={{ scale: 0.98 }}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-olive hover:bg-sage-wash transition-colors"
           >
-            <UserIcon className="w-5 h-5" />
+            <User className="w-5 h-5" />
             <span className="font-medium text-sm">Profile</span>
           </motion.button>
           
@@ -106,7 +106,7 @@ export function Sidebar({ activeScreen, onNavigate }) {
             whileTap={{ scale: 0.98 }}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-blush hover:bg-blush/10 transition-colors"
           >
-            <LogOutIcon className="w-5 h-5" />
+            <LogOut className="w-5 h-5" />
             <span className="font-medium text-sm">Logout</span>
           </motion.button>
         </div>

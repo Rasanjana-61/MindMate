@@ -12,17 +12,12 @@ import {
   LineChart,
   Line,
 } from 'recharts'
-import { PenLineIcon, ChevronDownIcon } from 'lucide-react'
+import { ChevronDown, Frown, PenLine, Sprout, Zap } from 'lucide-react'
 import { getMoodEmoji } from '../data/moodData'
+import { groupEmotionScores } from '../utils/emotionUtils'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 const USER_ID = 'testUser123'
-
-const EMOTION_EMOJI = {
-  joy: '😊', anger: '😠', disgust: '🤢', fear: '😨',
-  sadness: '😢', surprise: '😲', neutral: '😐',
-}
-const EMOTION_KEYS = ["joy", "anger", "disgust", "fear", "sadness", "surprise", "neutral"]
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -64,6 +59,16 @@ export function Dashboard({ onNavigate }) {
 
   const stats = dashboardData?.stats || { avgMood: 0, avgStress: 0, avgEnergy: 0 }
   const emotionStats = dashboardData?.emotionStats || {}
+  const emotionBreakdown = useMemo(() => {
+    const source = Array.isArray(dashboardData?.emotionBreakdown)
+      ? dashboardData.emotionBreakdown
+      : Object.entries(emotionStats).map(([emotion, score]) => ({ emotion, score }))
+
+    return groupEmotionScores(source)
+  }, [dashboardData?.emotionBreakdown, emotionStats])
+
+  const visibleEmotionBreakdown = emotionBreakdown.slice(0, 8)
+  const hiddenEmotionCount = Math.max(0, emotionBreakdown.length - visibleEmotionBreakdown.length)
   const chartData = dashboardData?.chartData || []
   const streakCount = dashboardData?.streakCount || 0
 
@@ -73,8 +78,8 @@ export function Dashboard({ onNavigate }) {
       <motion.div variants={itemVariants} className="bg-warm-white rounded-card shadow-card p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink mb-1">
-              {getGreeting()}, Asitha 🌱
+            <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink mb-1 flex items-center gap-2">
+              {getGreeting()}, Asitha <Sprout className="w-6 h-6 text-sage" />
             </h1>
             <p className="text-olive">{formatTodayDate()}</p>
           </div>
@@ -84,7 +89,7 @@ export function Dashboard({ onNavigate }) {
             whileTap={{ scale: 0.98 }}
             className="flex items-center gap-2 bg-sage text-white px-6 py-3 rounded-full font-medium shadow-card hover:bg-sage/90 transition-colors"
           >
-            <PenLineIcon className="w-5 h-5" />
+            <PenLine className="w-5 h-5" />
             Write Today's Entry
           </motion.button>
         </div>
@@ -92,7 +97,7 @@ export function Dashboard({ onNavigate }) {
 
       {/* Encouragement */}
       <motion.div variants={itemVariants} className="bg-sage-light/40 rounded-card p-5 flex items-start gap-4">
-        <span className="text-2xl shrink-0">🌿</span>
+        <Sprout className="w-6 h-6 shrink-0 text-sage mt-0.5" />
         <p className="font-lora italic text-forest leading-relaxed">
           {streakCount > 0
             ? `You've logged your mood ${streakCount} days in a row - wonderful consistency! Keep nurturing your growth.`
@@ -116,7 +121,7 @@ export function Dashboard({ onNavigate }) {
               <option value="30D">Last 30 Days</option>
               <option value="1Y">Last Year</option>
             </select>
-            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-forest pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-forest pointer-events-none" />
           </div>
         </div>
 
@@ -124,7 +129,10 @@ export function Dashboard({ onNavigate }) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           <div className="bg-sage-wash/30 rounded-xl p-4 border-l-4 border-sage flex flex-wrap justify-between items-center gap-4 transition-all hover:bg-sage-wash/50 hover:shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{getMoodEmoji(Math.round(stats.avgMood))}</span>
+              {(() => {
+                const MoodIcon = getMoodEmoji(Math.round(stats.avgMood))
+                return <MoodIcon className="w-8 h-8 text-sage shrink-0" />
+              })()}
               <div>
                 <p className="font-lora text-3xl font-semibold text-ink">{stats.avgMood || '—'}</p>
                 <p className="text-sm text-stone uppercase tracking-wide">Avg Mood</p>
@@ -143,7 +151,7 @@ export function Dashboard({ onNavigate }) {
 
           <div className="bg-sage-wash/30 rounded-xl p-4 border-l-4 border-blush flex flex-wrap justify-between items-center gap-4 transition-all hover:bg-sage-wash/50 hover:shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">😰</span>
+              <Frown className="w-8 h-8 text-dusty-rose shrink-0" />
               <div>
                 <p className="font-lora text-3xl font-semibold text-ink">{stats.avgStress || '—'}</p>
                 <p className="text-sm text-stone uppercase tracking-wide">Avg Stress</p>
@@ -162,7 +170,7 @@ export function Dashboard({ onNavigate }) {
 
           <div className="bg-sage-wash/30 rounded-xl p-4 border-l-4 border-amber flex flex-wrap justify-between items-center gap-4 transition-all hover:bg-sage-wash/50 hover:shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">⚡</span>
+              <Zap className="w-8 h-8 text-amber shrink-0" />
               <div>
                 <p className="font-lora text-3xl font-semibold text-ink">{stats.avgEnergy || '—'}</p>
                 <p className="text-sm text-stone uppercase tracking-wide">Avg Energy</p>
@@ -187,7 +195,7 @@ export function Dashboard({ onNavigate }) {
             className="flex items-center gap-2 text-sm font-medium text-forest bg-sage-wash/50 hover:bg-sage-wash px-4 py-2 rounded-full transition-colors"
           >
             {isEmotionsExpanded ? 'Hide Emotion Breakdown' : 'Show Emotion Breakdown'}
-            <ChevronDownIcon className={`w-4 h-4 transition-transform duration-300 ${isEmotionsExpanded ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isEmotionsExpanded ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
@@ -199,19 +207,43 @@ export function Dashboard({ onNavigate }) {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-10 pt-2">
-                {EMOTION_KEYS.map(emotion => {
-                  const score = emotionStats[emotion] || 0
-                  const percentage = (score * 100).toFixed(1)
-                  return (
-                    <div key={emotion} className="bg-sage-wash/20 rounded-xl p-4 border border-sage-light/30 flex flex-col items-center justify-center gap-2 transition-all hover:bg-sage-wash/40 hover:shadow-sm">
-                      <span className="text-3xl">{EMOTION_EMOJI[emotion]}</span>
-                      <span className="text-xs text-stone uppercase tracking-wide">{emotion}</span>
-                      <span className="font-lora text-lg font-semibold text-ink">{percentage}%</span>
-                    </div>
-                  )
-                })}
+              <div className="space-y-3 mb-10 pt-2">
+                {visibleEmotionBreakdown.length > 0 ? (
+                  visibleEmotionBreakdown.map(({ key, label, Icon, fillClass, score }) => {
+                    const percentage = (score * 100).toFixed(1)
+
+                    return (
+                      <div key={key} className="bg-sage-wash/20 rounded-xl p-4 border border-sage-light/30 transition-all hover:bg-sage-wash/40 hover:shadow-sm">
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                          <span className="flex items-center gap-2 text-sm font-medium text-forest capitalize">
+                            <Icon className="w-4 h-4" />
+                            {label}
+                          </span>
+                          <span className="font-lora text-base font-semibold text-ink">{percentage}%</span>
+                        </div>
+                        <div className="h-2 bg-warm-white rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${percentage}%` }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                            className={`h-full rounded-full ${fillClass}`}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <div className="rounded-xl border border-dashed border-sage-light/40 bg-sage-wash/10 p-6 text-center text-sm text-stone">
+                    No emotion breakdown is available for this range yet.
+                  </div>
+                )}
               </div>
+
+              {hiddenEmotionCount > 0 && (
+                <p className="-mt-6 mb-10 text-xs text-stone text-center">
+                  Showing the top 8 emotions. {hiddenEmotionCount} more are available in the data.
+                </p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

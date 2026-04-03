@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SendIcon, ClockIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
-import { getMoodEmoji } from '../data/moodData'
+import { Send, Clock3, ChevronDown, ChevronUp, NotebookPen, PencilLine, Sprout, Lightbulb, TriangleAlert, Smile, Frown, Zap, FilePenLine } from 'lucide-react'
+import { getMoodEmoji, getMoodMeta } from '../data/moodData'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 const USER_ID = 'testUser123'
@@ -93,6 +93,7 @@ const itemVariants = {
 
 function EntryCard({ entry, index, defaultExpanded = false, hideToggle = false }) {
   const [expanded, setExpanded] = useState(defaultExpanded)
+  const moodMeta = getMoodMeta(entry.moodScore)
 
   const emotionScores =
     entry.emotionScores && typeof entry.emotionScores === 'object'
@@ -110,7 +111,10 @@ function EntryCard({ entry, index, defaultExpanded = false, hideToggle = false }
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-xl">{getMoodEmoji(entry.moodScore)}</span>
+            {(() => {
+              const MoodIcon = getMoodEmoji(entry.moodScore)
+              return <MoodIcon className={`w-5 h-5 ${moodMeta.className}`} />
+            })()}
             {entry.emotion && (
               <span className="text-xs bg-sage-wash px-2 py-0.5 rounded-full text-sage font-medium capitalize">
                 {entry.emotion}
@@ -118,7 +122,7 @@ function EntryCard({ entry, index, defaultExpanded = false, hideToggle = false }
             )}
           </div>
           <span className="text-xs text-stone flex items-center gap-1">
-            <ClockIcon className="w-3 h-3" />
+            <Clock3 className="w-3 h-3" />
             {new Date(entry.entryDate).toLocaleTimeString('en-US', {
               hour: '2-digit',
               minute: '2-digit',
@@ -131,9 +135,9 @@ function EntryCard({ entry, index, defaultExpanded = false, hideToggle = false }
         </p>
 
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-olive">
-          <span>😊 Mood: {entry.moodScore}/5</span>
-          <span>😰 Stress: {entry.stressScore}/5</span>
-          <span>⚡ Energy: {entry.energyScore}/5</span>
+          <span className="inline-flex items-center gap-1"><Smile className="w-3.5 h-3.5" /> Mood: {entry.moodScore}/5</span>
+          <span className="inline-flex items-center gap-1"><Frown className="w-3.5 h-3.5" /> Stress: {entry.stressScore}/5</span>
+          <span className="inline-flex items-center gap-1"><Zap className="w-3.5 h-3.5" /> Energy: {entry.energyScore}/5</span>
         </div>
 
         {!hideToggle && (
@@ -143,11 +147,11 @@ function EntryCard({ entry, index, defaultExpanded = false, hideToggle = false }
           >
             {expanded ? (
               <>
-                <ChevronUpIcon className="w-3.5 h-3.5" /> Show less
+                <ChevronUp className="w-3.5 h-3.5" /> Show less
               </>
             ) : (
               <>
-                <ChevronDownIcon className="w-3.5 h-3.5" /> View full analysis
+                <ChevronDown className="w-3.5 h-3.5" /> View full analysis
               </>
             )}
           </button>
@@ -231,7 +235,7 @@ function TodayEntriesSidebar({ entries, loading, onEditEntry }) {
   return (
     <div className="bg-warm-white rounded-card shadow-card p-6 flex flex-col h-full min-h-0 overflow-hidden">
       <h2 className="font-lora text-xl font-semibold text-ink mb-1 flex items-center gap-2">
-        <span>🗒️</span>
+        <NotebookPen className="w-5 h-5 text-sage" />
         Today's Entries
       </h2>
       <p className="text-xs text-stone mb-4">
@@ -259,7 +263,7 @@ function TodayEntriesSidebar({ entries, loading, onEditEntry }) {
         </div>
       ) : !latestEntry ? (
         <div className="flex flex-col items-center justify-center flex-1 text-center py-8">
-          <span className="text-5xl mb-3">🌱</span>
+          <Sprout className="w-12 h-12 mb-3 text-sage" />
           <p className="text-olive text-sm font-medium">No entries yet today</p>
           <p className="text-stone text-xs mt-1">
             Write your first entry and it will appear here.
@@ -276,7 +280,7 @@ function TodayEntriesSidebar({ entries, loading, onEditEntry }) {
               onClick={() => onEditEntry(latestEntry)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-sage-wash/40 border border-sage/30 text-sage hover:bg-sage-wash rounded-lg text-xs font-medium transition-colors shadow-sm"
             >
-              <span>✏️</span> Modify Entry
+              <PencilLine className="w-3.5 h-3.5" /> Modify Entry
             </motion.button>
           </div>
         </div>
@@ -444,12 +448,11 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
               }}
               transition={{
                 duration: 2,
-                repeat: Infinity,
                 ease: 'easeInOut',
               }}
-              className="text-6xl mb-6"
+              className="mb-6"
             >
-              🌿
+              <Sprout className="w-16 h-16 text-sage mx-auto" />
             </motion.div>
 
             <p className="font-lora italic text-xl text-forest mb-4">
@@ -487,7 +490,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
           <div className="space-y-5">
             <motion.div variants={itemVariants}>
               <h1 className="font-lora text-2xl font-semibold text-ink mb-1 flex items-center gap-2">
-                <span>📝</span>
+                <FilePenLine className="w-6 h-6 text-sage" />
                 How was your day?
               </h1>
               <p className="text-olive text-sm">
@@ -548,7 +551,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
               {/* Tips */}
               <div className="mt-4 p-4 bg-sage-wash/30 rounded-xl">
                 <p className="text-sm text-olive">
-                  <span className="font-medium">💡 Tip:</span> Be honest and
+                  <span className="font-medium inline-flex items-center gap-1"><Lightbulb className="w-4 h-4" /> Tip:</span> Be honest and
                   specific. Describe what happened, how you felt, and what you
                   noticed about yourself today.
                 </p>
@@ -564,7 +567,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
                   exit={{ opacity: 0, y: -10 }}
                   className="p-4 bg-blush/30 border border-dusty-rose/40 rounded-xl text-dusty-rose text-sm text-center"
                 >
-                  ⚠️ {error}
+                  <span className="inline-flex items-center gap-1"><TriangleAlert className="w-4 h-4" /> {error}</span>
                 </motion.div>
               )}
               {warning && (
@@ -574,7 +577,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
                   exit={{ opacity: 0, y: -10 }}
                   className="p-4 bg-amber/20 border-l-4 border-amber rounded-xl text-amber-900 text-sm"
                 >
-                  💡 {warning}
+                  <span className="inline-flex items-center gap-1"><Lightbulb className="w-4 h-4" /> {warning}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -603,7 +606,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
                       }
                     `}
                   >
-                    <SendIcon className="w-5 h-5" />
+                    <Send className="w-5 h-5" />
                     {forceSubmit ? 'Submit Anyway' : (editingEntryId ? 'Update Entry' : 'Analyze My Entry')}
                   </motion.button>
                 );
@@ -615,7 +618,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
               className="text-center text-stone text-xs"
             >
               Your entries are private and help you understand your emotional
-              patterns 🌱
+              patterns
             </motion.p>
           </div>
 

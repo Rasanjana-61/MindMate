@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeftIcon, ChevronRightIcon, XIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import {
   getMoodEmoji,
   getDaysInMonth,
   getFirstDayOfMonth,
   formatDate,
 } from '../data/moodData'
+import { getEmotionCategoryMeta, groupEmotionScores } from '../utils/emotionUtils'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -16,11 +17,6 @@ const MONTH_NAMES = [
   'January','February','March','April','May','June',
   'July','August','September','October','November','December',
 ]
-
-const EMOTION_EMOJI = {
-  joy: '😊', anger: '😠', disgust: '🤢', fear: '😨',
-  sadness: '😢', surprise: '😲', neutral: '😐',
-}
 
 const SENTIMENT_COLORS = {
   Positive: 'bg-sage-wash text-sage',
@@ -67,9 +63,8 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   })
 
-  // Sort emotion scores descending
-  const sortedEmotions = Object.entries(entry.emotionScores ?? {})
-    .sort((a, b) => b[1] - a[1])
+  const primaryEmotion = getEmotionCategoryMeta(entry.emotion)
+  const sortedEmotions = groupEmotionScores(entry.emotionScores ?? {})
 
   const displayedSuggestions = Array.isArray(entry.suggestions) ? entry.suggestions : []
 
@@ -96,19 +91,22 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-sage-wash transition-colors text-stone hover:text-forest"
         >
-          <XIcon className="w-5 h-5" />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
           <div className="text-center md:text-left">
             <p className="font-lora text-lg text-ink font-semibold">{formattedDate}</p>
-            <div className="text-5xl mt-3 mb-2 flex items-center justify-center md:justify-start">
-              {getMoodEmoji(entry.mood)}
+            <div className="mt-3 mb-2 flex items-center justify-center md:justify-start gap-3">
+              {(() => {
+                const MoodIcon = getMoodEmoji(entry.mood)
+                return <MoodIcon className="w-12 h-12 text-sage" />
+              })()}
               {entry.emotion && (
                 <span className="ml-4 flex items-center gap-1.5">
-                  <span className="text-lg">{EMOTION_EMOJI[entry.emotion] ?? '💭'}</span>
-                  <span className="capitalize font-medium text-forest text-sm">{entry.emotion}</span>
+                  <primaryEmotion.Icon className="w-4 h-4" />
+                  <span className="capitalize font-medium text-forest text-sm">{primaryEmotion.label}</span>
                   <span className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${SENTIMENT_COLORS[entry.sentiment] ?? 'bg-sage-wash text-sage'}`}>
                     {entry.sentiment ?? '—'}
                   </span>
@@ -161,19 +159,19 @@ function CalendarPopup({ entry, onClose, onDelete, isDeleting }) {
               <div className="bg-warm-white rounded-xl p-4 border border-sage-light/30">
                 <p className="text-xs font-medium text-stone uppercase tracking-wide mb-2">Emotion Breakdown</p>
                 <div className="space-y-2">
-                  {sortedEmotions.slice(0, 8).map(([emotion, score], index) => (
-                    <div key={`${String(emotion || 'emotion')}-${index}`} className="flex items-center gap-2">
-                      <span className="text-sm w-5 text-center">{EMOTION_EMOJI[emotion] ?? '💭'}</span>
-                      <span className="text-xs text-stone capitalize w-20 truncate">{emotion || 'unknown'}</span>
+                  {sortedEmotions.slice(0, 8).map(({ key, label, Icon, fillClass, score }) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span className="text-xs text-stone capitalize flex-1 min-w-0">{label}</span>
                       <div className="flex-1 h-1.5 bg-sage-wash rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${score * 100}%` }}
-                          transition={{ duration: 0.4, delay: 0.05 * index }}
-                          className="h-full bg-forest/50 rounded-full"
+                          transition={{ duration: 0.4, ease: 'easeOut' }}
+                          className={`h-full rounded-full ${fillClass}`}
                         />
                       </div>
-                      <span className="text-xs text-stone w-10 text-right">{(score * 100).toFixed(0)}%</span>
+                      <span className="text-xs text-stone w-12 text-right shrink-0">{(score * 100).toFixed(0)}%</span>
                     </div>
                   ))}
                 </div>
@@ -348,7 +346,7 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted, onDate
 
         <div className="flex items-center justify-between mb-4">
           <button onClick={goToPrevMonth} className="p-2 rounded-lg hover:bg-sage-wash">
-            <ChevronLeftIcon className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
 
           <h2 className="font-lora text-xl font-semibold text-ink">
@@ -356,7 +354,7 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted, onDate
           </h2>
 
           <button onClick={goToNextMonth} className="p-2 rounded-lg hover:bg-sage-wash">
-            <ChevronRightIcon className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 

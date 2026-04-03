@@ -1,9 +1,13 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { PlusIcon } from 'lucide-react'
+import { NotebookPen, Plus, Sprout } from 'lucide-react'
 import { getMoodEmoji } from '../data/moodData'
 
-function DayCard({ date, entry, isLatest, index }) {
+function formatAsInputDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function DayCard({ date, entry, isLatest, index, onAddEntry }) {
   const dayName = date
     .toLocaleDateString('en-US', { weekday: 'short' })
     .toUpperCase()
@@ -25,10 +29,13 @@ function DayCard({ date, entry, isLatest, index }) {
           <p className="text-[10px] font-bold text-stone uppercase tracking-wide">{dayName}</p>
           <p className="text-xs text-stone/60">{dateStr}</p>
         </div>
-        <span className="text-lg opacity-30">📝</span>
+        <NotebookPen className="w-4 h-4 opacity-30 text-stone shrink-0" />
         <p className="text-stone/50 text-xs flex-1">No entry logged</p>
-        <button className="inline-flex items-center gap-1 text-sage text-xs font-medium hover:text-sage/80 transition-colors shrink-0">
-          <PlusIcon className="w-3 h-3" />
+        <button
+          onClick={() => onAddEntry?.(formatAsInputDate(date))}
+          className="inline-flex items-center gap-1 text-sage text-xs font-medium hover:text-sage/80 transition-colors shrink-0"
+        >
+          <Plus className="w-3 h-3" />
           Add
         </button>
       </motion.div>
@@ -50,9 +57,12 @@ function DayCard({ date, entry, isLatest, index }) {
         <p className="text-[10px] font-bold text-stone uppercase tracking-wide">{dayName}</p>
         <p className="text-xs text-stone/60">{dateStr}</p>
       </div>
-      <span className="text-xl shrink-0">{getMoodEmoji(entry.moodScore)}</span>
+      {(() => {
+        const MoodIcon = getMoodEmoji(entry.moodScore)
+        return <MoodIcon className="w-5 h-5 text-sage shrink-0" />
+      })()}
       {entry.text && (
-        <p className="font-lora text-forest/90 text-sm font-medium flex-1 truncate">
+        <p className="font-lora text-forest/65 text-sm font-normal flex-1 truncate">
           "{entry.text}"
         </p>
       )}
@@ -71,7 +81,7 @@ function DayCard({ date, entry, isLatest, index }) {
   )
 }
 
-export function RecentDaysFeed({ entries = [], loading = false }) {
+export function RecentDaysFeed({ entries = [], loading = false, onAddEntry }) {
   const today = new Date()
   const recentDays = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(today)
@@ -91,7 +101,7 @@ export function RecentDaysFeed({ entries = [], loading = false }) {
   return (
     <div className="flex flex-col h-full">
       <h2 className="font-lora text-xl font-semibold text-ink mb-4 flex items-center gap-2 shrink-0">
-        <span>🌿</span>
+        <Sprout className="w-5 h-5 text-sage" />
         Recent 7 Days
       </h2>
 
@@ -110,6 +120,7 @@ export function RecentDaysFeed({ entries = [], loading = false }) {
                 entry={entryByDate[key] ?? null}
                 isLatest={idx === 0}
                 index={idx}
+                onAddEntry={onAddEntry}
               />
             )
           })}

@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeftIcon, CalendarDaysIcon, LightbulbIcon, BrainIcon } from 'lucide-react'
+import { ArrowLeft, Brain, CalendarDays, Lightbulb } from 'lucide-react'
+import { getEmotionCategoryMeta, groupEmotionScores } from '../utils/emotionUtils'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -10,16 +11,6 @@ const containerVariants = {
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
-}
-
-const EMOTION_EMOJI = {
-  joy:      '😊',
-  neutral:  '😐',
-  sadness:  '😢',
-  anger:    '😠',
-  fear:     '😰',
-  disgust:  '🤢',
-  surprise: '😲',
 }
 
 const EMOTION_COLOR = {
@@ -84,10 +75,9 @@ export function Results({ analysisResult, onNavigate }) {
 
   const sentiment = deriveSentiment(emotion, moodScore)
   const sentColor = sentimentColors[sentiment]
+  const emotionCategory = getEmotionCategoryMeta(emotion)
 
-  // Sort emotion scores descending for display
-  const sortedEmotions = Object.entries(emotionScores)
-    .sort((a, b) => b[1] - a[1])
+  const sortedEmotions = groupEmotionScores(emotionScores)
 
   return (
     <motion.div
@@ -105,9 +95,9 @@ export function Results({ analysisResult, onNavigate }) {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', damping: 15, delay: 0.2 }}
-          className="text-7xl mb-4"
+          className="mb-4 flex justify-center"
         >
-          {EMOTION_EMOJI[emotion] ?? '🌿'}
+          <emotionCategory.Icon className="h-20 w-20 text-sage" />
         </motion.div>
 
         <h2 className="font-lora text-2xl font-semibold text-ink mb-2">
@@ -115,7 +105,7 @@ export function Results({ analysisResult, onNavigate }) {
         </h2>
 
         <p className="text-olive capitalize text-base mb-4">
-          Primary emotion detected: <span className="font-semibold text-forest">{emotion}</span>
+          Primary emotion detected: <span className="font-semibold text-forest">{emotionCategory.label}</span>
         </p>
 
         <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium ${sentColor.bg} ${sentColor.text}`}>
@@ -154,16 +144,16 @@ export function Results({ analysisResult, onNavigate }) {
           className="bg-warm-white rounded-card shadow-card p-6"
         >
           <h3 className="font-lora text-lg font-semibold text-ink mb-5 flex items-center gap-2">
-            <BrainIcon className="w-5 h-5 text-sage" />
+            <Brain className="w-5 h-5 text-sage" />
             Emotion Breakdown
           </h3>
 
           <div className="space-y-3">
-            {sortedEmotions.map(([em, score], idx) => (
-              <div key={`${String(em || 'emotion')}-${idx}`}>
+            {sortedEmotions.map(({ key, label, Icon, fillClass, score }, idx) => (
+              <div key={key}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium text-olive capitalize flex items-center gap-1.5">
-                    <span>{EMOTION_EMOJI[em] ?? '💭'}</span> {em || 'unknown'}
+                    <Icon className="w-4 h-4" /> {label}
                   </span>
                   <span className="text-xs text-stone">{(score * 100).toFixed(1)}%</span>
                 </div>
@@ -172,9 +162,7 @@ export function Results({ analysisResult, onNavigate }) {
                     initial={{ width: 0 }}
                     animate={{ width: `${score * 100}%` }}
                     transition={{ duration: 0.7, delay: 0.1 + idx * 0.07, ease: 'easeOut' }}
-                    className={`h-full rounded-full ${
-                      em === emotion ? 'bg-sage' : 'bg-sage-light/60'
-                    }`}
+                    className={`h-full rounded-full ${fillClass}`}
                   />
                 </div>
               </div>
@@ -250,7 +238,7 @@ export function Results({ analysisResult, onNavigate }) {
           className="bg-sage-wash/30 rounded-card p-6"
         >
           <h3 className="font-lora text-lg font-semibold text-ink mb-4 flex items-center gap-2">
-            <LightbulbIcon className="w-5 h-5 text-amber" />
+            <Lightbulb className="w-5 h-5 text-amber" />
             Wellness Suggestions
           </h3>
 
@@ -281,7 +269,7 @@ export function Results({ analysisResult, onNavigate }) {
           whileTap={{ scale: 0.98 }}
           className="flex items-center justify-center gap-2 px-6 py-3 bg-warm-white border border-sage-light rounded-full text-olive font-medium hover:bg-sage-wash transition-colors"
         >
-          <ArrowLeftIcon className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </motion.button>
 
@@ -291,7 +279,7 @@ export function Results({ analysisResult, onNavigate }) {
           whileTap={{ scale: 0.98 }}
           className="flex items-center justify-center gap-2 px-6 py-3 bg-sage text-white rounded-full font-medium hover:bg-sage/90 transition-colors"
         >
-          <CalendarDaysIcon className="w-4 h-4" />
+          <CalendarDays className="w-4 h-4" />
           View History
         </motion.button>
       </motion.div>

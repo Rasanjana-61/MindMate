@@ -40,6 +40,14 @@ function parseRequestedEntryDate(entryDate) {
   return parsed
 }
 
+function normalizeEmotionKey(key) {
+  return String(key || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '')
+}
+
 // 1. Submit Journal Entry
 export async function submitEntry(req, res) {
   try {
@@ -146,35 +154,45 @@ export async function getDashboardStats(req, res) {
       avgEnergy = filtered.reduce((acc, e) => acc + e.energyScore, 0) / filtered.length;
     }
 
-    // Emotion Stats are ALWAYS based on the last 7 days (as per existing spec)
-    const weeklyStartDate = new Date(now);
-    weeklyStartDate.setDate(now.getDate() - 6);
-    weeklyStartDate.setHours(0, 0, 0, 0);
-
-    const weeklyEntries = await JournalEntry.find({
+    const emotionEntries = await JournalEntry.find({
       userId,
-      entryDate: { $gte: weeklyStartDate, $lte: now }
-    });
+      entryDate: { $gte: startDate, $lte: now }
+    }).sort({ entryDate: 1 });
 
-    const EMOTION_KEYS = ["joy", "anger", "disgust", "fear", "sadness", "surprise", "neutral"];
-    let emotionTotals = { joy: 0, anger: 0, disgust: 0, fear: 0, sadness: 0, surprise: 0, neutral: 0 };
+    const emotionTotals = new Map();
     let emotionEntriesCount = 0;
 
-    weeklyEntries.forEach((e) => {
-      // Mongoose Map check
-      if (e.emotionScores && e.emotionScores.size > 0) {
+    emotionEntries.forEach((entry) => {
+      if (entry.emotionScores && entry.emotionScores.size > 0) {
         emotionEntriesCount++;
-        const scoresObj = Object.fromEntries(e.emotionScores);
-        EMOTION_KEYS.forEach(key => {
-          emotionTotals[key] += scoresObj[key] || 0;
+        const scoresObj = Object.fromEntries(entry.emotionScores);
+
+        Object.entries(scoresObj).forEach(([emotion, score]) => {
+          const normalizedEmotion = normalizeEmotionKey(emotion);
+          const safeScore = Number(score);
+
+          if (!normalizedEmotion || !Number.isFinite(safeScore)) {
+            return;
+          }
+
+          emotionTotals.set(
+            normalizedEmotion,
+            (emotionTotals.get(normalizedEmotion) || 0) + Math.max(0, safeScore)
+          );
         });
       }
     });
 
-    const emotionStats = {};
-    EMOTION_KEYS.forEach(key => {
-      emotionStats[key] = emotionEntriesCount > 0 ? (emotionTotals[key] / emotionEntriesCount) : 0;
-    });
+    const emotionBreakdown = Array.from(emotionTotals.entries())
+      .map(([emotion, total]) => ({
+        emotion,
+        score: emotionEntriesCount > 0 ? total / emotionEntriesCount : 0,
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    const emotionStats = Object.fromEntries(
+      emotionBreakdown.map(({ emotion, score }) => [emotion, score])
+    );
 
     // Chart Data Groupings
     const groups = {};
@@ -248,6 +266,7 @@ export async function getDashboardStats(req, res) {
         avgEnergy: Number(avgEnergy.toFixed(1)),
       },
       emotionStats,
+      emotionBreakdown,
       chartData,
       streakCount
     });

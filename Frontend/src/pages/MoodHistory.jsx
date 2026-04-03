@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar } from '../components/Calender'
 import { RecentDaysFeed } from '../components/RecentDaysFeed'
+import { ChartColumn } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -41,7 +42,7 @@ export function MoodHistory({ onNavigate }) {
       {/* Page Title */}
       <motion.div variants={itemVariants}>
         <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink flex items-center gap-3">
-          <span>📈</span>
+          <ChartColumn className="w-7 h-7 text-sage" />
           Mood History
         </h1>
         <p className="text-olive mt-1">
@@ -66,7 +67,11 @@ export function MoodHistory({ onNavigate }) {
 
         {/* Right Column - Recent Days Feed */}
         <div className="h-full min-h-0">
-          <RecentDaysFeed entries={entries} loading={loading} />
+          <RecentDaysFeed
+            entries={entries}
+            loading={loading}
+            onAddEntry={(entryDate) => onNavigate?.('journal', { entryDate })}
+          />
         </div>
       </motion.div>
     </motion.div>
