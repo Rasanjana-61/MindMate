@@ -1,0 +1,133 @@
+.app-shell {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.app-shell__main {
+  min-width: 0;
+  padding: 1.35rem;
+}
+
+.app-shell__content {
+  padding-top: 1.1rem;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  height: 100vh;
+  padding: 1.4rem;
+  background:
+    radial-gradient(circle at top, rgba(113, 188, 255, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(15, 35, 67, 0.96), rgba(18, 39, 73, 0.92));
+  color: #f0f6ff;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.sidebar__logo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, #75b5ff, #56d4ae);
+  color: #12345e;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.sidebar__brand strong {
+  display: block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+}
+
+.sidebar__brand span {
+  color: rgba(240, 246, 255, 0.72);
+  font-size: 0.9rem;
+}
+
+.sidebar__nav {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+  color: rgba(240, 246, 255, 0.82);
+  transition: 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.sidebar__link:hover,
+.sidebar__link--active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.sidebar__focus-card {
+  margin-top: auto;
+  padding: 1.15rem;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sidebar__card-label {
+  display: inline-block;
+  margin-bottom: 0.55rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.85rem;
+}
+
+.sidebar__focus-card strong {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.sidebar__card-progress {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar__card-progress div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #75b5ff, #56d4ae);
+}
+
+@media (max-width: 1120px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell__main {
+    padding: 1rem;
+  }
+}

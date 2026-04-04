@@ -21,6 +21,7 @@ frontend/.env
 # ========================
 Frontend/dist
 Backend/dist
+Backend/target
 dist
 dist-ssr
 coverage
