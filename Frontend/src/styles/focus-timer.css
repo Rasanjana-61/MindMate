@@ -12,21 +12,21 @@
 }
 
 .focus-timer__mode--focus {
-  background: rgba(193, 224, 219, 0.58);
-  color: #668f83;
+  background: rgba(207, 230, 230, 0.72);
+  color: var(--deep-teal);
 }
 
 .focus-timer__mode--break {
-  background: rgba(181, 214, 162, 0.3);
-  color: #72935f;
+  background: rgba(184, 208, 184, 0.48);
+  color: var(--olive);
 }
 
 .focus-timer__clock-card,
 .focus-timer__settings {
   padding: 1.2rem;
   border-radius: 26px;
-  background: rgba(252, 251, 247, 0.95);
-  border: 1px solid rgba(179, 206, 183, 0.28);
+  background: rgba(251, 248, 243, 0.95);
+  border: 1px solid rgba(95, 112, 95, 0.14);
   box-shadow: var(--shadow-soft);
 }
 
@@ -38,7 +38,7 @@
   text-align: center;
   background:
     radial-gradient(circle at top, rgba(255, 255, 255, 0.84), transparent 32%),
-    linear-gradient(180deg, rgba(252, 251, 247, 0.98), rgba(244, 248, 240, 0.86));
+    linear-gradient(180deg, rgba(251, 248, 243, 0.98), rgba(232, 240, 232, 0.88));
 }
 
 .focus-timer__dial {
@@ -51,10 +51,10 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at center, rgba(255, 255, 255, 0) 61%, rgba(255, 255, 255, 0.75) 62%, rgba(255, 255, 255, 0) 66%),
-    conic-gradient(from 180deg, #83b8ab 0 var(--progress), rgba(216, 226, 214, 0.74) var(--progress) 100%);
+    conic-gradient(from 180deg, var(--deep-teal) 0 var(--progress), rgba(207, 227, 210, 0.82) var(--progress) 100%);
   box-shadow:
     inset 0 0 0 8px rgba(255, 255, 255, 0.52),
-    0 25px 46px rgba(130, 156, 139, 0.18);
+    0 25px 46px rgba(95, 112, 95, 0.18);
 }
 
 .focus-timer__dial-inner {
@@ -66,8 +66,8 @@
   text-align: center;
   border-radius: 50%;
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(249, 247, 241, 0.92)),
-    #ffffff;
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(251, 248, 243, 0.92)),
+    var(--cream);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
@@ -103,8 +103,8 @@
 .focus-timer__session-strip div {
   padding: 0.85rem;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(179, 206, 183, 0.28);
+  background: rgba(251, 248, 243, 0.84);
+  border: 1px solid rgba(95, 112, 95, 0.14);
 }
 
 .focus-timer__session-strip span {
@@ -143,24 +143,24 @@
 
 .btn--primary {
   color: #ffffff;
-  background: linear-gradient(135deg, #79aaa0, #6faea0);
-  box-shadow: 0 12px 26px rgba(111, 174, 160, 0.26);
+  background: linear-gradient(135deg, #7eb2b2, var(--deep-teal));
+  box-shadow: 0 12px 26px rgba(111, 165, 165, 0.26);
 }
 
 .btn--ghost {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(179, 206, 183, 0.3);
+  background: rgba(251, 248, 243, 0.92);
+  border: 1px solid rgba(95, 112, 95, 0.14);
 }
 
 .btn--soft {
   color: var(--text);
-  background: rgba(193, 224, 219, 0.42);
+  background: rgba(207, 230, 230, 0.52);
 }
 
 .btn--danger {
-  color: #a83855;
-  background: rgba(239, 90, 115, 0.12);
+  color: #9a6662;
+  background: rgba(196, 148, 144, 0.16);
 }
 
 .focus-timer__fields {
@@ -181,8 +181,8 @@
   padding: 0.9rem;
   text-align: left;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(179, 206, 183, 0.28);
+  background: rgba(251, 248, 243, 0.9);
+  border: 1px solid rgba(95, 112, 95, 0.14);
   box-shadow: var(--shadow-soft);
 }
 
@@ -196,8 +196,8 @@
 }
 
 .focus-timer__preset--active {
-  background: linear-gradient(135deg, rgba(111, 174, 160, 0.14), rgba(181, 214, 162, 0.24));
-  border-color: rgba(131, 184, 171, 0.28);
+  background: linear-gradient(135deg, rgba(207, 230, 230, 0.72), rgba(207, 227, 210, 0.72));
+  border-color: rgba(111, 165, 165, 0.22);
 }
 
 .focus-timer__fields label,
@@ -217,8 +217,8 @@
   width: 100%;
   padding: 0.9rem 1rem;
   border-radius: 14px;
-  border: 1px solid rgba(179, 206, 183, 0.32);
-  background: #ffffff;
+  border: 1px solid rgba(95, 112, 95, 0.18);
+  background: rgba(251, 248, 243, 0.98);
   color: var(--text);
   outline: none;
 }
@@ -229,8 +229,8 @@
 .task-form input:focus,
 .task-form select:focus,
 .task-form textarea:focus {
-  border-color: rgba(131, 184, 171, 0.56);
-  box-shadow: 0 0 0 4px rgba(131, 184, 171, 0.14);
+  border-color: rgba(111, 165, 165, 0.54);
+  box-shadow: 0 0 0 4px rgba(111, 165, 165, 0.14);
 }
 
 .focus-timer__mini-stats {
@@ -243,8 +243,8 @@
 .focus-timer__mini-stats div {
   padding: 0.9rem;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(179, 206, 183, 0.28);
+  background: rgba(251, 248, 243, 0.9);
+  border: 1px solid rgba(95, 112, 95, 0.14);
   box-shadow: var(--shadow-soft);
 }
 
@@ -273,8 +273,8 @@
 .focus-timer__story-card {
   padding: 1rem;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.84);
-  border: 1px solid rgba(179, 206, 183, 0.28);
+  background: rgba(251, 248, 243, 0.86);
+  border: 1px solid rgba(95, 112, 95, 0.14);
 }
 
 .focus-timer__story-card strong {
@@ -290,16 +290,16 @@
 }
 
 .focus-timer__story-card--accent {
-  background: linear-gradient(135deg, rgba(111, 174, 160, 0.12), rgba(181, 214, 162, 0.18));
+  background: linear-gradient(135deg, rgba(207, 230, 230, 0.68), rgba(207, 227, 210, 0.68));
 }
 
 .focus-timer__notification {
   margin-top: 1rem;
   padding: 0.95rem 1rem;
   border-radius: 16px;
-  background: rgba(181, 214, 162, 0.24);
-  color: #6e8f5d;
-  border: 1px solid rgba(181, 214, 162, 0.28);
+  background: rgba(207, 227, 210, 0.66);
+  color: var(--olive);
+  border: 1px solid rgba(95, 112, 95, 0.16);
 }
 
 @media (max-width: 900px) {

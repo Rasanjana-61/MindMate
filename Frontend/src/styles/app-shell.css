@@ -22,10 +22,10 @@
   height: 100vh;
   padding: 1.4rem;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 245, 239, 0.96)),
-    rgba(255, 255, 255, 0.88);
+    linear-gradient(180deg, rgba(251, 248, 243, 0.96), rgba(232, 240, 232, 0.94)),
+    rgba(251, 248, 243, 0.9);
   color: var(--text);
-  border-right: 1px solid rgba(164, 189, 171, 0.24);
+  border-right: 1px solid rgba(95, 112, 95, 0.16);
 }
 
 .sidebar__brand {
@@ -41,9 +41,9 @@
   height: 52px;
   border-radius: 18px;
   font-size: 1.3rem;
-  background: linear-gradient(135deg, #b8dcc8, #83b8ab);
+  background: linear-gradient(135deg, var(--sage-soft), var(--deep-teal));
   color: #ffffff;
-  box-shadow: 0 12px 24px rgba(128, 162, 144, 0.2);
+  box-shadow: 0 12px 24px rgba(95, 112, 95, 0.2);
 }
 
 .sidebar__brand strong {
@@ -76,17 +76,17 @@
 
 .sidebar__link:hover,
 .sidebar__link--active {
-  background: rgba(193, 224, 219, 0.72);
-  border-color: rgba(138, 178, 165, 0.25);
-  color: #557d71;
+  background: rgba(207, 230, 230, 0.7);
+  border-color: rgba(111, 165, 165, 0.22);
+  color: var(--deep-teal);
 }
 
 .sidebar__focus-card {
   margin-top: auto;
   padding: 1.15rem;
   border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 244, 237, 0.94));
-  border: 1px solid rgba(164, 189, 171, 0.24);
+  background: linear-gradient(180deg, rgba(251, 248, 243, 0.9), rgba(244, 239, 231, 0.95));
+  border: 1px solid rgba(95, 112, 95, 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -107,13 +107,13 @@
   overflow: hidden;
   height: 10px;
   border-radius: 999px;
-  background: rgba(198, 220, 206, 0.5);
+  background: rgba(207, 227, 210, 0.62);
 }
 
 .sidebar__card-progress div {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #83b8ab, #b4d7a7);
+  background: linear-gradient(90deg, var(--deep-teal), var(--sage-light));
 }
 
 @media (max-width: 1120px) {
