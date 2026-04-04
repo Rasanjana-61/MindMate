@@ -10,6 +10,14 @@ const navItems = [
 function Sidebar() {
   return (
     <aside className="sidebar">
+      <div className="sidebar__brand">
+        <div className="sidebar__logo">M</div>
+        <div>
+          <strong>MindMate</strong>
+          <span>Student workspace</span>
+        </div>
+      </div>
+
       <nav className="sidebar__nav">
         {navItems.map(({ label, to, icon: Icon, end }) => (
           <NavLink
@@ -23,8 +31,6 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
-
-      
     </aside>
   );
 }
