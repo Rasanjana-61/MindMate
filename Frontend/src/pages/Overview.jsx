@@ -16,7 +16,7 @@ import { ChevronDown, Frown, PenLine, Sprout, Zap } from 'lucide-react'
 import { getMoodEmoji } from '../data/moodData'
 import { groupEmotionScores } from '../utils/emotionUtils'
 
-const API_URL = import.meta.env.VITE_API_BASE_URL
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
 const USER_ID = 'testUser123'
 
 function getGreeting() {

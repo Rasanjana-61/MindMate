@@ -4,7 +4,7 @@ import { Calendar } from '../components/Calender'
 import { RecentDaysFeed } from '../components/RecentDaysFeed'
 import { ChartColumn } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_BASE_URL
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
 
 const USER_ID = 'testUser123'
 

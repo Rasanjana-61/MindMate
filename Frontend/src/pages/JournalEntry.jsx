@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Clock3, ChevronDown, ChevronUp, NotebookPen, PencilLine, Sprout, Lightbulb, TriangleAlert, Smile, Frown, Zap, FilePenLine } from 'lucide-react'
 import { getMoodEmoji, getMoodMeta } from '../data/moodData'
 
-const API_URL = import.meta.env.VITE_API_BASE_URL
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
 const USER_ID = 'testUser123'
 
 function getTodayInputValue() {
