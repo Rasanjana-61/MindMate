@@ -67,8 +67,6 @@ export function Dashboard({ onNavigate }) {
     return groupEmotionScores(source)
   }, [dashboardData?.emotionBreakdown, emotionStats])
 
-  const visibleEmotionBreakdown = emotionBreakdown.slice(0, 8)
-  const hiddenEmotionCount = Math.max(0, emotionBreakdown.length - visibleEmotionBreakdown.length)
   const chartData = dashboardData?.chartData || []
   const streakCount = dashboardData?.streakCount || 0
 
@@ -208,8 +206,8 @@ export function Dashboard({ onNavigate }) {
               className="overflow-hidden"
             >
               <div className="space-y-3 mb-10 pt-2">
-                {visibleEmotionBreakdown.length > 0 ? (
-                  visibleEmotionBreakdown.map(({ key, label, Icon, fillClass, score }) => {
+                {emotionBreakdown.length > 0 ? (
+                  emotionBreakdown.map(({ key, label, Icon, fillClass, score }) => {
                     const percentage = (score * 100).toFixed(1)
 
                     return (
@@ -238,12 +236,6 @@ export function Dashboard({ onNavigate }) {
                   </div>
                 )}
               </div>
-
-              {hiddenEmotionCount > 0 && (
-                <p className="-mt-6 mb-10 text-xs text-stone text-center">
-                  Showing the top 8 emotions. {hiddenEmotionCount} more are available in the data.
-                </p>
-              )}
             </motion.div>
           )}
         </AnimatePresence>

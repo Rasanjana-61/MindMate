@@ -11,7 +11,7 @@ import {
 const navItems = [
   {
     id: 'dashboard',
-    label: 'Dashboard',
+    label: 'Overview',
     icon: LayoutDashboard,
   },
   {

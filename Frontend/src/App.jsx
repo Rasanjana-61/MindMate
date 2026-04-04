@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from './components/Sidebar'
-import { Dashboard } from './pages/Dashboard'
+import { Dashboard } from './pages/Overview'
 import { JournalEntry } from './pages/JournalEntry'
 import { Results } from './pages/Results'
 import { MoodHistory } from './pages/MoodHistory'
