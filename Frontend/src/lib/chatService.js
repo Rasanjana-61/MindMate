@@ -2,11 +2,12 @@
  * Chat service for communicating with the chatbot backend
  */
 
-const API_URL = "http://localhost:5000/api/chatbot";
+const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_URL = `${API_BASE_URL.replace(/\/api$/, "")}/api/chatbot`;
 
 // Get auth token from localStorage
 function getAuthToken() {
-  return localStorage.getItem("authToken");
+  return localStorage.getItem("studentwell_token") || localStorage.getItem("authToken");
 }
 
 export async function startChatbot() {

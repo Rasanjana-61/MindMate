@@ -4,7 +4,10 @@ import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
 import { HomePage } from './pages/HomePage';
 import { Dashboard } from './pages/Dashboard';
-import { MoodTracker } from './pages/MoodTracker';
+import { Dashboard as MoodDashboard } from './pages/Overview';
+import { JournalEntry } from './pages/JournalEntry';
+import { MoodHistory } from './pages/MoodHistory';
+import { Results as MoodResults } from './pages/Results';
 import { FocusTimer } from './pages/FocusTimer';
 import { PeerSupport } from './pages/PeerSupport';
 import { BookmarkedQuestions } from './pages/BookmarkedQuestions';
@@ -43,6 +46,9 @@ export function App() {
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [toastNotifications, setToastNotifications] = useState([]);
   const [chatbotData, setChatbotData] = useState(null);
+  const [moodScreen, setMoodScreen] = useState('dashboard');
+  const [moodAnalysisResult, setMoodAnalysisResult] = useState(null);
+  const [moodSelectedJournalDate, setMoodSelectedJournalDate] = useState(null);
 
   useEffect(() => {
     async function restoreSession() {
@@ -177,6 +183,51 @@ export function App() {
     setUnreadNotificationCount(0);
   };
 
+  const handlePageChange = (nextPage) => {
+    if (nextPage === 'mood') {
+      // Always open the mood module dashboard when selecting Mood from navigation.
+      setMoodScreen('dashboard');
+      setMoodSelectedJournalDate(null);
+    }
+
+    setCurrentPage(nextPage);
+  };
+
+  const handleMoodNavigate = (screen, options = {}) => {
+    if (screen === 'journal') {
+      setMoodSelectedJournalDate(options.entryDate ?? null);
+    } else {
+      setMoodSelectedJournalDate(null);
+    }
+
+    setMoodScreen(screen);
+  };
+
+  const handleMoodAnalysisComplete = (result) => {
+    setMoodAnalysisResult(result);
+    setMoodScreen('results');
+  };
+
+  const renderMoodModule = () => {
+    switch (moodScreen) {
+      case 'dashboard':
+        return <MoodDashboard onNavigate={handleMoodNavigate} />;
+      case 'journal':
+        return (
+          <JournalEntry
+            onAnalysisComplete={handleMoodAnalysisComplete}
+            initialEntryDate={moodSelectedJournalDate}
+          />
+        );
+      case 'history':
+        return <MoodHistory onNavigate={handleMoodNavigate} />;
+      case 'results':
+        return <MoodResults analysisResult={moodAnalysisResult} onNavigate={handleMoodNavigate} />;
+      default:
+        return <MoodDashboard onNavigate={handleMoodNavigate} />;
+    }
+  };
+
   const handleNotificationOpen = async (notification) => {
     if (!notification.isRead) {
       try {
@@ -192,7 +243,7 @@ export function App() {
     }
 
     if (notification.linkPage) {
-      setCurrentPage(notification.linkPage);
+      handlePageChange(notification.linkPage);
     }
   };
 
@@ -210,9 +261,9 @@ export function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard setPage={setCurrentPage} userName={user?.name || 'User'} />;
+        return <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
       case 'mood':
-        return <MoodTracker />;
+        return renderMoodModule();
       case 'focus':
         return <FocusTimer user={user} />;
       case 'peer':
@@ -224,17 +275,17 @@ export function App() {
       case 'profile':
         return <Profile user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
       case 'admin':
-        return user?.role === 'admin' ? <AdminDashboard /> : <Dashboard setPage={setCurrentPage} userName={user?.name || 'User'} />;
+        return user?.role === 'admin' ? <AdminDashboard /> : <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
       case 'summarizer':
-        return <SummarizerDashboard setPage={setCurrentPage} />;
+        return <SummarizerDashboard setPage={handlePageChange} />;
       case 'video-summary':
-        return <VideoSummary setPage={setCurrentPage} />;
+        return <VideoSummary setPage={handlePageChange} />;
       case 'text-summary':
-        return <TextSummary setPage={setCurrentPage} />;
+        return <TextSummary setPage={handlePageChange} />;
       case 'file-summary':
-        return <FileSummary setPage={setCurrentPage} />;
+        return <FileSummary setPage={handlePageChange} />;
       default:
-        return <Dashboard setPage={setCurrentPage} userName={user?.name || 'User'} />;
+        return <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
     }
   };
 
@@ -279,7 +330,7 @@ export function App() {
       <Toaster position="top-right" reverseOrder={false} />
       <Layout
         currentPage={currentPage}
-        setPage={setCurrentPage}
+        setPage={handlePageChange}
         user={user}
         onLogout={handleLogout}
         notifications={notifications}

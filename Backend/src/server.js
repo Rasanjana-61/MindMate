@@ -16,6 +16,7 @@ const resourceRoutes = require("./routes/resourceRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const moodTrackerRoutes = require("./routes/moodTrackerRoutes");
 const summarizerRoutes = require("./routes/summarizer/summarizerRoutes");
 const { setIO } = require("./utils/socket");
 
@@ -66,6 +67,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/summarizer", summarizerRoutes);
+app.use("/api", moodTrackerRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found." });
