@@ -68,7 +68,14 @@ export function Header({
       case 'dashboard':
         return 'Dashboard';
       case 'mood':
+      case 'mood-dashboard':
         return 'Mood & Mental Health';
+      case 'mood-journal':
+        return 'Journal Entry';
+      case 'mood-history':
+        return 'Mood History';
+      case 'mood-results':
+        return 'Mood Analysis';
       case 'focus':
         return 'Focus & Tasks';
       case 'peer':

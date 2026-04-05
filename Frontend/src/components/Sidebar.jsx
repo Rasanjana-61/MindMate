@@ -29,7 +29,9 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
 
   const renderNavItem = (item) => {
     const Icon = item.icon;
-    const isActive = currentPage === item.id;
+    const isActive = item.id === 'mood'
+      ? currentPage === 'mood' || currentPage.startsWith('mood-')
+      : currentPage === item.id;
 
     return (
       <button

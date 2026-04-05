@@ -46,7 +46,6 @@ export function App() {
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [toastNotifications, setToastNotifications] = useState([]);
   const [chatbotData, setChatbotData] = useState(null);
-  const [moodScreen, setMoodScreen] = useState('dashboard');
   const [moodAnalysisResult, setMoodAnalysisResult] = useState(null);
   const [moodSelectedJournalDate, setMoodSelectedJournalDate] = useState(null);
 
@@ -185,47 +184,44 @@ export function App() {
 
   const handlePageChange = (nextPage) => {
     if (nextPage === 'mood') {
-      // Always open the mood module dashboard when selecting Mood from navigation.
-      setMoodScreen('dashboard');
+      // Always open the mood dashboard when selecting Mood from navigation.
+      setCurrentPage('mood-dashboard');
       setMoodSelectedJournalDate(null);
+      return;
     }
 
     setCurrentPage(nextPage);
   };
 
   const handleMoodNavigate = (screen, options = {}) => {
-    if (screen === 'journal') {
-      setMoodSelectedJournalDate(options.entryDate ?? null);
-    } else {
-      setMoodSelectedJournalDate(null);
+    switch (screen) {
+      case 'dashboard':
+        setMoodSelectedJournalDate(null);
+        setCurrentPage('mood-dashboard');
+        return;
+      case 'journal':
+        setMoodSelectedJournalDate(options.entryDate ?? null);
+        setCurrentPage('mood-journal');
+        return;
+      case 'history':
+        setMoodSelectedJournalDate(null);
+        setCurrentPage('mood-history');
+        return;
+      case 'results':
+        setCurrentPage('mood-results');
+        return;
+      case 'profile':
+        setCurrentPage('profile');
+        return;
+      default:
+        setMoodSelectedJournalDate(null);
+        setCurrentPage('mood-dashboard');
     }
-
-    setMoodScreen(screen);
   };
 
   const handleMoodAnalysisComplete = (result) => {
     setMoodAnalysisResult(result);
-    setMoodScreen('results');
-  };
-
-  const renderMoodModule = () => {
-    switch (moodScreen) {
-      case 'dashboard':
-        return <MoodDashboard onNavigate={handleMoodNavigate} />;
-      case 'journal':
-        return (
-          <JournalEntry
-            onAnalysisComplete={handleMoodAnalysisComplete}
-            initialEntryDate={moodSelectedJournalDate}
-          />
-        );
-      case 'history':
-        return <MoodHistory onNavigate={handleMoodNavigate} />;
-      case 'results':
-        return <MoodResults analysisResult={moodAnalysisResult} onNavigate={handleMoodNavigate} />;
-      default:
-        return <MoodDashboard onNavigate={handleMoodNavigate} />;
-    }
+    setCurrentPage('mood-results');
   };
 
   const handleNotificationOpen = async (notification) => {
@@ -263,7 +259,19 @@ export function App() {
       case 'dashboard':
         return <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
       case 'mood':
-        return renderMoodModule();
+      case 'mood-dashboard':
+        return <MoodDashboard onNavigate={handleMoodNavigate} />;
+      case 'mood-journal':
+        return (
+          <JournalEntry
+            onAnalysisComplete={handleMoodAnalysisComplete}
+            initialEntryDate={moodSelectedJournalDate}
+          />
+        );
+      case 'mood-history':
+        return <MoodHistory onNavigate={handleMoodNavigate} />;
+      case 'mood-results':
+        return <MoodResults analysisResult={moodAnalysisResult} onNavigate={handleMoodNavigate} />;
       case 'focus':
         return <FocusTimer user={user} />;
       case 'peer':

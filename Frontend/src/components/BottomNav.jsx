@@ -37,7 +37,9 @@ export function BottomNav({ currentPage, setPage }) {
       <div className="flex items-center justify-around px-1 py-2">
         {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPage === item.id;
+            const isActive = item.id === 'mood'
+                ? currentPage === 'mood' || currentPage.startsWith('mood-')
+                : currentPage === item.id;
             return (<button key={item.id} onClick={() => setPage(item.id)} className="flex flex-col items-center justify-center w-14 gap-1 relative py-1">
 
               <div className={`p-2 rounded-xl transition-all duration-300 ${isActive ? 'bg-wellness-blue text-white shadow-md transform -translate-y-1' : 'text-wellness-text-muted hover:bg-wellness-bg'}`}>
