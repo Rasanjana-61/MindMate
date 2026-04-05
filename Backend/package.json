@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon --legacy-watch --watch src --ext js,json src/server.js",
+    "dev": "node src/dev.js",
     "start": "node src/server.js"
   },
   "dependencies": {

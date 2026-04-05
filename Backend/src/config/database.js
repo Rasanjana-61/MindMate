@@ -8,4 +8,6 @@ export async function connectToDatabase() {
   await mongoose.connect(databaseUrl, {
     serverSelectionTimeoutMS: 5000,
   });
+
+  console.log(`MongoDB connected: ${mongoose.connection.host}/${mongoose.connection.name}`);
 }
