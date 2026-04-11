@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { io } from 'socket.io-client';
 import {
   Bell,
   ChevronDown,
@@ -171,6 +172,74 @@ export function PeerSupport({ user }) {
 
     return () => window.clearInterval(interval);
   }, [activeCategory]);
+
+  // Set up socket connection to listen for real-time updates
+  useEffect(() => {
+    const token = localStorage.getItem('studentwell_token');
+    if (!token) {
+      console.warn('No auth token found for socket connection');
+      return;
+    }
+
+    // Connect to backend socket server (not the Vite dev server)
+    const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socket = io(socketUrl, {
+      auth: { token },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket connected:', socket.id);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    // Listen for post deletion by admin
+    socket.on('post:deleted', (data) => {
+      console.log('Post deleted event received:', data);
+      const deletedPostId = data.postId;
+      setOverview((prev) => {
+        const updatedPosts = prev.posts.filter((post) => post.id !== deletedPostId);
+        console.log(`Removed post ${deletedPostId}, remaining posts:`, updatedPosts.length);
+        return {
+          ...prev,
+          posts: updatedPosts,
+        };
+      });
+      setStatusMessage('A post has been removed by moderation.');
+    });
+
+    // Listen for report resolution by admin
+    socket.on('report:resolved', (data) => {
+      console.log('Report resolved event received:', data);
+      const resolvedPostId = data.postId;
+      setOverview((prev) => ({
+        ...prev,
+        posts: prev.posts.map((post) =>
+          post.id === resolvedPostId ? { ...post, reports: [] } : post
+        ),
+      }));
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    return () => {
+      console.log('Cleaning up socket connection');
+      socket.off('post:deleted');
+      socket.off('report:resolved');
+      socket.off('connect');
+      socket.off('connect_error');
+      socket.off('disconnect');
+      socket.disconnect();
+    };
+  }, []);
 
   const categoryTabs = useMemo(() => {
     if (overview.categories.length) {
@@ -373,6 +442,20 @@ export function PeerSupport({ user }) {
       await reportPost(postId, "Inappropriate content", "");
       setReportedPosts((current) => new Set([...current, postId]));
       setStatusMessage('Post reported successfully. Thank you for helping keep our community safe.');
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
+  }
+
+  async function handleMarkNotificationsRead() {
+    try {
+      await markPeerNotificationsRead();
+      setOverview((prev) => ({
+        ...prev,
+        notifications: prev.notifications.map((notif) => ({ ...notif, isRead: true })),
+        unreadNotificationCount: 0,
+      }));
+      setStatusMessage('Notifications marked as read.');
     } catch (error) {
       setErrorMessage(error.message);
     }
