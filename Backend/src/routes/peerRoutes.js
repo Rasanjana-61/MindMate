@@ -170,6 +170,7 @@ async function buildSuggestedConnections(userId, faculty, userDoc) {
       user: userId,
       faculty,
       moderationStatus: "visible",
+      isDeleted: false,
     })
       .sort({ createdAt: -1 })
       .limit(10)
@@ -189,6 +190,7 @@ async function buildSuggestedConnections(userId, faculty, userDoc) {
           user: { $ne: userId },
           faculty,
           moderationStatus: "visible",
+          isDeleted: false,
           $or: [
             userCategories.length ? { category: { $in: userCategories } } : null,
             userKeywords.length ? { keywords: { $in: userKeywords } } : null,
@@ -285,6 +287,7 @@ async function buildOverview(req, category) {
   const baseFilter = {
     faculty: req.user.faculty,
     moderationStatus: "visible",
+    isDeleted: false,
   };
   const filter = { ...baseFilter };
 
@@ -311,7 +314,7 @@ async function buildOverview(req, category) {
 
   const categoryCounts = await PeerPost.aggregate([
     {
-      $match: baseFilter,
+      $match: { ...baseFilter, isDeleted: false },
     },
     {
       $group: {
