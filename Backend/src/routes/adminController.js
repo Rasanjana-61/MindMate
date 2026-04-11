@@ -3,6 +3,7 @@ const { PeerPost } = require("../models/PeerPost");
 const { PeerReply } = require("../models/PeerReply");
 const Notification = require("../models/Notification");
 const { Resource } = require("../models/Resource");
+const { getIO } = require("../utils/socket");
 
 // GET /api/admin/stats
 const getStats = async (req, res, next) => {
@@ -140,6 +141,15 @@ const resolveReport = async (req, res, next) => {
     post.reports = [];
     await post.save();
     
+    // Emit socket event to notify users that report was resolved
+    const io = getIO();
+    if (io) {
+      console.log(`[ADMIN] Emitting report:resolved event for post ID: ${req.params.postId}`);
+      io.emit("report:resolved", { postId: req.params.postId });
+    } else {
+      console.error('[ADMIN] Socket.io instance not available');
+    }
+    
     res.json({ success: true, message: "All reports resolved for this post" });
   } catch (e) { 
     next(e); 
@@ -151,6 +161,15 @@ const forceDeletePost = async (req, res, next) => {
   try {
     const post = await PeerPost.findByIdAndUpdate(req.params.id, { isDeleted: true });
     if (!post) return res.status(404).json({ success: false, message: "Post not found" });
+    
+    // Emit socket event to notify all users that post was deleted
+    const io = getIO();
+    if (io) {
+      console.log(`[ADMIN] Emitting post:deleted event for post ID: ${req.params.id}`);
+      io.emit("post:deleted", { postId: req.params.id });
+    } else {
+      console.error('[ADMIN] Socket.io instance not available');
+    }
     
     res.json({ success: true, message: "Post removed by admin" });
   } catch (e) { 
