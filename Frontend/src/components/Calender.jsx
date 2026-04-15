@@ -8,8 +8,14 @@ import {
   formatDate,
 } from '../data/moodData'
 import { getEmotionCategoryMeta, groupEmotionScores } from '../utils/emotionUtils'
+import { getToken } from '../lib/auth'
 
 const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
+
+function getAuthHeaders() {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -321,8 +327,9 @@ export function Calendar({ entries = [], loading = false, onEntryDeleted, onDate
 
     try {
       setIsDeleting(true)
-      const response = await fetch(`${API_URL}/api/entries/${deleteEntryId}`, {
+      const response = await fetch(`${API_URL}/entries/${deleteEntryId}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       })
 
       if (!response.ok) {

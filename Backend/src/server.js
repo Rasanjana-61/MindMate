@@ -1,3 +1,6 @@
+// Force Google DNS for MongoDB SRV resolution
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");

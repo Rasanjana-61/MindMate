@@ -174,7 +174,8 @@ async function analyzeWithGemini(text) {
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
-  const parsed = parseGeminiJSON(response.text());
+  const responseText = typeof response.text === "function" ? await response.text() : String(response.text || "");
+  const parsed = parseGeminiJSON(responseText);
 
   const emotionScores = normalizeEmotionScores(parsed?.emotionScores);
   const detectedEmotion =
@@ -183,6 +184,8 @@ async function analyzeWithGemini(text) {
   const suggestions = Array.isArray(parsed?.suggestions)
     ? parsed.suggestions.filter((item) => typeof item === "string" && item.trim())
     : [];
+
+  console.log("✅ Gemini AI analysis successful. Emotion:", emotion);
 
   return {
     emotion,
@@ -209,6 +212,7 @@ async function analyzeEmotion(text) {
   try {
     analysis = (await analyzeWithGemini(cleanText)) || fallbackAnalysis(cleanText);
   } catch (error) {
+    console.error("❌ Gemini AI analysis failed, falling back to heuristic. Error:", error.message);
     analysis = fallbackAnalysis(cleanText);
   }
 

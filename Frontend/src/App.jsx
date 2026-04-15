@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
+import { MoodTrackerDashboard } from './components/MoodTrackerDashboard';
 import { HomePage } from './pages/HomePage';
 import { Dashboard } from './pages/Dashboard';
 import { Dashboard as MoodDashboard } from './pages/Overview';
@@ -208,6 +209,9 @@ export function App() {
         setCurrentPage('mood-history');
         return;
       case 'results':
+        if (options.analysisResult) {
+          setMoodAnalysisResult(options.analysisResult);
+        }
         setCurrentPage('mood-results');
         return;
       case 'profile':
@@ -254,49 +258,6 @@ export function App() {
     );
   }
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'dashboard':
-        return <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
-      case 'mood':
-      case 'mood-dashboard':
-        return <MoodDashboard onNavigate={handleMoodNavigate} />;
-      case 'mood-journal':
-        return (
-          <JournalEntry
-            onAnalysisComplete={handleMoodAnalysisComplete}
-            initialEntryDate={moodSelectedJournalDate}
-          />
-        );
-      case 'mood-history':
-        return <MoodHistory onNavigate={handleMoodNavigate} />;
-      case 'mood-results':
-        return <MoodResults analysisResult={moodAnalysisResult} onNavigate={handleMoodNavigate} />;
-      case 'focus':
-        return <FocusTimer user={user} />;
-      case 'peer':
-        return <PeerSupport user={user} />;
-      case 'bookmarks':
-        return <BookmarkedQuestions />;
-      case 'resources':
-        return <ResourceHub user={user} />;
-      case 'profile':
-        return <Profile user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
-      case 'admin':
-        return user?.role === 'admin' ? <AdminDashboard /> : <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
-      case 'summarizer':
-        return <SummarizerDashboard setPage={handlePageChange} />;
-      case 'video-summary':
-        return <VideoSummary setPage={handlePageChange} />;
-      case 'text-summary':
-        return <TextSummary setPage={handlePageChange} />;
-      case 'file-summary':
-        return <FileSummary setPage={handlePageChange} />;
-      default:
-        return <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
-    }
-  };
-
   if (!isAuthenticated) {
     if (showHome) {
       return (
@@ -336,19 +297,59 @@ export function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <Layout
-        currentPage={currentPage}
-        setPage={handlePageChange}
-        user={user}
-        onLogout={handleLogout}
-        notifications={notifications}
-        unreadNotificationCount={unreadNotificationCount}
-        onOpenNotification={handleNotificationOpen}
-        onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
-        toastNotifications={toastNotifications}
-      >
-        {renderPage()}
-      </Layout>
+      {currentPage === 'mood' || currentPage === 'mood-dashboard' || currentPage === 'mood-journal' || currentPage === 'mood-history' || currentPage === 'mood-results' ? (
+        // Render MoodTrackerDashboard standalone (not in Layout)
+        <MoodTrackerDashboard
+          currentPage={currentPage}
+          onNavigate={handleMoodNavigate}
+          user={user}
+          onLogout={handleLogout}
+          moodAnalysisResult={moodAnalysisResult}
+          moodSelectedJournalDate={moodSelectedJournalDate}
+        />
+      ) : (
+        // Render other pages in Layout
+        <Layout
+          currentPage={currentPage}
+          setPage={handlePageChange}
+          user={user}
+          onLogout={handleLogout}
+          notifications={notifications}
+          unreadNotificationCount={unreadNotificationCount}
+          onOpenNotification={handleNotificationOpen}
+          onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
+          toastNotifications={toastNotifications}
+        >
+          {(() => {
+            switch (currentPage) {
+              case 'dashboard':
+                return <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
+              case 'focus':
+                return <FocusTimer user={user} />;
+              case 'peer':
+                return <PeerSupport user={user} />;
+              case 'bookmarks':
+                return <BookmarkedQuestions />;
+              case 'resources':
+                return <ResourceHub user={user} />;
+              case 'profile':
+                return <Profile user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
+              case 'admin':
+                return user?.role === 'admin' ? <AdminDashboard /> : <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
+              case 'summarizer':
+                return <SummarizerDashboard setPage={handlePageChange} />;
+              case 'video-summary':
+                return <VideoSummary setPage={handlePageChange} />;
+              case 'text-summary':
+                return <TextSummary setPage={handlePageChange} />;
+              case 'file-summary':
+                return <FileSummary setPage={handlePageChange} />;
+              default:
+                return <Dashboard setPage={handlePageChange} userName={user?.name || 'User'} />;
+            }
+          })()}
+        </Layout>
+      )}
     </>
   );
 }

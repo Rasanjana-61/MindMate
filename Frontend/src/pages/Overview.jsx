@@ -15,9 +15,14 @@ import {
 import { ChevronDown, Frown, PenLine, Sprout, Zap } from 'lucide-react'
 import { getMoodEmoji } from '../data/moodData'
 import { groupEmotionScores } from '../utils/emotionUtils'
+import { getToken } from '../lib/auth'
 
 const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
-const USER_ID = 'testUser123'
+
+function getAuthHeaders() {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -49,7 +54,9 @@ export function Dashboard({ onNavigate }) {
   const [activeChart, setActiveChart] = useState('trend')
 
   useEffect(() => {
-    fetch(`${API_URL}/api/dashboard/${USER_ID}?timeRange=${timeRange}`)
+    fetch(`${API_URL}/dashboard?timeRange=${timeRange}`, {
+      headers: getAuthHeaders(),
+    })
       .then((r) => r.json())
       .then((data) => {
         setDashboardData(data)
