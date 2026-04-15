@@ -8,7 +8,7 @@ import {
   getWeeklySummary,
   updateEntry,
   deleteEntry
-} from "../controllers/journalController.js";
+} from "../controllers/journal.controller.js";
 
 const router = Router();
 

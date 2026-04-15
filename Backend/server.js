@@ -3,7 +3,7 @@ import dns from "dns";
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import journalRoutes from "./routes/journalRoutes.js";
+import journalRoutes from "./routes/journal.routes.js";
 
 // Force Node.js to use Google DNS to avoid SRV lookup failures with IPv6 DNS servers
 dns.setServers(["8.8.8.8", "8.8.4.4"]);

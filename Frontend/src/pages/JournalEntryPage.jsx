@@ -68,6 +68,24 @@ function validateJournalContent(text) {
   return { status: 'valid', message: '' }
 }
 
+function extractReadableErrorMessage(rawMessage, fallbackMessage) {
+  if (typeof rawMessage !== 'string' || !rawMessage.trim()) {
+    return fallbackMessage
+  }
+
+  const trimmed = rawMessage.trim()
+
+  try {
+    const parsed = JSON.parse(trimmed)
+    const nestedMessage = parsed?.error?.message || parsed?.message
+    return typeof nestedMessage === 'string' && nestedMessage.trim()
+      ? nestedMessage.trim()
+      : trimmed
+  } catch {
+    return trimmed
+  }
+}
+
 const containerVariants = {
   hidden: {
     opacity: 0,
@@ -411,7 +429,11 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
-        throw new Error(errData.message || `Server error ${response.status}`)
+        const message = extractReadableErrorMessage(
+          errData.message,
+          `Server error ${response.status}`,
+        )
+        throw new Error(message)
       }
 
       const data = await response.json()
@@ -422,7 +444,12 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
       onAnalysisComplete({ ...data, text: submittedText, entryDate: selectedDate })
     } catch (err) {
       console.error('Error submitting entry:', err)
-      setError(err.message || 'Failed to analyze. Please try again.')
+      setError(
+        extractReadableErrorMessage(
+          err?.message,
+          'Failed to analyze. Please try again.',
+        ),
+      )
       setIsAnalyzing(false)
     }
   }

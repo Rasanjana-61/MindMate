@@ -1,5 +1,5 @@
-import JournalEntry from "../models/JournalEntry.model.js";
-import { analyzeEmotion } from "../services/aiService.js";
+import JournalEntry from "../models/journal-entry.model.js";
+import { analyzeEmotion } from "../services/journal-ai.service.js";
 
 function getLocalDayBounds(date) {
   const start = new Date(date)

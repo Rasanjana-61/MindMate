@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Sidebar } from './components/Sidebar'
-import { Dashboard } from './pages/Overview'
-import { JournalEntry } from './pages/JournalEntry'
-import { Results } from './pages/Results'
-import { MoodHistory } from './pages/MoodHistory'
+import { Sidebar } from './components/JournalSidebar'
+import { Dashboard } from './pages/JournalOverviewPage'
+import { JournalEntry } from './pages/JournalEntryPage'
+import { Results } from './pages/JournalResultsPage'
+import { MoodHistory } from './pages/JournalMoodHistoryPage'
 
 const pageVariants = {
   initial: {

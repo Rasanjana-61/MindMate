@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar } from '../components/Calender'
-import { RecentDaysFeed } from '../components/RecentDaysFeed'
+import { Calendar } from '../components/JournalCalendar'
+import { RecentDaysFeed } from '../components/JournalRecentDaysFeed'
 import { ChartColumn } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import dns from 'dns';
-import JournalEntry from './models/JournalEntry.model.js';
+import JournalEntry from './models/journal-entry.model.js';
 
 dotenv.config();
 
