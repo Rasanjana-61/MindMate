@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, FileDigit, Upload, Loader2, FileCheck, X, AlertCircle } from 'lucide-react';
+import { ArrowLeft, FileDigit, Upload, Loader2, FileCheck, X, AlertCircle, FileText } from 'lucide-react';
 import { request } from '../../lib/auth';
 import './Summarizer.css';
 
