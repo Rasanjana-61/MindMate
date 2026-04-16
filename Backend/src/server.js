@@ -9,7 +9,6 @@ const { Server } = require("socket.io");
 const { connectDB } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const focusRoutes = require("./routes/focusRoutes");
-const moodRoutes = require("./routes/moodRoutes");
 const peerRoutes = require("./routes/peerRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const resourceRoutes = require("./routes/resourceRoutes");
@@ -61,7 +60,6 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/focus", focusRoutes);
-app.use("/api/moods", moodRoutes);
 app.use("/api/peer", peerRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/resources", resourceRoutes);
