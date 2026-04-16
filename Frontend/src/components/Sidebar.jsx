@@ -17,8 +17,11 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'summarizer', label: 'AI Summarizer', icon: Sparkles, badge: 'New' },
-    { id: 'mood', label: 'Mood Tracker', icon: Smile },
     { id: 'focus', label: 'Focus & Tasks', icon: Timer },
+  ];
+
+  const moodTrackerItems = [
+    { id: 'mood', label: 'Mood Tracker', icon: Smile },
   ];
 
   const communityNavItems = [
@@ -66,7 +69,12 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
           {mainNavItems.map(renderNavItem)}
         </nav>
 
-        <nav className="space-y-1">
+        <nav className="space-y-1 border-t border-wellness-border pt-4">
+          <p className="px-4 text-xs font-semibold text-wellness-text-muted uppercase tracking-wider mb-2">Mood Tracker</p>
+          {moodTrackerItems.map(renderNavItem)}
+        </nav>
+
+        <nav className="space-y-1 border-t border-wellness-border pt-4">
           <p className="px-4 text-xs font-semibold text-wellness-text-muted uppercase tracking-wider mb-2">Community</p>
           {communityNavItems.map(renderNavItem)}
         </nav>
