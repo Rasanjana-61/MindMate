@@ -113,7 +113,7 @@ export function Dashboard({ setPage, userName }) {
           </div>
 
           <div className="hidden md:flex gap-3">
-            <button onClick={() => setPage('mood')} className="bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+            <button onClick={() => setPage('mood-journal')} className="bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
               <Smile className="w-4 h-4" /> Log today's journal entry
             </button>
             <button onClick={() => setPage('focus')} className="bg-white text-app-primary hover:bg-app-primary-light px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
@@ -362,3 +362,4 @@ export function Dashboard({ setPage, userName }) {
     </div>
   );
 }
+

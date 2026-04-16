@@ -185,6 +185,13 @@ export function App() {
   };
 
   const handlePageChange = (nextPage) => {
+    if (nextPage === 'mood-journal') {
+      setMoodScreen('journal');
+      setMoodSelectedJournalDate(null);
+      setCurrentPage('mood');
+      return;
+    }
+
     if (nextPage === 'mood') {
       // Always open the mood module dashboard when selecting Mood from navigation.
       setMoodScreen('dashboard');
@@ -362,3 +369,5 @@ export function App() {
     </>
   );
 }
+
+
