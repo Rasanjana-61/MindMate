@@ -21,6 +21,8 @@ const summarizerRoutes = require("./routes/summarizer/summarizerRoutes");
 const { setIO } = require("./utils/socket");
 
 dotenv.config();
+require("dns").setServers(["8.8.8.8", "1.1.1.1"]);
+require("dns").setDefaultResultOrder("ipv4first");
 
 const app = express();
 const server = http.createServer(app);

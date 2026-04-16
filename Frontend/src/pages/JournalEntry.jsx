@@ -2,9 +2,17 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Clock3, ChevronDown, ChevronUp, NotebookPen, PencilLine, Sprout, Lightbulb, TriangleAlert, Smile, Frown, Zap, FilePenLine } from 'lucide-react'
 import { getMoodEmoji, getMoodMeta } from '../data/moodData'
+import { getToken } from '../lib/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
-const USER_ID = 'testUser123'
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api\/?$/, '')
+
+function getAuthHeaders(includeJson = false) {
+  const token = getToken()
+  return {
+    ...(includeJson ? { 'Content-Type': 'application/json' } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
 
 function getTodayInputValue() {
   const today = new Date()
@@ -316,7 +324,9 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
       setHistoryLoading(true)
 
       try {
-        const response = await fetch(`${API_URL}/api/history/${USER_ID}`)
+        const response = await fetch(`${API_URL}/api/history`, {
+          headers: getAuthHeaders(),
+        })
         if (!response.ok) {
           throw new Error(`Failed to load history (${response.status})`)
         }
@@ -398,14 +408,14 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
       if (editingEntryId) {
         response = await fetch(`${API_URL}/api/entries/${editingEntryId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(true),
           body: JSON.stringify({ text: journalText }),
         })
       } else {
         response = await fetch(`${API_URL}/api/entries`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: USER_ID, text: journalText, entryDate: selectedDate }),
+          headers: getAuthHeaders(true),
+          body: JSON.stringify({ text: journalText, entryDate: selectedDate }),
         })
       }
 

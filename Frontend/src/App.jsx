@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
+import { MoodTrackerLayout } from './components/MoodTrackerLayout';
 import { HomePage } from './pages/HomePage';
 import { Dashboard } from './pages/Dashboard';
 import { Dashboard as MoodDashboard } from './pages/Overview';
@@ -322,6 +323,23 @@ export function App() {
         chatbotData={chatbotData}
         onNavigateToHome={() => setShowHome(true)}
       />
+    );
+  }
+
+  if (currentPage === 'mood') {
+    return (
+      <>
+        <Toaster position="top-right" reverseOrder={false} />
+        <MoodTrackerLayout
+          currentScreen={moodScreen}
+          onNavigate={handleMoodNavigate}
+          onOpenProfile={() => setCurrentPage('profile')}
+          onExit={() => setCurrentPage('dashboard')}
+          user={user}
+        >
+          {renderMoodModule()}
+        </MoodTrackerLayout>
+      </>
     );
   }
 
