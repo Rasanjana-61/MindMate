@@ -7,13 +7,13 @@ const MOBILE_TABS = [
   { id: 'history', label: 'History', icon: ScrollText },
 ];
 
-export function MoodTrackerLayout({ currentScreen, onNavigate, onOpenProfile, onExit, user, children }) {
+export function MoodTrackerLayout({ currentScreen, onNavigate, onLogout, onExit, user, children }) {
   return (
     <div className="min-h-screen bg-warm-sand lg:flex" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <MoodTrackerSidebar
         currentScreen={currentScreen}
         onNavigate={onNavigate}
-        onOpenProfile={onOpenProfile}
+        onLogout={onLogout}
         onExit={onExit}
         user={user}
       />

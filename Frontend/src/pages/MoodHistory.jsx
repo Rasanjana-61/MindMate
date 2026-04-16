@@ -49,7 +49,7 @@ export function MoodHistory({ onNavigate }) {
       <motion.div variants={itemVariants}>
         <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink flex items-center gap-3">
           <ChartColumn className="w-7 h-7 text-sage" />
-          Mood History
+          Journal History
         </h1>
         <p className="text-olive mt-1">
           Track your emotional journey over time

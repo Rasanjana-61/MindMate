@@ -333,7 +333,7 @@ export function App() {
         <MoodTrackerLayout
           currentScreen={moodScreen}
           onNavigate={handleMoodNavigate}
-          onOpenProfile={() => setCurrentPage('profile')}
+          onLogout={handleLogout}
           onExit={() => setCurrentPage('dashboard')}
           user={user}
         >

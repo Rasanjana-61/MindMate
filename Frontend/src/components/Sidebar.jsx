@@ -57,7 +57,7 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen bg-white border-r border-wellness-border fixed left-0 top-0 z-20">
       <div className="p-6 flex items-center gap-3 text-wellness-blue font-bold text-xl border-b border-wellness-border/50">
-        MindMadte
+        MindMate
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-6">

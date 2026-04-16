@@ -1,9 +1,9 @@
-import { BarChart3, BookOpenText, ClipboardPen, House, UserRound } from 'lucide-react';
+import { BarChart3, BookOpenText, ClipboardPen, House, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Overview', icon: House },
-  { id: 'journal', label: 'Journal Entry', icon: ClipboardPen },
+  { id: 'journal', label: 'Journal', icon: ClipboardPen },
   { id: 'history', label: 'History', icon: BarChart3 },
 ];
 
@@ -21,7 +21,7 @@ function UserAvatar({ user }) {
   );
 }
 
-export function MoodTrackerSidebar({ currentScreen, onNavigate, onOpenProfile, onExit, user }) {
+export function MoodTrackerSidebar({ currentScreen, onNavigate, onExit, onLogout, user }) {
   return (
     <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-56 shrink-0 border-r border-sage-soft/70 bg-warm-white/95">
       <div className="flex h-full w-full flex-col overflow-hidden p-3">
@@ -36,10 +36,12 @@ export function MoodTrackerSidebar({ currentScreen, onNavigate, onOpenProfile, o
 
             const label =
               item.id === 'dashboard'
-                ? 'Overview'
+                ? 'Dashboard'
                 : item.id === 'journal'
-                  ? 'Journal'
-                  : item.label;
+                  ? 'Journal Entry'
+                  : item.id === 'history'
+                    ? 'Journal History'
+                    : item.label;
 
             return (
               <button
@@ -75,20 +77,20 @@ export function MoodTrackerSidebar({ currentScreen, onNavigate, onOpenProfile, o
           <div className="rounded-xl border border-sage-soft/80 bg-cream p-3 shadow-card">
           <button
             type="button"
-            onClick={onOpenProfile}
+            onClick={onExit}
             className="flex w-full items-center gap-2 rounded-lg border border-sage-soft bg-warm-white px-2.5 py-1.5 text-sm font-medium text-olive hover:text-forest hover:bg-sage-wash/50 transition-colors"
           >
-            <UserRound className="h-3.5 w-3.5" />
-            Profile
+            <BookOpenText className="h-3.5 w-3.5" />
+            Main Dashboard
           </button>
 
           <button
             type="button"
-            onClick={onExit}
+            onClick={onLogout}
             className="mt-1.5 flex w-full items-center gap-2 rounded-lg border border-sage-soft bg-warm-white px-2.5 py-1.5 text-sm font-medium text-olive hover:text-forest hover:bg-sage-wash/50 transition-colors"
           >
-            <BookOpenText className="h-3.5 w-3.5" />
-            Main Dashboard
+            <LogOut className="h-3.5 w-3.5" />
+            Logout
           </button>
           </div>
         </div>
