@@ -1,4 +1,4 @@
-import { ChevronLeft, House, PencilLine, ScrollText, UserRound } from 'lucide-react';
+import { House, PencilLine, ScrollText } from 'lucide-react';
 import { MoodTrackerSidebar } from './MoodTrackerSidebar';
 
 const MOBILE_TABS = [
@@ -19,30 +19,7 @@ export function MoodTrackerLayout({ currentScreen, onNavigate, onOpenProfile, on
       />
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-20 border-b border-sage-soft/60 bg-warm-white/90 backdrop-blur-sm">
-          <div className="mx-auto flex w-full max-w-[1300px] items-center justify-between gap-3 px-4 py-3 md:px-6">
-            <button
-              type="button"
-              onClick={onExit}
-              className="inline-flex items-center gap-2 rounded-full border border-sage-soft bg-cream px-3 py-1.5 text-sm font-medium text-olive hover:text-forest hover:bg-sage-wash/60 transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Student Dashboard
-            </button>
-
-            <p className="font-lora text-lg font-semibold text-ink">Mood Tracker Dashboard</p>
-
-            <button
-              type="button"
-              onClick={onOpenProfile}
-              className="inline-flex items-center gap-2 rounded-full border border-sage-soft bg-cream px-3 py-1.5 text-sm font-medium text-olive hover:text-forest hover:bg-sage-wash/60 transition-colors"
-            >
-              <UserRound className="h-4 w-4" />
-              Profile
-            </button>
-          </div>
-
-          <div className="lg:hidden border-t border-sage-soft/50">
+        <div className="lg:hidden">
             <div className="mx-auto flex w-full max-w-[1300px] gap-2 overflow-x-auto px-4 py-2 md:px-6">
               {MOBILE_TABS.map((tab) => {
                 const Icon = tab.icon;
@@ -66,7 +43,6 @@ export function MoodTrackerLayout({ currentScreen, onNavigate, onOpenProfile, on
               })}
             </div>
           </div>
-        </header>
 
         <main className="mx-auto w-full max-w-[1300px] flex-1 px-4 py-5 md:px-6 md:py-6">
           {children}

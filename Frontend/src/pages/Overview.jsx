@@ -47,11 +47,12 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-export function Dashboard({ onNavigate }) {
+export function Dashboard({ onNavigate, user }) {
   const [dashboardData, setDashboardData] = useState(null)
   const [timeRange, setTimeRange] = useState('7D')
   const [isEmotionsExpanded, setIsEmotionsExpanded] = useState(false)
   const [activeChart, setActiveChart] = useState('trend')
+  const displayName = user?.fullName || user?.name || user?.studentId || 'User'
 
   useEffect(() => {
     fetch(`${API_URL}/api/dashboard?timeRange=${timeRange}`, {
@@ -84,7 +85,7 @@ export function Dashboard({ onNavigate }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink mb-1 flex items-center gap-2">
-              {getGreeting()}, Asitha <Sprout className="w-6 h-6 text-sage" />
+              {getGreeting()}, {displayName} <Sprout className="w-6 h-6 text-sage" />
             </h1>
             <p className="text-olive">{formatTodayDate()}</p>
           </div>

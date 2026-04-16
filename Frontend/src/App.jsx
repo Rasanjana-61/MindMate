@@ -212,7 +212,7 @@ export function App() {
   const renderMoodModule = () => {
     switch (moodScreen) {
       case 'dashboard':
-        return <MoodDashboard onNavigate={handleMoodNavigate} />;
+        return <MoodDashboard onNavigate={handleMoodNavigate} user={user} />;
       case 'journal':
         return (
           <JournalEntry
@@ -225,7 +225,7 @@ export function App() {
       case 'results':
         return <MoodResults analysisResult={moodAnalysisResult} onNavigate={handleMoodNavigate} />;
       default:
-        return <MoodDashboard onNavigate={handleMoodNavigate} />;
+        return <MoodDashboard onNavigate={handleMoodNavigate} user={user} />;
     }
   };
 
