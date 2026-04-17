@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaCirclePause, FaPlay, FaRotateLeft, FaSliders } from 'react-icons/fa6';
 import '../../styles/focus-timer.css';
 
@@ -8,7 +8,25 @@ const presets = [
   { label: 'Deep Work', focusDuration: 45, breakDuration: 10 },
 ];
 
+function formatTimer(secondsLeft) {
+  const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+  const seconds = String(secondsLeft % 60).padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
+function updateFloatingTimerWindow(floatingWindow, { mode, progress, status, time }) {
+  if (!floatingWindow || floatingWindow.closed) {
+    return;
+  }
+
+  floatingWindow.document.querySelector('[data-floating-time]').textContent = time;
+  floatingWindow.document.querySelector('[data-floating-mode]').textContent = mode;
+  floatingWindow.document.querySelector('[data-floating-status]').textContent = status;
+  floatingWindow.document.querySelector('[data-floating-dial]').style.setProperty('--progress', `${progress}%`);
+}
+
 function FocusTimer({ focusDuration, breakDuration, onUpdateSettings, onSessionComplete }) {
+  const floatingWindowRef = useRef(null);
   const [mode, setMode] = useState('Focus');
   const [timeLeft, setTimeLeft] = useState(focusDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
@@ -18,6 +36,7 @@ function FocusTimer({ focusDuration, breakDuration, onUpdateSettings, onSessionC
   });
   const [notification, setNotification] = useState('');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [isFloatingTimerActive, setIsFloatingTimerActive] = useState(false);
 
   useEffect(() => {
     setSettings({ focusDuration, breakDuration });
@@ -56,9 +75,173 @@ function FocusTimer({ focusDuration, breakDuration, onUpdateSettings, onSessionC
 
   const totalSeconds = mode === 'Focus' ? settings.focusDuration * 60 : settings.breakDuration * 60;
   const progress = ((totalSeconds - timeLeft) / totalSeconds) * 100;
+  const displayTime = formatTimer(timeLeft);
+  const floatingStatus = isRunning ? 'Running' : 'Paused';
 
-  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-  const seconds = String(timeLeft % 60).padStart(2, '0');
+  useEffect(() => {
+    const floatingWindow = floatingWindowRef.current;
+
+    if (!floatingWindow || floatingWindow.closed) {
+      if (isFloatingTimerActive) {
+        setIsFloatingTimerActive(false);
+      }
+      return;
+    }
+
+    updateFloatingTimerWindow(floatingWindow, {
+      mode,
+      progress: Math.max(progress, 0),
+      status: floatingStatus,
+      time: displayTime,
+    });
+  }, [displayTime, floatingStatus, isFloatingTimerActive, mode, progress]);
+
+  useEffect(() => () => {
+    if (floatingWindowRef.current && !floatingWindowRef.current.closed) {
+      floatingWindowRef.current.close();
+    }
+  }, []);
+
+  const openFloatingTimer = async ({ notifyOnError = true, status = floatingStatus } = {}) => {
+    if (!('documentPictureInPicture' in window)) {
+      if (notifyOnError) {
+        setNotification('Floating timer is not supported in this browser. Use Chrome or Edge for the popup.');
+      }
+      return false;
+    }
+
+    if (floatingWindowRef.current && !floatingWindowRef.current.closed) {
+      floatingWindowRef.current.focus();
+      return true;
+    }
+
+    try {
+      const floatingWindow = await window.documentPictureInPicture.requestWindow({
+        width: 220,
+        height: 220,
+      });
+
+      floatingWindowRef.current = floatingWindow;
+      floatingWindow.document.title = 'MindMate Timer';
+      floatingWindow.document.body.innerHTML = `
+        <main class="floating-timer">
+          <div class="floating-timer__dial" data-floating-dial>
+            <div class="floating-timer__inner">
+              <span data-floating-status>Paused</span>
+              <strong data-floating-time>00:00</strong>
+              <small data-floating-mode>Focus</small>
+            </div>
+          </div>
+        </main>
+      `;
+
+      const style = floatingWindow.document.createElement('style');
+      style.textContent = `
+        * { box-sizing: border-box; }
+        html, body {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          overflow: hidden;
+          background: transparent;
+          font-family: Inter, Arial, sans-serif;
+        }
+        .floating-timer {
+          width: 100vw;
+          height: 100vh;
+          display: grid;
+          place-items: center;
+          background: #eef5ef;
+        }
+        .floating-timer__dial {
+          --progress: 0%;
+          width: min(88vw, 185px);
+          aspect-ratio: 1;
+          display: grid;
+          place-items: center;
+          padding: 12px;
+          border-radius: 50%;
+          background: conic-gradient(from 180deg, #4f7f7f 0 var(--progress), #d4e4d5 var(--progress) 100%);
+          box-shadow: 0 18px 34px rgba(43, 79, 79, 0.22);
+        }
+        .floating-timer__inner {
+          width: 100%;
+          height: 100%;
+          display: grid;
+          place-items: center;
+          padding: 18px;
+          border-radius: 50%;
+          background: #fbf8f3;
+          color: #253737;
+          text-align: center;
+        }
+        .floating-timer__inner span {
+          color: #6b7d74;
+          font-size: 0.74rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+        .floating-timer__inner strong {
+          font-size: 2.2rem;
+          line-height: 1;
+        }
+        .floating-timer__inner small {
+          color: #4f7f7f;
+          font-size: 0.86rem;
+          font-weight: 800;
+        }
+      `;
+      floatingWindow.document.head.append(style);
+
+      floatingWindow.addEventListener('pagehide', () => {
+        floatingWindowRef.current = null;
+        setIsFloatingTimerActive(false);
+      });
+
+      setIsFloatingTimerActive(true);
+      updateFloatingTimerWindow(floatingWindow, {
+        mode,
+        progress: Math.max(progress, 0),
+        status,
+        time: displayTime,
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to open floating timer.', error);
+      if (notifyOnError) {
+        setNotification('Floating timer could not be opened. Please allow the browser popup and try again.');
+      }
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (!isRunning) {
+      return undefined;
+    }
+
+    const stopTimer = () => {
+      setIsRunning(false);
+      setNotification('Timer paused because you left the focus tab.');
+      openFloatingTimer({ notifyOnError: false, status: 'Paused' });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        stopTimer();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isRunning, openFloatingTimer]);
+
+  const handleStart = () => {
+    setIsRunning(true);
+  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -127,7 +310,7 @@ function FocusTimer({ focusDuration, breakDuration, onUpdateSettings, onSessionC
             <div className="focus-timer__dial-inner">
               <span className="focus-timer__label">Current session</span>
               <strong className="focus-timer__time">
-                {minutes}:{seconds}
+                {displayTime}
               </strong>
               <p className="focus-timer__hint">
                 {mode === 'Focus'
@@ -153,7 +336,7 @@ function FocusTimer({ focusDuration, breakDuration, onUpdateSettings, onSessionC
           </div>
 
           <div className="focus-timer__actions">
-            <button className="btn btn--primary" type="button" onClick={() => setIsRunning(true)}>
+            <button className="btn btn--primary" type="button" onClick={handleStart}>
               <FaPlay /> Start
             </button>
             <button className="btn btn--ghost" type="button" onClick={() => setIsRunning(false)}>

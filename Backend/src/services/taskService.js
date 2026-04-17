@@ -2,6 +2,14 @@ import { randomUUID } from 'node:crypto';
 import Task from '../models/Task.js';
 import AppError from '../errors/AppError.js';
 import { PRIORITY_INPUTS, STATUS_INPUTS } from '../constants/taskConstants.js';
+import { isDatabaseConnected } from '../config/database.js';
+import {
+  addMemoryTask,
+  deleteMemoryTask,
+  getMemoryTask,
+  listMemoryTasks,
+  updateMemoryTask,
+} from '../store/memoryStore.js';
 
 function validateString(value, field, min, max) {
   if (typeof value !== 'string' || value.trim().length < min || value.trim().length > max) {
@@ -93,6 +101,16 @@ function applyTaskPayload(task, payload) {
 }
 
 async function getTaskOrThrow(taskId) {
+  if (!isDatabaseConnected()) {
+    const task = getMemoryTask(taskId);
+
+    if (!task) {
+      throw new AppError(404, `Task not found: ${taskId}`);
+    }
+
+    return task;
+  }
+
   const task = await Task.findOne({ id: taskId });
 
   if (!task) {
@@ -103,6 +121,10 @@ async function getTaskOrThrow(taskId) {
 }
 
 export async function getTasks() {
+  if (!isDatabaseConnected()) {
+    return listMemoryTasks().map(toResponse);
+  }
+
   const tasks = await Task.find().sort({ createdAt: -1, _id: -1 });
   return tasks.map(toResponse);
 }
@@ -116,6 +138,11 @@ export async function createTask(payload) {
   });
 
   applyTaskPayload(task, payload);
+
+  if (!isDatabaseConnected()) {
+    return toResponse(addMemoryTask(task.toObject()));
+  }
+
   await task.save();
 
   return toResponse(task);
@@ -126,6 +153,11 @@ export async function updateTask(taskId, payload) {
 
   const task = await getTaskOrThrow(taskId);
   applyTaskPayload(task, payload);
+
+  if (!isDatabaseConnected()) {
+    return toResponse(updateMemoryTask(taskId, task));
+  }
+
   await task.save();
 
   return toResponse(task);
@@ -134,12 +166,25 @@ export async function updateTask(taskId, payload) {
 export async function toggleTaskCompletion(taskId) {
   const task = await getTaskOrThrow(taskId);
   task.status = task.status === 'Completed' ? 'Pending' : 'Completed';
+
+  if (!isDatabaseConnected()) {
+    return toResponse(updateMemoryTask(taskId, { status: task.status }));
+  }
+
   await task.save();
 
   return toResponse(task);
 }
 
 export async function deleteTask(taskId) {
+  if (!isDatabaseConnected()) {
+    if (!deleteMemoryTask(taskId)) {
+      throw new AppError(404, `Task not found: ${taskId}`);
+    }
+
+    return;
+  }
+
   const task = await Task.findOneAndDelete({ id: taskId });
 
   if (!task) {

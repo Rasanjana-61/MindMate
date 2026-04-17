@@ -1,6 +1,13 @@
 import FocusSettings from '../models/FocusSettings.js';
 import FocusSession from '../models/FocusSession.js';
 import AppError from '../errors/AppError.js';
+import { isDatabaseConnected } from '../config/database.js';
+import {
+  addMemoryFocusSession,
+  getMemoryFocusSettings,
+  listMemoryFocusSessions,
+  updateMemoryFocusSettings,
+} from '../store/memoryStore.js';
 
 const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -77,6 +84,10 @@ function validateSessionPayload(payload) {
 }
 
 async function getOrCreateSettings() {
+  if (!isDatabaseConnected()) {
+    return getMemoryFocusSettings();
+  }
+
   let settings = await FocusSettings.findOne({ key: 'default' });
 
   if (!settings) {
@@ -134,6 +145,18 @@ export async function getFocusSettings() {
 export async function updateFocusSettings(payload) {
   validateFocusSettingsPayload(payload);
 
+  if (!isDatabaseConnected()) {
+    const settings = updateMemoryFocusSettings({
+      focusDuration: payload.focusDuration,
+      breakDuration: payload.breakDuration,
+    });
+
+    return {
+      focusDuration: settings.focusDuration,
+      breakDuration: settings.breakDuration,
+    };
+  }
+
   const settings = await getOrCreateSettings();
   settings.focusDuration = payload.focusDuration;
   settings.breakDuration = payload.breakDuration;
@@ -150,6 +173,41 @@ export async function getFocusStats() {
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);
   const weekStart = startOfDay(addDays(now, -6));
+
+  if (!isDatabaseConnected()) {
+    const sessions = listMemoryFocusSessions()
+      .filter((session) => session.mode === 'Focus')
+      .sort((left, right) => new Date(right.completedAt).getTime() - new Date(left.completedAt).getTime());
+
+    const todayFocusSessions = sessions.filter((session) => {
+      const completedAt = new Date(session.completedAt);
+      return completedAt >= todayStart && completedAt <= todayEnd;
+    });
+    const weekFocusSessions = sessions.filter((session) => {
+      const completedAt = new Date(session.completedAt);
+      return completedAt >= weekStart && completedAt <= todayEnd;
+    });
+
+    const todayMinutes = todayFocusSessions.reduce((sum, session) => sum + session.durationMinutes, 0);
+    const weekMinutes = weekFocusSessions.reduce((sum, session) => sum + session.durationMinutes, 0);
+    const weeklyTotals = new Map(dayLabels.map((label) => [label, 0]));
+
+    for (const session of weekFocusSessions) {
+      const label = dayLabels[new Date(session.completedAt).getDay()];
+      weeklyTotals.set(label, weeklyTotals.get(label) + session.durationMinutes);
+    }
+
+    return {
+      todayMinutes,
+      weekMinutes,
+      streak: calculateStreak(sessions),
+      completedSessions: sessions.length,
+      weeklyTrend: dayLabels.map((day) => ({
+        day,
+        minutes: weeklyTotals.get(day) ?? 0,
+      })),
+    };
+  }
 
   const [todayFocusSessions, weekFocusSessions, allFocusSessions] = await Promise.all([
     FocusSession.find({
@@ -187,6 +245,16 @@ export async function getFocusStats() {
 
 export async function recordSession(payload) {
   validateSessionPayload(payload);
+
+  if (!isDatabaseConnected()) {
+    addMemoryFocusSession({
+      mode: normalizeSessionMode(payload.mode),
+      durationMinutes: payload.completedMinutes,
+      completedAt: payload.completedAt ? new Date(payload.completedAt) : new Date(),
+    });
+
+    return;
+  }
 
   await FocusSession.create({
     mode: normalizeSessionMode(payload.mode),

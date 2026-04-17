@@ -1,8 +1,15 @@
 import Task from '../models/Task.js';
 import FocusSettings from '../models/FocusSettings.js';
 import { defaultTasks } from './defaultData.js';
+import { isDatabaseConnected } from '../config/database.js';
+import { seedMemoryStore } from '../store/memoryStore.js';
 
 export async function seedDatabase() {
+  if (!isDatabaseConnected()) {
+    seedMemoryStore();
+    return;
+  }
+
   const [taskCount, settingsCount] = await Promise.all([
     Task.countDocuments(),
     FocusSettings.countDocuments(),
