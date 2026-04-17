@@ -25,6 +25,11 @@ dist
 dist-ssr
 coverage
 
+# Playwright artifacts
+Frontend/playwright-report/
+Frontend/test-results/
+Frontend/blob-report/
+
 # ========================
 # Logs
 # ========================
@@ -40,6 +45,10 @@ lerna-debug.log*
 # Local files
 # ========================
 *.local
+
+# Runtime uploads
+#Backend/uploads/profile-images/
+#Backend/uploads/resources/
 
 # ========================
 # Editor & OS files
