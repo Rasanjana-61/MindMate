@@ -53,6 +53,9 @@ function validateTaskPayload(payload) {
       dueDate,
       priority: payload.priority || "medium",
       completed: Boolean(payload.completed),
+      subject: payload.subject?.trim() || "",
+      pomodoros: Number(payload.pomodoros) || 1,
+      totalTimeSpent: Number(payload.totalTimeSpent) || 0,
     },
   };
 }
@@ -70,10 +73,10 @@ function validateSessionPayload(payload) {
 
   if (
     !Number.isFinite(completedDurationMinutes) ||
-    completedDurationMinutes < 1 ||
+    completedDurationMinutes < 0.1 ||
     completedDurationMinutes > 240
   ) {
-    errors.completedDurationMinutes = "Completed duration must be between 1 and 240 minutes.";
+    errors.completedDurationMinutes = "Completed duration must be at least 6 seconds.";
   }
 
   if (!completedAt) {
@@ -87,6 +90,7 @@ function validateSessionPayload(payload) {
       plannedDurationMinutes,
       completedDurationMinutes,
       completedAt,
+      taskId: payload.taskId || null,
     },
   };
 }
@@ -122,6 +126,9 @@ function formatTask(task) {
     priority: task.priority,
     completed: task.completed,
     completedAt: task.completedAt,
+    subject: task.subject,
+    pomodoros: task.pomodoros,
+    totalTimeSpent: task.totalTimeSpent || 0,
     createdAt: task.createdAt,
     updatedAt: task.updatedAt,
   };
@@ -371,6 +378,14 @@ router.post("/sessions", async (req, res) => {
       ...values,
       completed: true,
     });
+
+    if (values.taskId) {
+      const task = await Task.findOne({ _id: values.taskId, user: req.user._id });
+      if (task) {
+        task.totalTimeSpent = (task.totalTimeSpent || 0) + values.completedDurationMinutes;
+        await task.save();
+      }
+    }
 
     if (values.sessionType === "focus") {
       await createNotification({

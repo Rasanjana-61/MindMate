@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { MoodTrackerLayout } from './components/MoodTrackerLayout';
 import { HomePage } from './pages/HomePage';
 import { Dashboard } from './pages/Dashboard';
@@ -21,6 +22,7 @@ import { SummarizerDashboard } from './pages/summarizer/SummarizerDashboard';
 import { VideoSummary } from './pages/summarizer/VideoSummary';
 import { TextSummary } from './pages/summarizer/TextSummary';
 import { FileSummary } from './pages/summarizer/FileSummary';
+import { Tasks } from './pages/Tasks';
 import {
   API_BASE_URL,
   clearToken,
@@ -36,7 +38,6 @@ import {
 } from './lib/auth';
 
 export function App() {
-  console.log("App component is rendering...");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showHome, setShowHome] = useState(true);
   const [authPage, setAuthPage] = useState('login');
@@ -185,6 +186,8 @@ export function App() {
   };
 
   const handlePageChange = (nextPage) => {
+    window.scrollTo(0, 0);
+
     if (nextPage === 'mood-journal') {
       setMoodScreen('journal');
       setMoodSelectedJournalDate(null);
@@ -193,7 +196,6 @@ export function App() {
     }
 
     if (nextPage === 'mood') {
-      // Always open the mood module dashboard when selecting Mood from navigation.
       setMoodScreen('dashboard');
       setMoodSelectedJournalDate(null);
     }
@@ -280,6 +282,8 @@ export function App() {
         return <BookmarkedQuestions />;
       case 'resources':
         return <ResourceHub user={user} />;
+      case 'tasks':
+        return <Tasks />;
       case 'profile':
         return <Profile user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
       case 'admin':
@@ -344,7 +348,9 @@ export function App() {
           onExit={() => setCurrentPage('dashboard')}
           user={user}
         >
-          {renderMoodModule()}
+          <ErrorBoundary key={moodScreen}>
+            {renderMoodModule()}
+          </ErrorBoundary>
         </MoodTrackerLayout>
       </>
     );
@@ -364,10 +370,10 @@ export function App() {
         onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
         toastNotifications={toastNotifications}
       >
-        {renderPage()}
+        <ErrorBoundary key={currentPage}>
+          {renderPage()}
+        </ErrorBoundary>
       </Layout>
     </>
   );
 }
-
-

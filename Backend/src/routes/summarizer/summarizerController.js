@@ -32,7 +32,7 @@ const summarize = async (req, res) => {
     const { type, content, language = "English" } = req.body;
 
     if (type === "video") {
-      const summary = await GeminiService.generateSummary(content); // content is transcript text
+      const summary = await GeminiService.generateSummary(content, language); // content is transcript text
       return res.json({ success: true, summary });
     }
 

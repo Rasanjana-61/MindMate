@@ -93,6 +93,7 @@ export function FocusTimer({ user }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingTask, setIsSavingTask] = useState(false);
   const [isLoggingSession, setIsLoggingSession] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState('');
   const [overview, setOverview] = useState({
     tasks: [],
     stats: {
@@ -130,20 +131,58 @@ export function FocusTimer({ user }) {
     loadOverview();
   }, []);
 
+  const [autoPauseInfo, setAutoPauseInfo] = useState(null);
+
   useEffect(() => {
-    if (isActive && timeLeft > 0) {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && isActive) {
+        setIsActive(false);
+        setAutoPauseInfo({
+          pausedAt: new Date(),
+        });
+      } else if (document.visibilityState === 'visible' && autoPauseInfo) {
+        const now = new Date();
+        const pausedDurationSeconds = Math.round((now.getTime() - autoPauseInfo.pausedAt.getTime()) / 1000);
+        const minutes = Math.floor(pausedDurationSeconds / 60);
+        const seconds = pausedDurationSeconds % 60;
+        
+        const durationText = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+        const timeString = autoPauseInfo.pausedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        setStatusMessage(`Auto-paused at ${timeString}. You were away for ${durationText}.`);
+        setAutoPauseInfo(null);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isActive, autoPauseInfo]);
+
+  useEffect(() => {
+    if (isActive) {
       const interval = window.setInterval(() => {
-        setTimeLeft((current) => current - 1);
+        if (selectedTaskId) {
+          // Count UP mode for task tracking
+          setTimeLeft((current) => current + 1);
+        } else if (timeLeft > 0) {
+          // Count DOWN mode for standard pomodoro
+          setTimeLeft((current) => current - 1);
+        } else {
+          // Pomodoro finished
+          setIsActive(false);
+        }
       }, 1000);
 
       return () => clearInterval(interval);
     }
 
     return undefined;
-  }, [isActive, timeLeft]);
+  }, [isActive, timeLeft, selectedTaskId]);
 
   useEffect(() => {
-    if (timeLeft !== 0 || !isActive || isLoggingSession) {
+    // Only auto-finalize for standard Pomodoro (count down)
+    // If a task is selected, we use count up (stopwatch) and finalize manually via "End"
+    if (selectedTaskId || timeLeft !== 0 || !isActive || isLoggingSession) {
       return;
     }
 
@@ -159,6 +198,7 @@ export function FocusTimer({ user }) {
           plannedDurationMinutes: isBreak ? breakMinutes : focusMinutes,
           completedDurationMinutes: isBreak ? breakMinutes : focusMinutes,
           completedAt: new Date().toISOString(),
+          taskId: !isBreak ? selectedTaskId : null,
         });
 
         setStatusMessage(
@@ -182,15 +222,64 @@ export function FocusTimer({ user }) {
   }, [timeLeft, isActive, isBreak, focusMinutes, breakMinutes, isLoggingSession]);
 
   useEffect(() => {
-    if (!isActive) {
+    // Only reset timer to presets if NO task is selected
+    if (!selectedTaskId) {
       setTimeLeft((isBreak ? breakMinutes : focusMinutes) * 60);
+    } else {
+      setTimeLeft(0);
     }
-  }, [focusMinutes, breakMinutes, isBreak, isActive]);
+  }, [focusMinutes, breakMinutes, isBreak, selectedTaskId]);
 
-  function resetTimer() {
+  async function endSession() {
+    const elapsedSeconds = selectedTaskId ? timeLeft : (currentDurationSeconds - timeLeft);
+    const elapsedMinutes = elapsedSeconds / 60; // Precise decimal minutes
+
     setIsActive(false);
-    setStatusMessage('');
-    setTimeLeft((isBreak ? breakMinutes : focusMinutes) * 60);
+    setStatusMessage('Concluding session...');
+
+    try {
+      // 1. Save time spent if it's a meaningful session (6s+)
+      if (elapsedSeconds >= 6) {
+        await createFocusSession({
+          sessionType: isBreak ? 'break' : 'focus',
+          plannedDurationMinutes: isBreak ? breakMinutes : focusMinutes,
+          completedDurationMinutes: elapsedMinutes,
+          completedAt: new Date().toISOString(),
+          taskId: !isBreak ? selectedTaskId : null,
+        });
+      }
+
+      // 2. Fetch fresh data to check goals
+      const updatedData = await fetchFocusOverview();
+      setOverview(updatedData);
+      
+      // 3. Handle task completion logic if applicable
+      if (selectedTaskId) {
+        const task = (updatedData.tasks || []).find(t => t.id === selectedTaskId);
+        if (task) {
+          const goalMin = task.priority === 'high' ? 60 : task.priority === 'medium' ? 40 : 20;
+          const isGoalReached = (task.totalTimeSpent || 0) >= goalMin;
+
+          if (isGoalReached && !task.completed) {
+            await updateTask(selectedTaskId, { ...task, completed: true });
+            setStatusMessage(`Goal reached! "${task.title}" completed.`);
+          } else {
+            setStatusMessage(`Progress saved for "${task.title}".`);
+          }
+        }
+      } else {
+        setStatusMessage('Session ended.');
+      }
+    } catch (error) {
+      console.error('Finalize session error:', error);
+      setErrorMessage('Progress logged, but failed to sync dashboard immediately. Refresh to update.');
+    } finally {
+      // 4. ALWAYS reset UI state regardless of success/fail
+      setSelectedTaskId('');
+      setTimeLeft(0);
+      setIsActive(false);
+      await loadOverview();
+    }
   }
 
   function startEditingTask(task) {
@@ -297,429 +386,261 @@ export function FocusTimer({ user }) {
     visible: { opacity: 1, y: 0 },
   };
 
+
+  const presets = [
+    { name: 'Sprint', focus: 20, break: 5 },
+    { name: 'Classic', focus: 25, break: 5 },
+    { name: 'Deep Work', focus: 45, break: 10 },
+  ];
+
+  const handlePresetChange = (preset) => {
+    setFocusMinutes(preset.focus);
+    setBreakMinutes(preset.break);
+    if (!isActive) {
+      setTimeLeft(preset.focus * 60);
+      setIsBreak(false);
+    }
+  };
+
+  // Calculate progress goal based on priority if a task is selected
+  const getTaskGoalMinutes = () => {
+    const task = (overview?.tasks || []).find(t => t.id === selectedTaskId);
+    if (!task) return focusMinutes;
+    
+    switch (task.priority) {
+      case 'high': return 60;
+      case 'medium': return 40;
+      case 'low': return 20;
+      default: return focusMinutes;
+    }
+  };
+
+  const taskGoalMinutes = getTaskGoalMinutes();
+
+  const progressPercent = selectedTaskId 
+    ? Math.round(Math.min(100, (timeLeft / (taskGoalMinutes * 60)) * 100))
+    : Math.round(((currentDurationSeconds - timeLeft) / currentDurationSeconds) * 100);
+
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 max-w-6xl mx-auto">
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-        <div className="lg:col-span-5 space-y-6">
-          <div className="card p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-wellness-blue-light/45 via-white to-wellness-green-light/25" />
-            <div className="relative z-10 w-full">
-              <div className="flex items-center justify-between gap-4 mb-6">
-                <span
-                  className={`px-5 py-2 rounded-full text-sm font-bold shadow-sm ${
-                    isBreak ? 'bg-wellness-green text-white' : 'bg-wellness-blue text-white'
-                  }`}
-                >
-                  {isBreak ? 'Break Time' : 'Focus Session'}
-                </span>
-                <span className="text-sm font-medium text-wellness-text-sec">
-                  Default: {focusMinutes}/{breakMinutes} min
-                </span>
-              </div>
+    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#2F3E34]">Pomodoro Focus Timer</h1>
+          <p className="text-[#6B7C72] mt-1 italic">Stay on task with guided focus and break cycles designed for academic work.</p>
+        </div>
+        <div className="bg-[#CFE6E6] text-[#6FA5A5] px-6 py-2 rounded-full text-sm font-bold shadow-sm border border-[#6FA5A5]/20">
+          Focus Mode
+        </div>
+      </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-8 text-left">
-                <div className="bg-white/90 rounded-2xl border border-wellness-border/60 p-4">
-                  <label className="text-xs font-semibold uppercase tracking-[0.16em] text-wellness-text-muted block mb-2">
-                    Focus Minutes
-                  </label>
-                  <select
-                    value={focusMinutes}
-                    onChange={(event) => setFocusMinutes(Number(event.target.value))}
-                    className="w-full rounded-xl border border-wellness-border bg-wellness-bg px-3 py-2 text-sm outline-none focus:border-wellness-blue"
-                  >
-                    {[15, 20, 25, 30, 45, 60].map((value) => (
-                      <option key={value} value={value}>
-                        {value} min
-                      </option>
-                    ))}
-                  </select>
-                </div>
+      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-[#D7E8DA]/50 relative overflow-hidden">
+        {/* Live Progress Background Line */}
+        {selectedTaskId && isActive && (
+          <motion.div 
+            className="absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-[#7BAE7F] to-[#6FA5A5] shadow-[0_0_10px_rgba(123,174,127,0.4)]"
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(100, (timeLeft / (taskGoalMinutes * 60)) * 100)}%` }}
+            transition={{ type: 'spring', damping: 20, stiffness: 50 }}
+          />
+        )}
 
-                <div className="bg-white/90 rounded-2xl border border-wellness-border/60 p-4">
-                  <label className="text-xs font-semibold uppercase tracking-[0.16em] text-wellness-text-muted block mb-2">
-                    Break Minutes
-                  </label>
-                  <select
-                    value={breakMinutes}
-                    onChange={(event) => setBreakMinutes(Number(event.target.value))}
-                    className="w-full rounded-xl border border-wellness-border bg-wellness-bg px-3 py-2 text-sm outline-none focus:border-wellness-blue"
-                  >
-                    {[5, 10, 15, 20].map((value) => (
-                      <option key={value} value={value}>
-                        {value} min
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-2xl transition-colors ${isActive ? 'bg-[#7BAE7F] text-white' : 'bg-[#F6F7F5] text-[#7BAE7F]'}`}>
+              <CheckCircle2 className={`w-6 h-6 ${isActive ? 'animate-pulse' : ''}`} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-[#6B7C72] uppercase tracking-widest">
+                {isActive ? 'Currently Tracking' : 'Active Task Tracking'}
+              </p>
+              <h3 className="text-lg font-bold text-[#2F3E34]">
+                {selectedTaskId ? (overview?.tasks || []).find(t => t.id === selectedTaskId)?.title : "No task selected"}
+              </h3>
+            </div>
+          </div>
+          <div className="w-full md:w-auto min-w-[300px]">
+            <select 
+              value={selectedTaskId}
+              onChange={(e) => setSelectedTaskId(e.target.value)}
+              className="w-full bg-[#F6F7F5] border-none rounded-2xl px-6 py-4 text-[#2F3E34] focus:ring-2 focus:ring-[#7BAE7F]/20 transition-all font-medium appearance-none cursor-pointer"
+            >
+              <option value="">Select a task to track...</option>
+              {(overview?.tasks || []).filter(t => !t.completed).map(task => (
+                <option key={task.id} value={task.id}>{task.title}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
-              <div className="relative w-64 h-64 md:w-72 md:h-72 flex items-center justify-center mx-auto mb-10">
-                <div
-                  className={`absolute inset-0 rounded-full transition-all duration-1000 ${
-                    isActive
-                      ? isBreak
-                        ? 'shadow-[0_0_40px_rgba(123,200,164,0.35)]'
-                        : 'shadow-[0_0_40px_rgba(107,159,212,0.35)]'
-                      : ''
-                  }`}
-                />
-                <svg className="w-full h-full transform -rotate-90 relative z-10" viewBox="0 0 260 260">
-                  <circle cx="130" cy="130" r={radius} fill="none" stroke={isBreak ? '#E8F0E8' : '#CFE6E6'} strokeWidth="12" />
-                  <circle
-                    cx="130"
-                    cy="130"
-                    r={radius}
-                    fill="none"
-                    stroke={isBreak ? '#B8D0B8' : '#6FA5A5'}
-                    strokeWidth="12"
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    className="transition-all duration-1000 ease-linear"
-                  />
-                </svg>
-                <div className="absolute flex flex-col items-center z-20">
-                  <span className="text-6xl font-bold text-wellness-text font-mono tracking-tighter">
-                    {formatCountdown(timeLeft)}
-                  </span>
-                  <span className="text-sm text-wellness-text-sec mt-2">
-                    {isBreak ? 'Reset and recharge' : 'Protected study block'}
-                  </span>
-                </div>
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Card: Timer Display */}
+        <div className="lg:col-span-7 bg-white rounded-[40px] p-10 shadow-sm border border-[#D7E8DA]/50 flex flex-col items-center">
+          <div className="relative w-80 h-80 flex items-center justify-center">
+            {/* Outer Circle Ring */}
+            <div className="absolute inset-0 rounded-full border-[16px] border-[#E8F0E8]" />
+            
+            {/* Progress Circle */}
+            <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 320 320">
+              <circle
+                cx="160"
+                cy="160"
+                r="144"
+                fill="none"
+                stroke={isBreak ? '#B8D0B8' : '#7BAE7F'}
+                strokeWidth="16"
+                strokeDasharray="904.78"
+                strokeDashoffset={904.78 - (timeLeft / currentDurationSeconds) * 904.78}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-linear"
+              />
+            </svg>
 
-              <div className="flex items-center justify-center gap-6">
-                <button
-                  onClick={resetTimer}
-                  className="w-12 h-12 rounded-full flex items-center justify-center bg-wellness-bg text-wellness-text-sec hover:bg-gray-200 hover:text-wellness-text transition-all"
-                  title="Reset timer"
-                  type="button"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                </button>
-
-                <button
-                  onClick={() => setIsActive((current) => !current)}
-                  disabled={isLoggingSession}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all hover:scale-105 active:scale-95 ${
-                    isBreak
-                      ? 'bg-wellness-green hover:bg-green-500 shadow-wellness-green/30'
-                      : 'bg-wellness-blue hover:bg-blue-500 shadow-wellness-blue/30'
-                  } ${isLoggingSession ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  type="button"
-                >
-                  {isActive ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1.5" />}
-                </button>
-
-                <div className="w-12 h-12 rounded-full bg-white border border-wellness-border flex items-center justify-center text-sm font-semibold text-wellness-text">
-                  {overview.recentSessions.length}
-                </div>
-              </div>
-
-              {statusMessage ? (
-                <div className="mt-6 rounded-2xl border border-wellness-green/30 bg-wellness-green-light/40 px-4 py-3 text-sm text-wellness-green">
-                  {statusMessage}
-                </div>
-              ) : null}
-
-              {errorMessage ? (
-                <div className="mt-6 rounded-2xl border border-wellness-peach/30 bg-wellness-peach-light/30 px-4 py-3 text-sm text-wellness-peach">
-                  {errorMessage}
-                </div>
-              ) : null}
+            {/* Timer Text */}
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <p className="text-[10px] font-bold text-[#6B7C72] uppercase tracking-[0.2em] mb-4">
+                {selectedTaskId ? "TRACKING TASK" : "CURRENT SESSION"}
+              </p>
+              <h2 className="text-8xl font-bold text-[#2F3E34] font-mono leading-none tracking-tighter">
+                {formatCountdown(timeLeft)}
+              </h2>
+              <p className="text-sm text-[#6B7C72] mt-8 max-w-[180px] leading-relaxed">
+                {selectedTaskId ? "Viewing live time for selected task." : "Keep one clear study goal for this session."}
+              </p>
             </div>
           </div>
 
-          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
-            <div className="card p-5 flex items-center gap-4">
-              <div className="bg-wellness-peach-light/50 p-3 rounded-xl text-wellness-peach">
-                <Flame className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-wellness-text-sec mb-0.5">Current Streak</p>
-                <p className="text-lg font-bold text-wellness-text">{overview.stats.streakDays} Days</p>
-              </div>
+          {/* Session Info Tabs */}
+          <div className="grid grid-cols-3 gap-4 w-full mt-12">
+            <div className="bg-[#F6F7F5] rounded-2xl p-4 text-center">
+              <p className="text-[10px] font-bold text-[#6B7C72] uppercase mb-1">Focus</p>
+              <p className="text-lg font-bold text-[#2F3E34]">{focusMinutes}m</p>
             </div>
+            <div className="bg-[#F6F7F5] rounded-2xl p-4 text-center">
+              <p className="text-[10px] font-bold text-[#6B7C72] uppercase mb-1">Break</p>
+              <p className="text-lg font-bold text-[#2F3E34]">{breakMinutes}m</p>
+            </div>
+            <div className="bg-[#F6F7F5] rounded-2xl p-4 text-center">
+              <p className="text-[10px] font-bold text-[#6B7C72] uppercase mb-1">Mode</p>
+              <p className="text-lg font-bold text-[#2F3E34]">{isBreak ? 'Break' : 'Focus'}</p>
+            </div>
+          </div>
 
-            <div className="card p-5 flex items-center gap-4">
-              <div className="bg-wellness-blue-light p-3 rounded-xl text-wellness-blue">
-                <Clock className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-wellness-text-sec mb-0.5">Today's Focus</p>
-                <p className="text-lg font-bold text-wellness-text">{formatMinutes(overview.stats.todayFocusMinutes)}</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="card p-5">
-            <p className="text-sm font-semibold text-wellness-text mb-3">Focus snapshot</p>
-            <div className="space-y-3 text-sm text-wellness-text-sec">
-              <div className="flex items-center justify-between">
-                <span>Weekly focus time</span>
-                <span className="font-semibold text-wellness-text">{formatMinutes(overview.stats.weekFocusMinutes)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Completed tasks</span>
-                <span className="font-semibold text-wellness-text">{overview.stats.completedTasks}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Next due task</span>
-                <span className="font-semibold text-wellness-text">
-                  {nextDueTask ? formatDateLabel(nextDueTask.dueDate) : 'No deadline set'}
-                </span>
-              </div>
-            </div>
-          </motion.div>
+          {/* Controls */}
+          <div className="flex items-center justify-center gap-4 mt-10">
+            <button
+              onClick={() => setIsActive(!isActive)}
+              className="bg-[#6FA5A5] text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-lg shadow-[#6FA5A5]/30 hover:bg-[#5E9494] transition-all hover:-translate-y-1 active:scale-95"
+            >
+              {isActive ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+              {isActive ? 'Pause' : 'Start'}
+            </button>
+            <button
+              onClick={endSession}
+              className="bg-[#DDEAD9] text-[#4F7D5C] px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-[#CFE3D2] transition-all hover:-translate-y-1 active:scale-95"
+            >
+              <RotateCcw className="w-5 h-5" />
+              End Session
+            </button>
+          </div>
         </div>
 
-        <div className="lg:col-span-7 space-y-6">
-          <motion.div variants={itemVariants} className="card p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-wellness-text">Task Manager</h2>
-              <span className="bg-wellness-bg text-wellness-text-sec text-xs font-bold px-3 py-1 rounded-full">
-                {overview.stats.completedTasks}/{overview.stats.totalTasks} Done
-              </span>
+        {/* Right Card: Settings */}
+        <div className="lg:col-span-5 space-y-8">
+          <div className="bg-white rounded-[40px] p-10 shadow-sm border border-[#D7E8DA]/50 h-full flex flex-col">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-2xl font-bold text-[#2F3E34]">Session Settings</h2>
+              <button className="flex items-center gap-2 text-xs font-bold text-[#6B7C72] border border-[#DDEAD9] px-3 py-1.5 rounded-lg hover:bg-[#F6F7F5]">
+                <Activity className="w-4 h-4" /> Customizable
+              </button>
             </div>
+            <p className="text-sm text-[#6B7C72] mb-8">Adjust durations to match your revision intensity.</p>
 
-            <form onSubmit={handleTaskSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-wellness-bg/50 p-4 rounded-2xl border border-wellness-border/50">
-              <div className="md:col-span-2">
-                <input
-                  type="text"
-                  value={taskForm.title}
-                  onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))}
-                  placeholder="Task title"
-                  className="w-full px-4 py-3 bg-white border border-transparent rounded-xl focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/20 outline-none text-sm transition-all shadow-sm"
-                />
-                {taskErrors.title ? <p className="text-xs text-wellness-peach mt-2">{taskErrors.title}</p> : null}
-              </div>
-
-              <div className="md:col-span-2">
-                <textarea
-                  value={taskForm.description}
-                  onChange={(event) => setTaskForm((current) => ({ ...current, description: event.target.value }))}
-                  placeholder="Optional description"
-                  className="w-full px-4 py-3 bg-white border border-transparent rounded-xl focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/20 outline-none text-sm transition-all shadow-sm min-h-24 resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.16em] text-wellness-text-muted block mb-2">Due date</label>
-                <input
-                  type="date"
-                  value={taskForm.dueDate}
-                  onChange={(event) => setTaskForm((current) => ({ ...current, dueDate: event.target.value }))}
-                  className="w-full px-4 py-3 bg-white border border-transparent rounded-xl focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/20 outline-none text-sm transition-all shadow-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-[0.16em] text-wellness-text-muted block mb-2">Priority</label>
-                <select
-                  value={taskForm.priority}
-                  onChange={(event) => setTaskForm((current) => ({ ...current, priority: event.target.value }))}
-                  className="w-full px-4 py-3 bg-white border border-transparent rounded-xl text-sm outline-none focus:border-wellness-blue focus:ring-2 focus:ring-wellness-blue/20 shadow-sm font-medium"
+            {/* Presets Grid */}
+            <div className="grid grid-cols-3 gap-3 mb-8">
+              {presets.map((preset) => (
+                <button
+                  key={preset.name}
+                  onClick={() => handlePresetChange(preset)}
+                  className={`p-4 rounded-2xl text-left transition-all border ${
+                    focusMinutes === preset.focus && breakMinutes === preset.break
+                      ? 'bg-[#D7E8DA] border-[#7BAE7F] ring-2 ring-[#7BAE7F]/20'
+                      : 'bg-[#F6F7F5] border-transparent hover:border-[#DDEAD9]'
+                  }`}
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-2 flex flex-wrap justify-end gap-3">
-                {editingTaskId ? (
-                  <button type="button" onClick={resetTaskForm} className="btn-secondary px-5 py-3 flex items-center gap-2">
-                    <X className="w-4 h-4" />
-                    Cancel Edit
-                  </button>
-                ) : null}
-
-                <button type="submit" disabled={isSavingTask} className="btn-primary px-5 py-3 flex items-center gap-2">
-                  {editingTaskId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                  {isSavingTask ? 'Saving...' : editingTaskId ? 'Update Task' : 'Add Task'}
+                  <p className="font-bold text-[#2F3E34] text-sm">{preset.name}</p>
+                  <p className="text-[10px] text-[#6B7C72] mt-1">{preset.focus}/{preset.break}</p>
                 </button>
-              </div>
-            </form>
+              ))}
+            </div>
 
-            <div className="mb-5">
-              <div className="flex items-center justify-between text-xs text-wellness-text-muted mb-2">
-                <span>Task completion</span>
-                <span>{completedRatio}%</span>
+            {/* Duration Inputs */}
+            <div className="space-y-6 flex-1">
+              <div>
+                <label className="text-sm font-medium text-[#6B7C72] block mb-2">Focus duration (minutes)</label>
+                <input
+                  type="number"
+                  value={focusMinutes}
+                  onChange={(e) => setFocusMinutes(Number(e.target.value))}
+                  className="w-full bg-[#F6F7F5] border-none rounded-2xl px-6 py-4 text-[#2F3E34] focus:ring-2 focus:ring-[#7BAE7F]/20 transition-all font-medium"
+                />
               </div>
-              <div className="w-full bg-wellness-bg h-2 rounded-full overflow-hidden">
-                <div className="bg-wellness-green h-full rounded-full transition-all" style={{ width: `${completedRatio}%` }} />
+              <div>
+                <label className="text-sm font-medium text-[#6B7C72] block mb-2">Break duration (minutes)</label>
+                <input
+                  type="number"
+                  value={breakMinutes}
+                  onChange={(e) => setBreakMinutes(Number(e.target.value))}
+                  className="w-full bg-[#F6F7F5] border-none rounded-2xl px-6 py-4 text-[#2F3E34] focus:ring-2 focus:ring-[#7BAE7F]/20 transition-all font-medium"
+                />
               </div>
             </div>
 
-            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
-              {isLoading ? (
-                <div className="text-center py-12 text-sm text-wellness-text-sec">Loading tasks...</div>
-              ) : overview.tasks.length ? (
-                overview.tasks.map((task) => {
-                  const theme = priorityTheme[task.priority];
-
-                  return (
-                    <div
-                      key={task.id}
-                      className={`flex items-start gap-3 p-4 rounded-xl border transition-all duration-300 ${
-                        task.completed
-                          ? 'bg-wellness-bg/50 border-transparent opacity-70'
-                          : `bg-white shadow-sm hover:shadow-md border-l-4 ${theme.border} border-y-wellness-border/50 border-r-wellness-border/50`
-                      }`}
-                    >
-                      <button
-                        onClick={() => handleToggleTask(task)}
-                        className={`shrink-0 mt-0.5 transition-colors ${
-                          task.completed ? 'text-wellness-green' : 'text-wellness-text-muted hover:text-wellness-blue'
-                        }`}
-                        type="button"
-                        title="Toggle complete"
-                      >
-                        {task.completed ? <CheckCircle2 className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
-                      </button>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <p className={`text-sm font-medium ${task.completed ? 'line-through text-wellness-text-sec' : 'text-wellness-text'}`}>
-                            {task.title}
-                          </p>
-                          <span className={`text-[11px] font-semibold px-2 py-1 rounded-full capitalize ${theme.badge}`}>
-                            {task.priority}
-                          </span>
-                        </div>
-                        {task.description ? (
-                          <p className="text-sm text-wellness-text-sec leading-6 mb-2">{task.description}</p>
-                        ) : null}
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-wellness-text-muted">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDateLabel(task.dueDate)}
-                          </span>
-                          <span className={`w-2 h-2 rounded-full ${theme.dot}`} />
-                          <span>{task.completed ? 'Completed' : 'Pending'}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => startEditingTask(task)}
-                          className="p-2 rounded-lg bg-wellness-bg text-wellness-text-sec hover:text-wellness-blue"
-                          type="button"
-                          title="Edit task"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTask(task.id)}
-                          className="p-2 rounded-lg bg-wellness-bg text-wellness-text-sec hover:text-wellness-peach"
-                          type="button"
-                          title="Delete task"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center py-12 flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-wellness-blue-light rounded-full flex items-center justify-center text-wellness-blue mb-4">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <p className="text-wellness-text font-semibold">No tasks yet</p>
-                  <p className="text-wellness-text-sec text-sm mt-1">Create your first task above to start organizing work.</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="card p-6 md:p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-bold flex items-center gap-2 text-wellness-text">
-                <div className="bg-wellness-blue-light p-2 rounded-lg">
-                  <Activity className="w-5 h-5 text-wellness-blue" />
-                </div>
-                Productivity Tracking
-              </h2>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-wellness-blue">{(overview.stats.weekFocusMinutes / 60).toFixed(1)}</span>
-                <span className="text-sm font-medium text-wellness-text-sec ml-1">hrs this week</span>
+            {/* Footer Stats */}
+            <div className="grid grid-cols-3 gap-3 pt-8 mt-8 border-t border-[#F6F7F5]">
+              <div className="text-left">
+                <p className="text-[10px] text-[#6B7C72] font-bold uppercase mb-1">Progress</p>
+                <p className="text-lg font-bold text-[#2F3E34]">{progressPercent}%</p>
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] text-[#6B7C72] font-bold uppercase mb-1">Next break</p>
+                <p className="text-lg font-bold text-[#2F3E34]">{breakMinutes} min</p>
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] text-[#6B7C72] font-bold uppercase mb-1">Focus goal</p>
+                <p className="text-lg font-bold text-[#2F3E34]">{focusMinutes} min</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <div className="rounded-2xl border border-wellness-border/60 bg-white p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-wellness-text-muted mb-2">Today</p>
-                <p className="text-2xl font-bold text-wellness-text">{formatMinutes(overview.stats.todayFocusMinutes)}</p>
-              </div>
-              <div className="rounded-2xl border border-wellness-border/60 bg-white p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-wellness-text-muted mb-2">Completed tasks</p>
-                <p className="text-2xl font-bold text-wellness-green">{overview.stats.completedTasks}</p>
-              </div>
-              <div className="rounded-2xl border border-wellness-border/60 bg-white p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-wellness-text-muted mb-2">Streak</p>
-                <p className="text-2xl font-bold text-wellness-peach">{overview.stats.streakDays} days</p>
-              </div>
-            </div>
-
-            <div className="h-56 mb-8">
-              {overview.chartData.length ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={overview.chartData} margin={{ top: 10, right: 0, bottom: 0, left: -20 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#CFE3D2" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#718096', fontSize: 12, fontWeight: 500 }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#718096', fontSize: 12, fontWeight: 500 }} />
-                    <Tooltip
-                      cursor={{ fill: '#E8F4FD', radius: 6 }}
-                      contentStyle={{
-                        borderRadius: '12px',
-                        border: 'none',
-                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-                        padding: '12px',
-                      }}
-                      formatter={(value) => [`${value} hrs`, 'Focus Time']}
-                      labelFormatter={(label, payload) => (payload?.[0]?.payload?.date ? formatDateLabel(payload[0].payload.date) : label)}
-                    />
-                    <Bar dataKey="hours" radius={[6, 6, 0, 0]} maxBarSize={48}>
-                      {overview.chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.hours === Math.max(...overview.chartData.map((item) => item.hours)) ? '#548A7B' : '#6FA5A5'} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full rounded-3xl border border-dashed border-wellness-border flex items-center justify-center text-center px-8 text-sm text-wellness-text-sec">
-                  Complete a focus session to start building your productivity chart.
-                </div>
-              )}
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold text-wellness-text mb-3">Recent focus sessions</h3>
-              <div className="space-y-3">
-                {overview.recentSessions.length ? (
-                  overview.recentSessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between rounded-2xl bg-wellness-bg/60 px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-white p-2 rounded-xl shadow-sm text-wellness-blue">
-                          <Clock className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-wellness-text">{formatMinutes(session.completedDurationMinutes)} focus block</p>
-                          <p className="text-xs text-wellness-text-muted">{formatDateLabel(session.completedAt)}</p>
-                        </div>
-                      </div>
-                      <span className="text-xs font-semibold text-wellness-blue">Saved</span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-wellness-text-sec">No focus sessions saved yet.</p>
-                )}
-              </div>
-            </div>
-          </motion.div>
+            {/* Action Button */}
+            <button
+              onClick={() => {
+                if (selectedTaskId) {
+                  setTimeLeft(0);
+                } else {
+                  setTimeLeft((isBreak ? breakMinutes : focusMinutes) * 60);
+                }
+                setStatusMessage('Settings applied and timer reset.');
+                setTimeout(() => setStatusMessage(''), 3000);
+              }}
+              className="w-full mt-8 bg-[#6FA5A5] text-white py-4 rounded-2xl font-bold shadow-lg shadow-[#6FA5A5]/20 hover:bg-[#5E9494] transition-all active:scale-[0.98]"
+            >
+              Save Timer Settings
+            </button>
+          </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+
+      {statusMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-8 right-8 bg-[#7BAE7F] text-white px-6 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2"
+        >
+          <CheckCircle2 className="w-5 h-5" /> {statusMessage}
+        </motion.div>
+      )}
+    </div>
   );
 }

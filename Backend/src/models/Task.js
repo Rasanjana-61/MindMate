@@ -37,6 +37,19 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    subject: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    pomodoros: {
+      type: Number,
+      default: 1,
+    },
+    totalTimeSpent: {
+      type: Number,
+      default: 0, // In minutes
+    },
   },
   {
     timestamps: true,

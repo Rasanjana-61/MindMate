@@ -22,7 +22,7 @@ const focusSessionSchema = new mongoose.Schema(
     completedDurationMinutes: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0.1,
       max: 240,
     },
     completed: {
@@ -33,6 +33,11 @@ const focusSessionSchema = new mongoose.Schema(
       type: Date,
       required: true,
       default: Date.now,
+    },
+    taskId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      default: null,
     },
   },
   {

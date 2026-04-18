@@ -70,7 +70,7 @@ class GeminiService {
         return `${text.slice(0, maxLength)}\n\n[Transcript truncated for stability]`;
     }
 
-    async generateSummary(transcript) {
+    async generateSummary(transcript, language = "English") {
         try {
             if (!process.env.GEMINI_API_KEY) {
                 return "AI Summary is ready to be activated. Please add your GEMINI_API_KEY to the .env file to see real results!";
@@ -80,7 +80,7 @@ class GeminiService {
             const prompt = `
                 You are a professional video summarizer.
                 Below is a transcript of a video.
-                Please provide a concise, high-quality summary of the main points discussed.
+                Please provide a concise, high-quality summary of the main points discussed in ${language}.
                 Use bullet points for key takeaways.
 
                 Transcript:
@@ -106,11 +106,7 @@ class GeminiService {
                 try {
                     return await this.callGeminiApi(prompt, "gemini-flash-latest");
                 } catch (e1) {
-                    try {
-                        return await this.callGeminiApi(prompt, "gemini-1.5-flash");
-                    } catch (e2) {
-                        return await this.callGeminiApi(prompt, "gemini-pro");
-                    }
+                    return await this.callGeminiApi(prompt, "gemini-1.5-flash");
                 }
             }
         } catch (error) {
@@ -149,11 +145,7 @@ class GeminiService {
                 try {
                     return await this.callGeminiApi(prompt, "gemini-flash-latest");
                 } catch (e1) {
-                    try {
-                        return await this.callGeminiApi(prompt, "gemini-1.5-flash");
-                    } catch (e2) {
-                        return await this.callGeminiApi(prompt, "gemini-pro");
-                    }
+                    return await this.callGeminiApi(prompt, "gemini-1.5-flash");
                 }
             }
         } catch (error) {

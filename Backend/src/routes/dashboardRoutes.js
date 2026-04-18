@@ -148,6 +148,7 @@ router.get("/overview", async (req, res) => {
         priority: task.priority,
         completed: task.completed,
         dueDate: task.dueDate,
+        totalTimeSpent: task.totalTimeSpent || 0,
       })),
       focus: {
         todayFocusMinutes,

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Download, FileText, MessageSquare, Edit3, Loader2, PlayCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { request } from '../../lib/auth';
 import './Summarizer.css';
 
@@ -16,6 +18,7 @@ export function VideoSummary({ setPage }) {
     const [player, setPlayer] = useState(null);
     const [notes, setNotes] = useState('');
     const [error, setError] = useState('');
+    const [selectedLanguage, setSelectedLanguage] = useState('English');
     const transcriptContainerRef = useRef(null);
 
     const extractYoutubeId = (url) => {
@@ -55,7 +58,7 @@ export function VideoSummary({ setPage }) {
         }
     }, [currentTime]);
 
-    const handleSummarize = async () => {
+    const handleSummarize = async (lang = selectedLanguage) => {
         if (!videoLink.trim() || !videoId) {
             setError('Please enter a valid YouTube link.');
             return;
@@ -76,7 +79,7 @@ export function VideoSummary({ setPage }) {
                 const fullText = tResponse.transcript.map(s => s.text).join(' ');
                 const sResponse = await request('/summarizer/summarize', {
                     method: 'POST',
-                    body: JSON.stringify({ type: 'video', content: fullText })
+                    body: JSON.stringify({ type: 'video', content: fullText, language: lang })
                 });
                 
                 if (sResponse.success) {
@@ -131,7 +134,7 @@ export function VideoSummary({ setPage }) {
                         className={`flex-1 px-4 py-2 rounded-xl bg-slate-50 border ${error ? 'border-red-500' : 'border-slate-200'} outline-none focus:border-emerald-500 transition-all`}
                     />
                     <button
-                        onClick={handleSummarize}
+                        onClick={() => handleSummarize()}
                         disabled={isLoading}
                         className="bg-emerald-500 text-white px-6 py-2 rounded-xl font-semibold hover:bg-emerald-600 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/20"
                     >
@@ -220,8 +223,24 @@ export function VideoSummary({ setPage }) {
                                             <p>Generating summary...</p>
                                         </div>
                                     ) : summary ? (
-                                        <div className="bg-slate-50 rounded-2xl p-6 text-slate-700 leading-relaxed shadow-inner">
-                                            {summary}
+                                        <div className="bg-slate-50 rounded-2xl p-6 text-slate-700 leading-relaxed shadow-inner markdown-summary">
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>
+                                            
+                                            <div className="flex items-center gap-3 mt-8 pt-6 border-t border-slate-200/60">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2">Language:</p>
+                                                <button 
+                                                    onClick={() => { setSelectedLanguage('English'); handleSummarize('English'); }}
+                                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${selectedLanguage === 'English' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-500'}`}
+                                                >
+                                                    English
+                                                </button>
+                                                <button 
+                                                    onClick={() => { setSelectedLanguage('Sinhala'); handleSummarize('Sinhala'); }}
+                                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${selectedLanguage === 'Sinhala' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-500'}`}
+                                                >
+                                                    Sinhala
+                                                </button>
+                                            </div>
                                         </div>
                                     ) : (
                                         <p className="text-slate-400 text-center py-20">Summary will appear here after processing.</p>

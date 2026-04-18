@@ -105,7 +105,7 @@ export function Dashboard({ setPage, userName }) {
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              {getGreeting()}, {userName.split(' ')[0]}! 👋
+              {getGreeting()}, {(userName || 'User').split(' ')[0]}! 👋
             </h1>
             <p className="text-blue-100 text-lg max-w-xl">
               Your dashboard now reflects live mood, focus, task, peer, and AI summary activity.
@@ -123,6 +123,7 @@ export function Dashboard({ setPage, userName }) {
         </div>
       </motion.div>
 
+
       {errorMessage ? (
         <div className="rounded-2xl border border-app-stress/30 bg-app-stress/10 px-4 py-3 text-sm text-app-stress">
           {errorMessage}
@@ -135,230 +136,194 @@ export function Dashboard({ setPage, userName }) {
           <p className="text-sm text-app-text-secondary">Loading dashboard data...</p>
         </div>
       ) : (
-        <>
-          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <motion.div variants={itemVariants} className="card p-5 card-hover">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-app-primary-light p-2 rounded-lg text-app-primary">
-                  <Clock className="w-5 h-5" />
+        <div className="space-y-8">
+          {/* Main Feature Banner */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#D7E8DA] rounded-[40px] p-8 lg:p-12 relative overflow-hidden"
+          >
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left Side: Title and Momentum */}
+              <div className="lg:col-span-8 flex flex-col justify-between">
+                <div>
+                  <h2 className="text-4xl md:text-5xl font-bold text-[#2F3E34] leading-tight max-w-md mb-12">
+                    Focus, tasks, and progress in one place.
+                  </h2>
                 </div>
-                <span className="text-sm font-medium text-app-text-secondary">Today's Focus</span>
-              </div>
-              <div className="flex items-end gap-2">
-                <h3 className="text-2xl font-bold text-app-text-primary">{overview.stats.todayFocusLabel}</h3>
-              </div>
-            </motion.div>
 
-            <motion.div variants={itemVariants} className="card p-5 card-hover">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-app-mood/10 p-2 rounded-lg text-app-mood">
-                  <CheckCircle2 className="w-5 h-5" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white/60 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-white/40">
+                    <p className="text-xs font-semibold text-app-text-secondary uppercase tracking-wider mb-2">Focus momentum</p>
+                    <p className="text-xl font-bold text-app-text-primary">{overview.stats.todayFocusLabel} today</p>
+                  </div>
+                  <div className="bg-white/60 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-white/40">
+                    <p className="text-xs font-semibold text-app-text-secondary uppercase tracking-wider mb-2">Task progress</p>
+                    <p className="text-xl font-bold text-app-text-primary">
+                      {overview.stats.completedTasks} tasks completed
+                    </p>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-app-text-secondary">Tasks Done</span>
               </div>
-              <div className="flex items-end gap-2">
-                <h3 className="text-2xl font-bold text-app-text-primary">
-                  {overview.stats.completedTasks}
-                  <span className="text-lg text-app-text-secondary">/{overview.stats.totalTasks}</span>
-                </h3>
-              </div>
-              <div className="w-full bg-app-background h-1.5 rounded-full mt-3 overflow-hidden">
-                <div
-                  className="bg-app-mood h-full rounded-full"
-                  style={{
-                    width: `${overview.stats.totalTasks ? (overview.stats.completedTasks / overview.stats.totalTasks) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-            </motion.div>
 
-            <motion.div variants={itemVariants} className="card p-5 card-hover">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-app-energy/10 p-2 rounded-lg text-app-energy">
-                  <Flame className="w-5 h-5" />
+              {/* Right Side: Quick Stats */}
+              <div className="lg:col-span-4 space-y-4">
+                <div className="bg-white/40 backdrop-blur-md rounded-[32px] p-6 border border-white/20">
+                  <p className="text-[10px] font-bold text-app-primary uppercase tracking-widest mb-1">FOCUS</p>
+                  <h3 className="text-2xl font-bold text-app-text-primary mb-1">Keep it simple</h3>
+                  <p className="text-sm text-app-text-secondary">One task at a time.</p>
                 </div>
-                <span className="text-sm font-medium text-app-text-secondary">Current Streak</span>
-              </div>
-              <div className="flex items-end gap-2">
-                <h3 className="text-2xl font-bold text-app-text-primary">{overview.stats.streakDays} Days</h3>
-              </div>
-            </motion.div>
 
-            <motion.div variants={itemVariants} className="card p-5 card-hover">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-app-mood/10 p-2 rounded-lg text-app-mood">
-                  <Smile className="w-5 h-5" />
+                <div className="grid grid-cols-2 gap-4 h-full">
+                  <div className="bg-gradient-to-br from-[#7BAE7F] to-[#5F8C63] rounded-[32px] p-6 flex flex-col items-center justify-center text-white relative shadow-xl shadow-app-primary/20 overflow-hidden group">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.2),transparent)] pointer-events-none"></div>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest opacity-80 mb-2">Weekly focus</p>
+                    <p className="text-3xl font-bold mb-1">{overview.stats.todayFocusLabel}</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/40">
+                      <p className="text-[10px] font-bold text-app-text-secondary uppercase tracking-widest mb-1">CURRENT STREAK</p>
+                      <p className="text-lg font-bold text-app-text-primary">{overview.stats.streakDays} days</p>
+                    </div>
+                    <div className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/40">
+                      <p className="text-[10px] font-bold text-app-text-secondary uppercase tracking-widest mb-1">UPCOMING TASKS</p>
+                      <p className="text-lg font-bold text-app-text-primary">{(overview?.tasks || []).filter(t => !t.completed).length}</p>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-app-text-secondary">Avg Mood</span>
               </div>
-              <div className="flex items-end gap-2">
-                <h3 className="text-2xl font-bold text-app-text-primary">{overview.stats.averageMood || 0}</h3>
-                <span className="text-xl mb-0.5">{overview.stats.averageMoodEmoji}</span>
-              </div>
-            </motion.div>
+            </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-app-mood" />
-                    Today's Tasks
-                  </h2>
-                  <button onClick={() => setPage('focus')} className="text-app-primary text-sm hover:underline font-medium">
-                    View All
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { label: "Today's Focus Time", value: overview.stats.todayFocusLabel, icon: Clock, color: 'bg-[#CFE6E6] text-[#6FA5A5]' },
+              { label: "Completed Tasks", value: overview.stats.completedTasks, icon: CheckCircle2, color: 'bg-[#DDEAD9] text-[#7BAE7F]' },
+              { label: "Current Streak", value: `${overview.stats.streakDays} days`, icon: Flame, color: 'bg-[#E8F0E8] text-[#5F705F]' },
+              { label: "Upcoming Tasks", value: (overview?.tasks || []).filter(t => !t.completed).length, icon: ArrowRight, color: 'bg-[#F4EFE7] text-[#C49490]' },
+            ].map((stat, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-white rounded-[28px] p-6 shadow-sm border border-app-primary-light/30 flex items-center gap-6 group hover:shadow-md transition-all cursor-pointer"
+                onClick={() => setPage(idx === 0 ? 'focus' : idx === 1 ? 'focus' : idx === 2 ? 'mood-journal' : 'focus')}
+              >
+                <div className={`p-4 rounded-2xl ${stat.color} transition-transform group-hover:scale-110`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-app-text-secondary mb-1">{stat.label}</p>
+                  <p className="text-xl font-bold text-app-text-primary">{stat.value}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Bottom Sections */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Quick Notes */}
+            <div className="lg:col-span-8">
+              <div className="bg-white rounded-[32px] p-8 shadow-sm border border-app-primary-light/30 h-full">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold text-app-text-primary">Quick Notes</h2>
+                  <button className="flex items-center gap-2 px-4 py-1.5 bg-[#E8F0E8] rounded-full text-app-primary text-xs font-bold uppercase tracking-wider">
+                    <Leaf className="w-4 h-4" /> Focus
                   </button>
                 </div>
-                <div className="space-y-3">
-                  {overview.tasks.length ? (
-                    overview.tasks.map((task) => (
-                      <div key={task.id} className="flex items-start gap-3 p-3 rounded-xl border border-app-primary-light/50 hover:border-app-primary/30 hover:shadow-sm transition-all group">
-                        <button className="mt-0.5 text-app-text-secondary group-hover:text-app-primary transition-colors">
-                          {task.completed ? <CheckCircle2 className="w-5 h-5 text-app-mood" /> : <Circle className="w-5 h-5" />}
-                        </button>
-                        <div className="flex-1">
-                          <p className={`text-sm font-medium ${task.completed ? 'text-app-text-secondary line-through' : 'text-app-text-primary'}`}>
-                            {task.title}
-                          </p>
-                          <p className="text-xs text-app-text-secondary mt-1 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" /> {formatDateLabel(task.dueDate)}
+
+                <div className="space-y-6">
+                  {(() => {
+                    const nextTask = (overview?.tasks || []).find(t => !t.completed);
+                    if (!nextTask) {
+                      return (
+                        <div className="bg-app-background/50 rounded-2xl p-6 border border-transparent">
+                          <p className="text-xs font-bold text-app-text-secondary uppercase tracking-widest mb-2">Next</p>
+                          <p className="text-lg font-medium italic text-app-text-secondary">
+                            Enjoy your achievement!
                           </p>
                         </div>
-                        <div className={`w-2 h-2 rounded-full mt-1.5 ${task.priority === 'high' ? 'bg-app-stress' : task.priority === 'medium' ? 'bg-app-energy' : 'bg-app-mood'}`} />
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-app-text-secondary">No tasks created yet.</p>
-                  )}
-                </div>
-              </div>
-            </div>
+                      );
+                    }
 
-            <div className="space-y-6">
-              <div className="card p-6 flex flex-col justify-between bg-gradient-to-br from-white to-app-primary-light/30 border-app-primary-light">
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <Flame className="w-5 h-5 text-app-primary" />
-                      Focus Session
-                    </h2>
-                  </div>
+                    // Calculate goal based on priority
+                    const goalMinutes = nextTask.priority === 'high' ? 60 : nextTask.priority === 'medium' ? 40 : 20;
+                    const progressPercent = Math.min(100, Math.round((nextTask.totalTimeSpent / goalMinutes) * 100));
 
-                  <div className="flex items-center gap-8 mb-6">
-                    <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
-                      <svg className="w-full h-full transform -rotate-90 drop-shadow-sm" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#DDEAD9" strokeWidth="8" />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="45"
-                          fill="none"
-                          stroke="#7BAE7F"
-                          strokeWidth="8"
-                          strokeDasharray="283"
-                          strokeDashoffset={283 - (overview.focus.goalProgressPercent / 100) * 283}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute flex flex-col items-center">
-                        <span className="text-2xl font-bold text-app-text-primary">{overview.focus.todayFocusLabel}</span>
-                        <span className="text-[10px] text-app-text-secondary uppercase tracking-wider font-medium">Today</span>
+                    return (
+                      <div className="bg-app-background/50 rounded-2xl p-6 border border-transparent hover:border-app-primary-light transition-all">
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="text-xs font-bold text-app-text-secondary uppercase tracking-widest">Next</p>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                            nextTask.priority === 'high' ? 'bg-red-50 text-red-500' : 
+                            nextTask.priority === 'medium' ? 'bg-amber-50 text-amber-500' : 
+                            'bg-blue-50 text-blue-500'
+                          }`}>
+                            {nextTask.priority}
+                          </span>
+                        </div>
+                        <p className="text-lg font-medium text-app-text-primary mb-6">
+                          {nextTask.title}
+                        </p>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center text-[10px] font-bold text-app-text-secondary uppercase tracking-widest">
+                            <span>Progress</span>
+                            <span>{progressPercent}%</span>
+                          </div>
+                          <div className="h-2 bg-white rounded-full overflow-hidden border border-app-primary-light/20">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progressPercent}%` }}
+                              className="h-full bg-app-primary"
+                              transition={{ duration: 1, ease: 'easeOut' }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-app-text-secondary mb-2">Daily Goal: {overview.focus.dailyGoalHours}h</p>
-                      <div className="w-full bg-app-background h-2 rounded-full mb-2 overflow-hidden">
-                        <div className="bg-app-primary h-full rounded-full" style={{ width: `${overview.focus.goalProgressPercent}%` }} />
-                      </div>
-                      <p className="text-sm font-medium text-app-text-primary">
-                        {overview.focus.goalProgressPercent >= 100
-                          ? 'Daily goal reached. Nice work.'
-                          : `${overview.focus.goalProgressPercent}% of your daily goal is complete.`}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <button onClick={() => setPage('focus')} className="btn-primary w-full flex justify-center items-center gap-2 shadow-md shadow-app-primary/20">
-                  Continue Session
-                </button>
-              </div>
+                    );
+                  })()}
 
-              <div className="card p-6 bg-gradient-to-r from-app-primary/10 to-white border-l-4 border-l-app-primary">
-                <div className="flex items-start gap-4">
-                  <div className="bg-white p-3 rounded-xl shadow-sm text-app-primary shrink-0">
-                    <Sparkles className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-app-text-primary mb-1">AI Resources</h3>
-                    <p className="text-sm text-app-text-secondary mb-4">
-                      {overview.resources.length
-                        ? `You have ${overview.resources.length} recent AI summaries ready for revision.`
-                        : 'Upload readings and get instant key points, definitions, and revision summaries.'}
+                  <div className="bg-app-background/50 rounded-2xl p-6 border border-transparent hover:border-app-primary-light transition-all">
+                    <p className="text-xs font-bold text-app-text-secondary uppercase tracking-widest mb-2">Break reminder</p>
+                    <p className="text-sm text-app-text-secondary">
+                      You've been focused for a while. Remember to stretch and hydrate!
                     </p>
-                    <button onClick={() => setPage('resources')} className="btn-secondary text-sm py-2 px-5">
-                      {overview.resources.length ? 'Open Summaries' : 'Try it now'}
-                    </button>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-app-text-secondary" />
-                    Community Trending
-                  </h2>
+            {/* Pages Section */}
+            <div className="lg:col-span-4">
+              <div className="bg-white rounded-[32px] p-8 shadow-sm border border-app-primary-light/30 h-full">
+                <h2 className="text-2xl font-bold text-app-text-primary mb-8">Pages</h2>
+
+                <div className="space-y-4">
+                  {[
+                    { id: 'focus', title: 'Focus Timer Page', desc: 'Open the timer from the left navigation.' },
+                    { id: 'focus', title: 'Tasks Page', desc: 'Manage your tasks on the separate tasks module.' },
+                    { id: 'resources', title: 'Resources Hub', desc: 'Access your AI summaries and study materials.' }
+                  ].map((p, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => setPage(p.id)}
+                      className="group cursor-pointer bg-app-background/30 rounded-2xl p-5 border border-transparent hover:border-app-primary-light hover:bg-white transition-all"
+                    >
+                      <h3 className="font-bold text-app-text-primary mb-1 group-hover:text-app-primary">{p.title}</h3>
+                      <p className="text-xs text-app-text-secondary leading-relaxed">{p.desc}</p>
+                    </div>
+                  ))}
                 </div>
-                <div className="space-y-4 mb-5">
-                  {overview.peerDiscussions.length ? (
-                    overview.peerDiscussions.map((discussion) => (
-                      <div key={discussion.id} className="group cursor-pointer">
-                        <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-app-background flex items-center justify-center text-app-text-secondary shrink-0 mt-0.5">
-                            <Users className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-app-text-primary mb-1 group-hover:text-app-primary transition-colors line-clamp-2">
-                              {discussion.title}
-                            </p>
-                            <div className="flex items-center gap-3">
-                              <span className="text-[10px] font-medium px-2 py-0.5 bg-app-background rounded-md text-app-text-secondary">
-                                {discussion.tag}
-                              </span>
-                              <span className="text-xs text-app-text-secondary flex items-center gap-1">
-                                <MessageCircle className="w-3 h-3" /> {discussion.replies}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-app-text-secondary">No peer discussions yet in your faculty feed.</p>
-                  )}
-                </div>
-                <button onClick={() => setPage('peer')} className="text-app-primary text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all">
-                  Join the discussion <ArrowRight className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </div>
-
-          <div className="bg-app-mood/10 border border-app-mood/30 rounded-2xl p-4 flex items-start gap-4 relative group">
-            <div className="bg-white p-2.5 rounded-xl text-app-mood shrink-0 shadow-sm">
-              <Leaf className="w-5 h-5" />
-            </div>
-            <div className="pr-6">
-              <h4 className="font-semibold text-app-mood mb-1 text-sm">Daily Wellness Tip</h4>
-              <p className="text-sm text-app-text-secondary leading-relaxed">{overview.wellnessTip}</p>
-            </div>
-            <button className="absolute top-4 right-4 text-app-mood/50 hover:text-app-mood transition-colors opacity-0 group-hover:opacity-100">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </>
+        </div>
       )}
+
     </div>
   );
 }
