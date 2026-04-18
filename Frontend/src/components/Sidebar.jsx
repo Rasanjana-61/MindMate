@@ -1,4 +1,4 @@
-import { BookOpen, LayoutDashboard, LogOut, MessageCircle, Smile, Timer, User, Bookmark, Shield, Sparkles } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LogOut, MessageCircle, Smile, Timer, User, Bookmark, Shield, Sparkles, ClipboardList } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function SidebarAvatar({ user }) {
@@ -17,7 +17,8 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'summarizer', label: 'AI Summarizer', icon: Sparkles, badge: 'New' },
-    { id: 'focus', label: 'Focus & Tasks', icon: Timer },
+    { id: 'focus', label: 'Focus Timer', icon: Timer },
+    { id: 'tasks', label: 'Tasks', icon: ClipboardList },
   ];
 
   const moodTrackerItems = [

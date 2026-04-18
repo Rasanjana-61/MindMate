@@ -68,12 +68,13 @@ function validateSessionPayload(payload) {
     errors.plannedDurationMinutes = "Planned duration must be between 1 and 240 minutes.";
   }
 
+  // Allow decimals for high precision
   if (
     !Number.isFinite(completedDurationMinutes) ||
-    completedDurationMinutes < 1 ||
+    completedDurationMinutes < 0.1 ||
     completedDurationMinutes > 240
   ) {
-    errors.completedDurationMinutes = "Completed duration must be between 1 and 240 minutes.";
+    errors.completedDurationMinutes = "Completed duration must be at least 6 seconds.";
   }
 
   if (!completedAt) {
@@ -87,6 +88,7 @@ function validateSessionPayload(payload) {
       plannedDurationMinutes,
       completedDurationMinutes,
       completedAt,
+      taskId: payload.taskId || null,
     },
   };
 }
@@ -122,6 +124,7 @@ function formatTask(task) {
     priority: task.priority,
     completed: task.completed,
     completedAt: task.completedAt,
+    totalTimeSpent: task.totalTimeSpent || 0,
     createdAt: task.createdAt,
     updatedAt: task.updatedAt,
   };
@@ -371,6 +374,15 @@ router.post("/sessions", async (req, res) => {
       ...values,
       completed: true,
     });
+
+    // Increment task total time if linked
+    if (values.taskId) {
+      const task = await Task.findOne({ _id: values.taskId, user: req.user._id });
+      if (task) {
+        task.totalTimeSpent = (task.totalTimeSpent || 0) + values.completedDurationMinutes;
+        await task.save();
+      }
+    }
 
     if (values.sessionType === "focus") {
       await createNotification({

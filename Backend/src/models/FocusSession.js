@@ -22,7 +22,7 @@ const focusSessionSchema = new mongoose.Schema(
     completedDurationMinutes: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0.1,
       max: 240,
     },
     completed: {

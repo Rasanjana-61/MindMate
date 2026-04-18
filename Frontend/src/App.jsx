@@ -10,6 +10,7 @@ import { JournalEntry } from './pages/JournalEntry';
 import { MoodHistory } from './pages/MoodHistory';
 import { Results as MoodResults } from './pages/Results';
 import { FocusTimer } from './pages/FocusTimer';
+import { Tasks } from './pages/Tasks';
 import { PeerSupport } from './pages/PeerSupport';
 import { BookmarkedQuestions } from './pages/BookmarkedQuestions';
 import { ResourceHub } from './pages/ResourceHub';
@@ -274,6 +275,8 @@ export function App() {
         return renderMoodModule();
       case 'focus':
         return <FocusTimer user={user} />;
+      case 'tasks':
+        return <Tasks />;
       case 'peer':
         return <PeerSupport user={user} />;
       case 'bookmarks':

@@ -14,8 +14,9 @@ function startOfUtcDay(date) {
 }
 
 function formatMinutes(totalMinutes) {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  const roundedMinutes = Math.floor(totalMinutes);
+  const hours = Math.floor(roundedMinutes / 60);
+  const minutes = roundedMinutes % 60;
 
   if (!hours) {
     return `${minutes}m`;
@@ -148,6 +149,7 @@ router.get("/overview", async (req, res) => {
         priority: task.priority,
         completed: task.completed,
         dueDate: task.dueDate,
+        totalTimeSpent: task.totalTimeSpent || 0,
       })),
       focus: {
         todayFocusMinutes,

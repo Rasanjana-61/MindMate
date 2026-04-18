@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import YouTube from 'react-youtube';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Download, FileText, MessageSquare, Edit3, Loader2, PlayCircle } from 'lucide-react';
@@ -40,7 +41,7 @@ export function VideoSummary({ setPage }) {
                     if (roundedTime !== currentTime) {
                         setCurrentTime(roundedTime);
                     }
-                } catch (e) {}
+                } catch (e) { }
             }, 500);
         }
         return () => clearInterval(interval);
@@ -71,14 +72,14 @@ export function VideoSummary({ setPage }) {
             const tResponse = await request(`/summarizer/video/transcript?videoLink=${encodeURIComponent(videoLink)}`);
             if (tResponse.success) {
                 setTranscriptData(tResponse.transcript);
-                
+
                 // 2. Fetch Summary using the transcript text
                 const fullText = tResponse.transcript.map(s => s.text).join(' ');
                 const sResponse = await request('/summarizer/summarize', {
                     method: 'POST',
                     body: JSON.stringify({ type: 'video', content: fullText })
                 });
-                
+
                 if (sResponse.success) {
                     setSummary(sResponse.summary);
                 } else {
@@ -108,7 +109,7 @@ export function VideoSummary({ setPage }) {
         const file = new Blob([notes], { type: 'text/plain' });
         element.href = URL.createObjectURL(file);
         element.download = "video_notes.txt";
-        document.body.appendChild(element); 
+        document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
     };
@@ -158,7 +159,7 @@ export function VideoSummary({ setPage }) {
                             </div>
                         )}
                     </div>
-                    
+
                     <div className="bg-white rounded-3xl p-6 border border-slate-200">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-bold text-slate-900">Live Transcript</h2>
@@ -171,7 +172,7 @@ export function VideoSummary({ setPage }) {
                                 transcriptData.map((seg, index) => {
                                     const isActive = currentTime >= seg.offset && currentTime <= (seg.offset + seg.duration);
                                     return (
-                                        <div key={index} 
+                                        <div key={index}
                                             className={`transcript-row ${isActive ? 'active' : ''}`}
                                             onClick={() => player?.seekTo(seg.offset / 1000)}
                                         >
@@ -220,8 +221,8 @@ export function VideoSummary({ setPage }) {
                                             <p>Generating summary...</p>
                                         </div>
                                     ) : summary ? (
-                                        <div className="bg-slate-50 rounded-2xl p-6 text-slate-700 leading-relaxed shadow-inner">
-                                            {summary}
+                                        <div className="bg-slate-50 rounded-2xl p-6 text-slate-700 leading-relaxed shadow-inner markdown-content">
+                                            <ReactMarkdown>{summary}</ReactMarkdown>
                                         </div>
                                     ) : (
                                         <p className="text-slate-400 text-center py-20">Summary will appear here after processing.</p>
@@ -239,7 +240,7 @@ export function VideoSummary({ setPage }) {
                                 >
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="text-lg font-bold">My Personal Notes</h3>
-                                        <button 
+                                        <button
                                             onClick={handleDownloadNotes}
                                             className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
                                             title="Download Notes"
@@ -247,7 +248,7 @@ export function VideoSummary({ setPage }) {
                                             <Download className="w-5 h-5" />
                                         </button>
                                     </div>
-                                    <textarea 
+                                    <textarea
                                         className="flex-1 w-full p-6 rounded-2xl bg-slate-50 border border-slate-100 text-slate-700 outline-none focus:border-emerald-500 transition-all resize-none shadow-inner"
                                         placeholder="Jot down important points while watching..."
                                         value={notes}
