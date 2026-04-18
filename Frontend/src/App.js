@@ -65,7 +65,7 @@ function App() {
       } catch (error) {
         console.error('Failed to load backend data.', error);
         if (isActive) {
-          setLoadError('Backend connection failed. Make sure Spring Boot is running on port 8080.');
+          setLoadError('Backend connection failed. Make sure the Express.js backend is running on port 8081.');
         }
       } finally {
         if (isActive) {
