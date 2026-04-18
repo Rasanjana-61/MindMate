@@ -2,9 +2,17 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Clock3, ChevronDown, ChevronUp, NotebookPen, PencilLine, Sprout, Lightbulb, TriangleAlert, Smile, Frown, Zap, FilePenLine } from 'lucide-react'
 import { getMoodEmoji, getMoodMeta } from '../data/moodData'
+import { getToken } from '../lib/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
-const USER_ID = 'testUser123'
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api\/?$/, '')
+
+function getAuthHeaders(includeJson = false) {
+  const token = getToken()
+  return {
+    ...(includeJson ? { 'Content-Type': 'application/json' } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
 
 function getTodayInputValue() {
   const today = new Date()
@@ -316,7 +324,9 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
       setHistoryLoading(true)
 
       try {
-        const response = await fetch(`${API_URL}/api/history/${USER_ID}`)
+        const response = await fetch(`${API_URL}/api/history`, {
+          headers: getAuthHeaders(),
+        })
         if (!response.ok) {
           throw new Error(`Failed to load history (${response.status})`)
         }
@@ -398,14 +408,14 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
       if (editingEntryId) {
         response = await fetch(`${API_URL}/api/entries/${editingEntryId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(true),
           body: JSON.stringify({ text: journalText }),
         })
       } else {
         response = await fetch(`${API_URL}/api/entries`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: USER_ID, text: journalText, entryDate: selectedDate }),
+          headers: getAuthHeaders(true),
+          body: JSON.stringify({ text: journalText, entryDate: selectedDate }),
         })
       }
 
@@ -484,10 +494,10 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"
+          className="grid grid-cols-1 gap-6 items-stretch lg:grid-cols-[1.35fr_1fr] lg:h-[calc(100vh-3.25rem)] lg:overflow-hidden"
         >
           {/* Left Column — Write Entry */}
-          <div className="space-y-5">
+          <div className="flex min-h-0 flex-col">
             <motion.div variants={itemVariants}>
               <h1 className="font-lora text-2xl font-semibold text-ink mb-1 flex items-center gap-2">
                 <FilePenLine className="w-6 h-6 text-sage" />
@@ -501,7 +511,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
             {/* Journal Card */}
             <motion.div
               variants={itemVariants}
-              className="bg-warm-white rounded-card shadow-card p-6"
+              className="mt-5 bg-warm-white rounded-card shadow-card p-6 flex min-h-0 flex-1 flex-col"
             >
               <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                 <div>
@@ -535,13 +545,13 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
                 </div>
               )}
 
-              <div className="relative">
+              <div className="relative min-h-0 flex-1">
                 <textarea
                   value={journalText}
                   onChange={handleTextChange}
                   disabled={selectedDateLocked}
                   placeholder={selectedDateLocked ? `You already have an entry for ${selectedDateLabel}.` : `On ${selectedDateLabel || 'this day'} I felt... I noticed... Something that made me smile was... I'm grateful for...`}
-                  className={`w-full min-h-64 p-5 bg-cream/50 border-2 border-transparent focus:border-sage-light rounded-xl resize-none text-forest placeholder:text-stone/60 focus:outline-none transition-colors font-sans leading-relaxed ${selectedDateLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`h-full w-full min-h-[300px] lg:min-h-0 p-5 bg-cream/50 border-2 border-transparent focus:border-sage-light rounded-xl resize-none text-forest placeholder:text-stone/60 focus:outline-none transition-colors font-sans leading-relaxed ${selectedDateLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
                 />
                 <div className="absolute bottom-3 right-3 text-xs text-stone">
                   {characterCount}/{maxCharacters}
@@ -583,7 +593,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
             </AnimatePresence>
 
             {/* Submit Button */}
-            <motion.div variants={itemVariants} className="flex justify-center">
+            <motion.div variants={itemVariants} className="mt-4 flex justify-center">
               {(() => {
                 const isUnchanged = editingEntryId && journalText.trim() === originalText.trim();
                 const isDisabled = !journalText.trim() || isUnchanged || selectedDateLocked || isFutureSelectedDate;
@@ -615,7 +625,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
 
             <motion.p
               variants={itemVariants}
-              className="text-center text-stone text-xs"
+              className="mt-3 text-center text-stone text-xs"
             >
               Your entries are private and help you understand your emotional
               patterns
@@ -623,7 +633,7 @@ export function JournalEntry({ onAnalysisComplete, initialEntryDate }) {
           </div>
 
           {/* Right Column — Today's Entries */}
-          <motion.div variants={itemVariants} className="h-full min-h-0 md:h-[calc(100vh-6rem)]">
+          <motion.div variants={itemVariants} className="h-full min-h-0">
             <TodayEntriesSidebar 
               entries={historyEntries}
               loading={historyLoading}

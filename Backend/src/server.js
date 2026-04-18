@@ -9,7 +9,6 @@ const { Server } = require("socket.io");
 const { connectDB } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const focusRoutes = require("./routes/focusRoutes");
-const moodRoutes = require("./routes/moodRoutes");
 const peerRoutes = require("./routes/peerRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const resourceRoutes = require("./routes/resourceRoutes");
@@ -21,6 +20,8 @@ const summarizerRoutes = require("./routes/summarizer/summarizerRoutes");
 const { setIO } = require("./utils/socket");
 
 dotenv.config();
+require("dns").setServers(["8.8.8.8", "1.1.1.1"]);
+require("dns").setDefaultResultOrder("ipv4first");
 
 const app = express();
 const server = http.createServer(app);
@@ -59,7 +60,6 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/focus", focusRoutes);
-app.use("/api/moods", moodRoutes);
 app.use("/api/peer", peerRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/resources", resourceRoutes);

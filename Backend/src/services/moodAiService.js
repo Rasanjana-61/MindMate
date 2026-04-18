@@ -1,56 +1,34 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL_FOR_JOURNAL || process.env.GEMINI_MODEL || "gemini-3-flash-preview";
 
-const POSITIVE_HINTS = [
-  "happy",
-  "calm",
-  "good",
-  "great",
-  "excited",
-  "grateful",
-  "proud",
-  "relaxed",
-  "motivated",
-  "hopeful",
-  "peaceful",
-  "content",
-];
+function getGeminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY_FOR_JOURNAL || process.env.GEMINI_API_KEY;
 
-const NEGATIVE_HINTS = [
-  "sad",
-  "anxious",
-  "stressed",
-  "stress",
-  "overwhelmed",
-  "angry",
-  "afraid",
-  "fear",
-  "lonely",
-  "tired",
-  "drained",
-  "burnout",
-  "upset",
-  "frustrated",
-];
-
-function parseGeminiJSON(text) {
-  const raw = typeof text === "string" ? text.trim() : "";
-
-  if (!raw) {
-    throw new Error("Gemini returned an empty response.");
+  if (!apiKey) {
+    throw new Error("Missing GEMINI_API_KEY_FOR_JOURNAL in environment variables");
   }
 
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  return new GoogleGenerativeAI(apiKey);
+}
 
-    if (!fenced) {
-      throw new Error("Gemini returned non-JSON content.");
+function parseGeminiJSON(text) {
+  if (typeof text !== "string" || !text.trim()) {
+    throw new Error("Gemini returned an empty response text");
+  }
+
+  const trimmed = text.trim();
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const codeFenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+
+    if (!codeFenceMatch) {
+      throw new Error("Gemini returned non-JSON content");
     }
 
-    return JSON.parse(fenced[1]);
+    return JSON.parse(codeFenceMatch[1]);
   }
 }
 
@@ -62,93 +40,115 @@ function normalizeEmotionKey(key) {
     .replace(/[^a-z0-9_]/g, "");
 }
 
-function clampScore(value) {
-  const numeric = Number(value);
-
-  if (!Number.isFinite(numeric)) {
-    return 3;
-  }
-
-  return Math.min(5, Math.max(1, Number(numeric.toFixed(1))));
-}
-
 function normalizeEmotionScores(rawScores) {
   if (!rawScores || typeof rawScores !== "object") {
-    return { neutral: 1 };
+    throw new Error("Gemini emotion output is not a JSON object");
   }
 
   const normalized = {};
   let total = 0;
 
   for (const [key, value] of Object.entries(rawScores)) {
-    const safeKey = normalizeEmotionKey(key);
-    const safeValue = Number(value);
+    const normalizedKey = normalizeEmotionKey(key);
 
-    if (!safeKey || !Number.isFinite(safeValue) || safeValue < 0) {
+    if (!normalizedKey) {
       continue;
     }
 
-    normalized[safeKey] = (normalized[safeKey] || 0) + safeValue;
+    const safeValue = Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : 0;
+    normalized[normalizedKey] = (normalized[normalizedKey] || 0) + safeValue;
     total += safeValue;
   }
 
   if (total <= 0) {
-    return { neutral: 1 };
+    throw new Error("Gemini emotion output has zero total score");
   }
 
-  Object.keys(normalized).forEach((key) => {
-    normalized[key] = Number((normalized[key] / total).toFixed(6));
-  });
+  for (const emotion of Object.keys(normalized)) {
+    normalized[emotion] = Number((normalized[emotion] / total).toFixed(6));
+  }
 
   return normalized;
 }
 
-function deriveSentiment({ moodScore, stressScore, emotion }) {
-  const loweredEmotion = String(emotion || "").toLowerCase();
+function sanitizeScalarScore(value, fieldName) {
+  const numeric = Number(value);
 
-  if (moodScore >= 3.5 && stressScore <= 2.5) {
-    return "Positive";
+  if (!Number.isFinite(numeric)) {
+    throw new Error(`Gemini ${fieldName} must be a number`);
   }
 
-  if (
-    moodScore <= 2.5 ||
-    stressScore >= 3.5 ||
-    NEGATIVE_HINTS.some((hint) => loweredEmotion.includes(hint))
-  ) {
-    return "Negative";
-  }
-
-  return "Neutral";
+  return Math.min(5, Math.max(1, Number(numeric.toFixed(1))));
 }
 
-function fallbackAnalysis(text) {
-  const lowered = String(text || "").toLowerCase();
-  const positiveHits = POSITIVE_HINTS.filter((hint) => lowered.includes(hint)).length;
-  const negativeHits = NEGATIVE_HINTS.filter((hint) => lowered.includes(hint)).length;
+function sanitizeSuggestions(rawSuggestions) {
+  const fromArray = Array.isArray(rawSuggestions)
+    ? rawSuggestions
+    : Array.isArray(rawSuggestions?.suggestions)
+      ? rawSuggestions.suggestions
+      : [];
 
-  let emotion = "neutral";
-  let moodScore = 3;
-  let stressScore = 3;
-  let energyScore = 3;
+  const clean = fromArray
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
 
-  if (positiveHits > negativeHits) {
-    emotion = "joy";
-    moodScore = 4;
-    stressScore = 2;
-    energyScore = 4;
-  } else if (negativeHits > positiveHits) {
-    emotion = "sadness";
-    moodScore = 2;
-    stressScore = 4;
-    energyScore = 2;
+  if (clean.length === 0) {
+    throw new Error("Gemini suggestions output must contain at least 1 non-empty string");
   }
 
-  const emotionScores =
-    emotion === "joy"
-      ? { joy: 0.7, neutral: 0.2, sadness: 0.1 }
-      : emotion === "sadness"
-        ? { sadness: 0.7, anxiety: 0.2, neutral: 0.1 }
-        : { neutral: 0.7, calm: 0.2, sadness: 0.1 };
+  return clean;
+}
+
+function getDetectedEmotion(emotionScores) {
+  return Object.entries(emotionScores).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "neutral";
+}
+
+async function getAnalysisFromGemini(note) {
+  const ai = getGeminiClient();
+  const prompt = `Analyze the journal text and return ONLY valid JSON with this exact shape:\n{\n  "emotion": "string",\n  "emotionScores": {\n    "emotion_label": number\n  },\n  "moodScore": number,\n  "stressScore": number,\n  "energyScore": number,\n  "suggestions": ["string", "string", ...]\n}\n\nRules:\n- emotionScores can contain ANY relevant emotion labels, not fixed labels\n- each emotionScores value must be between 0 and 1\n- emotionScores values should sum to 1\n- emotion should match the highest score emotion\n- moodScore, stressScore, energyScore must be on a 1 to 5 scale\n- suggestions can be any number of items (at least 1)\n- each suggestion must be detailed, practical, and actionable (2-3 sentences recommended)\n- output JSON only, no markdown\n\nJournal text:\n"""${note}"""`;
+
+  const model = ai.getGenerativeModel({
+    model: GEMINI_MODEL,
+    generationConfig: {
+      responseMimeType: "application/json",
+      temperature: 0.2,
+    },
+  });
+  const result = await model.generateContent(prompt);
+
+  const response = await result.response;
+  const text = typeof response?.text === "function" ? await response.text() : String(response?.text || "");
+  const parsed = parseGeminiJSON(text);
+
+  const emotionScores = normalizeEmotionScores(parsed?.emotionScores);
+  const detectedEmotion = getDetectedEmotion(emotionScores);
+  const explicitEmotion = normalizeEmotionKey(parsed?.emotion || detectedEmotion) || detectedEmotion;
+
+  return {
+    emotion: explicitEmotion,
+    emotionScores,
+    moodScore: sanitizeScalarScore(parsed?.moodScore, "moodScore"),
+    stressScore: sanitizeScalarScore(parsed?.stressScore, "stressScore"),
+    energyScore: sanitizeScalarScore(parsed?.energyScore, "energyScore"),
+    suggestions: sanitizeSuggestions(parsed?.suggestions),
+  };
+}
+
+async function analyzeEmotion(note) {
+  const inputText = typeof note === "string" ? note.trim() : "";
+
+  if (!inputText) {
+    throw new Error("Journal text is required for Gemini analysis");
+  }
+
+  const {
+    emotion,
+    emotionScores,
+    moodScore,
+    stressScore,
+    energyScore,
+    suggestions,
+  } = await getAnalysisFromGemini(inputText);
 
   return {
     emotion,
@@ -156,68 +156,13 @@ function fallbackAnalysis(text) {
     moodScore,
     stressScore,
     energyScore,
-    suggestions: [
-      "Take a short check-in break: 3 deep breaths and one minute to prioritize your next small task.",
-      "Write one supportive sentence to yourself about what went well and what you can control next.",
-    ],
-  };
-}
-
-async function analyzeWithGemini(text) {
-  if (!process.env.GEMINI_API_KEY) {
-    return null;
-  }
-
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-  const prompt = `Analyze the following journal text and return JSON only with this exact structure:\n{\n  "emotion": "string",\n  "emotionScores": { "emotion_label": number },\n  "moodScore": number,\n  "stressScore": number,\n  "energyScore": number,\n  "suggestions": ["string"]\n}\nRules:\n- emotionScores values must be between 0 and 1 and sum close to 1\n- moodScore, stressScore, energyScore must be between 1 and 5\n- suggestions must contain at least 1 practical suggestion\nJournal:\n\"\"\"${text}\"\"\"`;
-
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const parsed = parseGeminiJSON(response.text());
-
-  const emotionScores = normalizeEmotionScores(parsed?.emotionScores);
-  const detectedEmotion =
-    Object.entries(emotionScores).sort((a, b) => b[1] - a[1])[0]?.[0] || "neutral";
-  const emotion = normalizeEmotionKey(parsed?.emotion || detectedEmotion) || detectedEmotion;
-  const suggestions = Array.isArray(parsed?.suggestions)
-    ? parsed.suggestions.filter((item) => typeof item === "string" && item.trim())
-    : [];
-
-  return {
-    emotion,
-    emotionScores,
-    moodScore: clampScore(parsed?.moodScore),
-    stressScore: clampScore(parsed?.stressScore),
-    energyScore: clampScore(parsed?.energyScore),
-    suggestions:
-      suggestions.length > 0
-        ? suggestions
-        : ["Try one short grounding activity and break your next task into a 15-minute step."],
-  };
-}
-
-async function analyzeEmotion(text) {
-  const cleanText = typeof text === "string" ? text.trim() : "";
-
-  if (!cleanText) {
-    throw new Error("Journal text is required.");
-  }
-
-  let analysis;
-
-  try {
-    analysis = (await analyzeWithGemini(cleanText)) || fallbackAnalysis(cleanText);
-  } catch (error) {
-    analysis = fallbackAnalysis(cleanText);
-  }
-
-  return {
-    ...analysis,
-    moodScore: clampScore(analysis.moodScore),
-    stressScore: clampScore(analysis.stressScore),
-    energyScore: clampScore(analysis.energyScore),
-    sentiment: deriveSentiment(analysis),
+    suggestions,
+    sentiment:
+      moodScore >= 3.5 && stressScore <= 2.5
+        ? "Positive"
+        : moodScore <= 2.5 || stressScore >= 3.5
+          ? "Negative"
+          : "Neutral",
   };
 }
 

@@ -1,6 +1,7 @@
 const TranscriptLoader = require("../../services/TranscriptLoader");
 const GeminiService = require("../../services/GeminiService");
-const pdf = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
+//const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
 
 /**
@@ -50,8 +51,15 @@ const summarize = async (req, res) => {
       const fileMimeType = req.file.mimetype;
 
       if (fileMimeType === "application/pdf") {
-        const data = await pdf(fileBuffer);
-        extractedText = data.text;
+        //const data = await pdf(fileBuffer);
+        //extractedText = data.text;
+        const parser = new PDFParse({ data: fileBuffer });
+        try {
+          const data = await parser.getText();
+          extractedText = data.text;
+        } finally {
+          await parser.destroy();
+        }
       } else if (fileMimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
         const data = await mammoth.extractRawText({ buffer: fileBuffer });
         extractedText = data.value;

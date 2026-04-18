@@ -1,8 +1,15 @@
 const express = require("express");
 const { JournalEntry } = require("../models/JournalEntry");
 const { analyzeEmotion } = require("../services/moodAiService");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
+
+router.use(protect);
+
+function getAuthenticatedUserId(req) {
+  return String(req.user._id);
+}
 
 function getLocalDayBounds(dateInput) {
   const date = new Date(dateInput);
@@ -60,11 +67,8 @@ function normalizeEmotionKey(key) {
 
 router.post("/entries", async (req, res) => {
   try {
-    const { userId, text, entryDate } = req.body;
-
-    if (!userId || !String(userId).trim()) {
-      return res.status(400).json({ status: "error", message: "userId is required." });
-    }
+    const { text, entryDate } = req.body;
+    const userId = getAuthenticatedUserId(req);
 
     if (!text || !String(text).trim()) {
       return res.status(400).json({ status: "error", message: "text is required." });
@@ -125,6 +129,7 @@ router.put("/entries/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { text } = req.body;
+    const userId = getAuthenticatedUserId(req);
 
     if (!text || !String(text).trim()) {
       return res.status(400).json({ status: "error", message: "text is required." });
@@ -132,8 +137,8 @@ router.put("/entries/:id", async (req, res) => {
 
     const analysis = await analyzeEmotion(text);
 
-    const updated = await JournalEntry.findByIdAndUpdate(
-      id,
+    const updated = await JournalEntry.findOneAndUpdate(
+      { _id: id, userId: String(userId) },
       {
         text: String(text).trim(),
         emotion: analysis.emotion,
@@ -172,7 +177,8 @@ router.put("/entries/:id", async (req, res) => {
 router.delete("/entries/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await JournalEntry.findByIdAndDelete(id);
+    const userId = getAuthenticatedUserId(req);
+    const deleted = await JournalEntry.findOneAndDelete({ _id: id, userId: String(userId) });
 
     if (!deleted) {
       return res.status(404).json({ status: "error", message: "Entry not found." });
@@ -195,9 +201,9 @@ router.post("/analyze", async (req, res) => {
   }
 });
 
-router.get("/history/:userId", async (req, res) => {
+router.get("/history", async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = getAuthenticatedUserId(req);
 
     const entries = await JournalEntry.find({ userId: String(userId) }).sort({ entryDate: -1 });
 
@@ -221,9 +227,10 @@ router.get("/history/:userId", async (req, res) => {
   }
 });
 
-router.get("/history/:userId/:entryDate", async (req, res) => {
+router.get("/history/date/:entryDate", async (req, res) => {
   try {
-    const { userId, entryDate } = req.params;
+    const { entryDate } = req.params;
+    const userId = getAuthenticatedUserId(req);
     const parsedDate = parseEntryDate(entryDate);
     const { start, end } = getLocalDayBounds(parsedDate);
 
@@ -250,9 +257,9 @@ router.get("/history/:userId/:entryDate", async (req, res) => {
   }
 });
 
-router.get("/weekly-summary/:userId", async (req, res) => {
+router.get("/weekly-summary", async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = getAuthenticatedUserId(req);
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 6);
 
@@ -288,9 +295,9 @@ router.get("/weekly-summary/:userId", async (req, res) => {
   }
 });
 
-router.get("/dashboard/:userId", async (req, res) => {
+router.get("/dashboard", async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = getAuthenticatedUserId(req);
     const timeRange = normalizeTimeRange(req.query.timeRange);
 
     const now = new Date();

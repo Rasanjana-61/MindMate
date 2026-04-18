@@ -113,8 +113,8 @@ export function Dashboard({ setPage, userName }) {
           </div>
 
           <div className="hidden md:flex gap-3">
-            <button onClick={() => setPage('mood')} className="bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-              <Smile className="w-4 h-4" /> Log Mood
+            <button onClick={() => setPage('mood-journal')} className="bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+              <Smile className="w-4 h-4" /> Log today's journal entry
             </button>
             <button onClick={() => setPage('focus')} className="bg-white text-app-primary hover:bg-app-primary-light px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
               <Flame className="w-4 h-4" /> Start Focus
@@ -200,32 +200,6 @@ export function Dashboard({ setPage, userName }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
-              <div className="card p-6 flex flex-col justify-between relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-app-stress/20 to-transparent rounded-bl-full -z-10" />
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <Smile className="w-5 h-5 text-app-stress" />
-                      Mood Check-in
-                    </h2>
-                  </div>
-                  <p className="text-sm text-app-text-secondary mb-6">
-                    Your recent average mood is {overview.stats.averageMood || 0}/5.
-                  </p>
-
-                  <div className="flex justify-between items-center mb-6 bg-app-background/50 p-4 rounded-2xl border border-app-primary-light/50">
-                    {emojis.map((emoji, index) => (
-                      <button key={index} onClick={() => setPage('mood')} className="text-3xl hover:scale-125 transition-transform p-2 rounded-full hover:bg-white hover:shadow-sm">
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <button onClick={() => setPage('mood')} className="text-app-primary text-sm font-medium flex items-center gap-1 hover:gap-2 transition-all w-fit">
-                  View detailed history <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -388,3 +362,4 @@ export function Dashboard({ setPage, userName }) {
     </div>
   );
 }
+

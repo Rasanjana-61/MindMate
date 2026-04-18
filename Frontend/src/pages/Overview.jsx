@@ -15,9 +15,14 @@ import {
 import { ChevronDown, Frown, PenLine, Sprout, Zap } from 'lucide-react'
 import { getMoodEmoji } from '../data/moodData'
 import { groupEmotionScores } from '../utils/emotionUtils'
+import { getToken } from '../lib/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
-const USER_ID = 'testUser123'
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api\/?$/, '')
+
+function getAuthHeaders() {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -42,14 +47,17 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-export function Dashboard({ onNavigate }) {
+export function Dashboard({ onNavigate, user }) {
   const [dashboardData, setDashboardData] = useState(null)
   const [timeRange, setTimeRange] = useState('7D')
   const [isEmotionsExpanded, setIsEmotionsExpanded] = useState(false)
   const [activeChart, setActiveChart] = useState('trend')
+  const displayName = user?.fullName || user?.name || user?.studentId || 'User'
 
   useEffect(() => {
-    fetch(`${API_URL}/api/dashboard/${USER_ID}?timeRange=${timeRange}`)
+    fetch(`${API_URL}/api/dashboard?timeRange=${timeRange}`, {
+      headers: getAuthHeaders(),
+    })
       .then((r) => r.json())
       .then((data) => {
         setDashboardData(data)
@@ -77,7 +85,7 @@ export function Dashboard({ onNavigate }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink mb-1 flex items-center gap-2">
-              {getGreeting()}, Asitha <Sprout className="w-6 h-6 text-sage" />
+              {getGreeting()}, {displayName} <Sprout className="w-6 h-6 text-sage" />
             </h1>
             <p className="text-olive">{formatTodayDate()}</p>
           </div>

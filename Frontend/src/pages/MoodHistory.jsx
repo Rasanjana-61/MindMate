@@ -3,10 +3,14 @@ import { motion } from 'framer-motion'
 import { Calendar } from '../components/Calender'
 import { RecentDaysFeed } from '../components/RecentDaysFeed'
 import { ChartColumn } from 'lucide-react'
+import { getToken } from '../lib/auth'
 
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/api\/?$/, '')
 
-const USER_ID = 'testUser123'
+function getAuthHeaders() {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,7 +31,9 @@ export function MoodHistory({ onNavigate }) {
   }
 
   useEffect(() => {
-    fetch(`${API_URL}/api/history/${USER_ID}`)
+    fetch(`${API_URL}/api/history`, {
+      headers: getAuthHeaders(),
+    })
       .then(r => r.json())
       .then(data => { setEntries(Array.isArray(data) ? data : []); setLoading(false) })
       .catch(() => setLoading(false))
@@ -43,7 +49,7 @@ export function MoodHistory({ onNavigate }) {
       <motion.div variants={itemVariants}>
         <h1 className="font-lora text-2xl md:text-3xl font-semibold text-ink flex items-center gap-3">
           <ChartColumn className="w-7 h-7 text-sage" />
-          Mood History
+          Journal History
         </h1>
         <p className="text-olive mt-1">
           Track your emotional journey over time

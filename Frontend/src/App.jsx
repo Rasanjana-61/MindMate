@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/Layout';
+import { MoodTrackerLayout } from './components/MoodTrackerLayout';
 import { HomePage } from './pages/HomePage';
 import { Dashboard } from './pages/Dashboard';
 import { Dashboard as MoodDashboard } from './pages/Overview';
@@ -184,6 +185,13 @@ export function App() {
   };
 
   const handlePageChange = (nextPage) => {
+    if (nextPage === 'mood-journal') {
+      setMoodScreen('journal');
+      setMoodSelectedJournalDate(null);
+      setCurrentPage('mood');
+      return;
+    }
+
     if (nextPage === 'mood') {
       // Always open the mood module dashboard when selecting Mood from navigation.
       setMoodScreen('dashboard');
@@ -211,7 +219,7 @@ export function App() {
   const renderMoodModule = () => {
     switch (moodScreen) {
       case 'dashboard':
-        return <MoodDashboard onNavigate={handleMoodNavigate} />;
+        return <MoodDashboard onNavigate={handleMoodNavigate} user={user} />;
       case 'journal':
         return (
           <JournalEntry
@@ -224,7 +232,7 @@ export function App() {
       case 'results':
         return <MoodResults analysisResult={moodAnalysisResult} onNavigate={handleMoodNavigate} />;
       default:
-        return <MoodDashboard onNavigate={handleMoodNavigate} />;
+        return <MoodDashboard onNavigate={handleMoodNavigate} user={user} />;
     }
   };
 
@@ -325,6 +333,23 @@ export function App() {
     );
   }
 
+  if (currentPage === 'mood') {
+    return (
+      <>
+        <Toaster position="top-right" reverseOrder={false} />
+        <MoodTrackerLayout
+          currentScreen={moodScreen}
+          onNavigate={handleMoodNavigate}
+          onLogout={handleLogout}
+          onExit={() => setCurrentPage('dashboard')}
+          user={user}
+        >
+          {renderMoodModule()}
+        </MoodTrackerLayout>
+      </>
+    );
+  }
+
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
@@ -344,3 +369,5 @@ export function App() {
     </>
   );
 }
+
+
