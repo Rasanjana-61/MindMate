@@ -70,7 +70,9 @@ export function Header({
       case 'mood':
         return 'Mood & Mental Health';
       case 'focus':
-        return 'Focus & Tasks';
+        return 'Focus Timer';
+      case 'tasks':
+        return 'Task Manager';
       case 'peer':
         return 'Peer Support';
       case 'resources':

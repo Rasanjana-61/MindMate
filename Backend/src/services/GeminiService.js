@@ -21,7 +21,7 @@ class GeminiService {
 
         console.log(`[Gemini] Calling raw API with model: ${modelName}`);
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-        
+
         try {
             const response = await fetch(url, {
                 method: "POST",
@@ -97,12 +97,12 @@ class GeminiService {
                 return text;
             } catch (sdkError) {
                 console.warn("[Gemini] SDK error with primary model:", sdkError.message || sdkError);
-                
+
                 // Fallback sequence: 
                 // 1. gemini-flash-latest
                 // 2. gemini-1.5-flash
                 // 3. gemini-pro
-                
+
                 try {
                     return await this.callGeminiApi(prompt, "gemini-flash-latest");
                 } catch (e1) {

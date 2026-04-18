@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, FileDigit, Upload, Loader2, FileCheck, X, AlertCircle, FileText } from 'lucide-react';
 import { request } from '../../lib/auth';
@@ -195,9 +196,9 @@ export function FileSummary({ setPage }) {
                                         key="result"
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="text-lg leading-relaxed text-slate-700 whitespace-pre-wrap"
+                                        className="text-lg leading-relaxed text-slate-700 markdown-content"
                                     >
-                                        {summary}
+                                        <ReactMarkdown>{summary}</ReactMarkdown>
                                     </motion.div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-full gap-6 text-slate-400 opacity-50 text-center">
