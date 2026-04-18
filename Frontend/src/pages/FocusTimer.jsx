@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import {
   Activity,
+  AlertTriangle,
   Calendar,
   CheckCircle2,
   Circle,
   Clock,
   Flame,
+  History,
   Pause,
   Pencil,
   Play,
@@ -106,6 +108,50 @@ export function FocusTimer({ user }) {
     chartData: [],
     recentSessions: [],
   });
+
+  const [interruptionLogs, setInterruptionLogs] = useState(() => {
+    const saved = localStorage.getItem('focus_interruptions');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('focus_interruptions', JSON.stringify(interruptionLogs));
+  }, [interruptionLogs]);
+
+  const isActiveRef = useRef(isActive);
+  const timeLeftRef = useRef(timeLeft);
+  const isBreakRef = useRef(isBreak);
+
+  useEffect(() => {
+    isActiveRef.current = isActive;
+    timeLeftRef.current = timeLeft;
+    isBreakRef.current = isBreak;
+  }, [isActive, timeLeft, isBreak]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Only pause if a focus session (not break) is active
+      if (document.visibilityState === 'hidden' && isActiveRef.current && !isBreakRef.current) {
+        setIsActive(false);
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const newLog = {
+          id: Date.now(),
+          time: timeStr,
+          remaining: formatCountdown(timeLeftRef.current),
+          type: 'tab_switch',
+          date: now.toISOString()
+        };
+
+        setInterruptionLogs(prev => [newLog, ...prev].slice(0, 10));
+        setErrorMessage('Timer paused because you switched tabs! Stay focused on your task.');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   const currentDurationSeconds = (isBreak ? breakMinutes : focusMinutes) * 60;
   const radius = 120;
@@ -306,9 +352,8 @@ export function FocusTimer({ user }) {
             <div className="relative z-10 w-full">
               <div className="flex items-center justify-between gap-4 mb-6">
                 <span
-                  className={`px-5 py-2 rounded-full text-sm font-bold shadow-sm ${
-                    isBreak ? 'bg-wellness-green text-white' : 'bg-wellness-blue text-white'
-                  }`}
+                  className={`px-5 py-2 rounded-full text-sm font-bold shadow-sm ${isBreak ? 'bg-wellness-green text-white' : 'bg-wellness-blue text-white'
+                    }`}
                 >
                   {isBreak ? 'Break Time' : 'Focus Session'}
                 </span>
@@ -355,13 +400,12 @@ export function FocusTimer({ user }) {
 
               <div className="relative w-64 h-64 md:w-72 md:h-72 flex items-center justify-center mx-auto mb-10">
                 <div
-                  className={`absolute inset-0 rounded-full transition-all duration-1000 ${
-                    isActive
-                      ? isBreak
-                        ? 'shadow-[0_0_40px_rgba(123,200,164,0.35)]'
-                        : 'shadow-[0_0_40px_rgba(107,159,212,0.35)]'
-                      : ''
-                  }`}
+                  className={`absolute inset-0 rounded-full transition-all duration-1000 ${isActive
+                    ? isBreak
+                      ? 'shadow-[0_0_40px_rgba(123,200,164,0.35)]'
+                      : 'shadow-[0_0_40px_rgba(107,159,212,0.35)]'
+                    : ''
+                    }`}
                 />
                 <svg className="w-full h-full transform -rotate-90 relative z-10" viewBox="0 0 260 260">
                   <circle cx="130" cy="130" r={radius} fill="none" stroke={isBreak ? '#E8F0E8' : '#CFE6E6'} strokeWidth="12" />
@@ -401,11 +445,10 @@ export function FocusTimer({ user }) {
                 <button
                   onClick={() => setIsActive((current) => !current)}
                   disabled={isLoggingSession}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all hover:scale-105 active:scale-95 ${
-                    isBreak
-                      ? 'bg-wellness-green hover:bg-green-500 shadow-wellness-green/30'
-                      : 'bg-wellness-blue hover:bg-blue-500 shadow-wellness-blue/30'
-                  } ${isLoggingSession ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl transition-all hover:scale-105 active:scale-95 ${isBreak
+                    ? 'bg-wellness-green hover:bg-green-500 shadow-wellness-green/30'
+                    : 'bg-wellness-blue hover:bg-blue-500 shadow-wellness-blue/30'
+                    } ${isLoggingSession ? 'opacity-60 cursor-not-allowed' : ''}`}
                   type="button"
                 >
                   {isActive ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1.5" />}
@@ -561,17 +604,15 @@ export function FocusTimer({ user }) {
                   return (
                     <div
                       key={task.id}
-                      className={`flex items-start gap-3 p-4 rounded-xl border transition-all duration-300 ${
-                        task.completed
-                          ? 'bg-wellness-bg/50 border-transparent opacity-70'
-                          : `bg-white shadow-sm hover:shadow-md border-l-4 ${theme.border} border-y-wellness-border/50 border-r-wellness-border/50`
-                      }`}
+                      className={`flex items-start gap-3 p-4 rounded-xl border transition-all duration-300 ${task.completed
+                        ? 'bg-wellness-bg/50 border-transparent opacity-70'
+                        : `bg-white shadow-sm hover:shadow-md border-l-4 ${theme.border} border-y-wellness-border/50 border-r-wellness-border/50`
+                        }`}
                     >
                       <button
                         onClick={() => handleToggleTask(task)}
-                        className={`shrink-0 mt-0.5 transition-colors ${
-                          task.completed ? 'text-wellness-green' : 'text-wellness-text-muted hover:text-wellness-blue'
-                        }`}
+                        className={`shrink-0 mt-0.5 transition-colors ${task.completed ? 'text-wellness-green' : 'text-wellness-text-muted hover:text-wellness-blue'
+                          }`}
                         type="button"
                         title="Toggle complete"
                       >
@@ -633,6 +674,57 @@ export function FocusTimer({ user }) {
             </div>
           </motion.div>
 
+          {/* Focus Interruptions Card */}
+          <motion.div variants={itemVariants} className="card p-6 md:p-8 bg-amber-50/20 border-amber-100/50">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2 text-wellness-text">
+                <div className="bg-amber-100 p-2 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                </div>
+                Focus Interruptions
+              </h2>
+              {interruptionLogs.length > 0 && (
+                <button
+                  onClick={() => setInterruptionLogs([])}
+                  className="text-xs font-semibold text-amber-600 hover:text-amber-700 underline underline-offset-4"
+                  type="button"
+                >
+                  Clear history
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {interruptionLogs.length > 0 ? (
+                interruptionLogs.map((log) => (
+                  <div key={log.id} className="flex items-center justify-between rounded-2xl bg-white/80 border border-amber-100 px-4 py-3 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-amber-50 p-2 rounded-xl text-amber-600">
+                        <History className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-wellness-text">Tab switched at {log.time}</p>
+                        <p className="text-xs text-wellness-text-muted">Timer was at {log.remaining}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100/70 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200/50">
+                      Auto-Paused
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 border-2 border-dashed border-amber-200/30 rounded-3xl bg-amber-50/10">
+                  <div className="w-12 h-12 bg-wellness-green-light/30 rounded-full flex items-center justify-center text-wellness-green mx-auto mb-3">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm font-medium text-wellness-text">Perfect Focus</p>
+                  <p className="text-xs text-wellness-text-sec mt-1">No distractions recorded. keep it up!</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Recent sessions */}
           <motion.div variants={itemVariants} className="card p-6 md:p-8">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl font-bold flex items-center gap-2 text-wellness-text">
