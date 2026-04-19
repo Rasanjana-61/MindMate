@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import YouTube from 'react-youtube';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Download, FileText, MessageSquare, Edit3, Loader2, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Send, Download, FileText, Edit3, Loader2, PlayCircle } from 'lucide-react';
 import { request } from '../../lib/auth';
 import './Summarizer.css';
 
@@ -12,7 +12,6 @@ export function VideoSummary({ setPage }) {
     const [transcriptData, setTranscriptData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('summary');
-    const [chatMessage, setChatMessage] = useState('');
     const [currentTime, setCurrentTime] = useState(0);
     const [player, setPlayer] = useState(null);
     const [notes, setNotes] = useState('');
@@ -192,8 +191,7 @@ export function VideoSummary({ setPage }) {
                     <div className="workspace-tabs">
                         {[
                             { id: 'summary', name: 'Summary', icon: <FileText className="w-4 h-4" /> },
-                            { id: 'notes', name: 'Notes', icon: <Edit3 className="w-4 h-4" /> },
-                            { id: 'chat', name: 'Chat', icon: <MessageSquare className="w-4 h-4" /> }
+                            { id: 'notes', name: 'Notes', icon: <Edit3 className="w-4 h-4" /> }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -257,31 +255,6 @@ export function VideoSummary({ setPage }) {
                                 </motion.div>
                             )}
 
-                            {activeTab === 'chat' && (
-                                <motion.div
-                                    key="chat"
-                                    initial={{ opacity: 0, x: 10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    className="h-full flex flex-col"
-                                >
-                                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-4 opacity-50">
-                                        <MessageSquare className="w-12 h-12" />
-                                        <p className="text-center px-8">Video AI Chat is currently being synchronized. Soon you'll be able to ask anything!</p>
-                                    </div>
-                                    <div className="mt-4 flex gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Ask anything..."
-                                            className="flex-1 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-emerald-500"
-                                            disabled
-                                        />
-                                        <button className="p-2 bg-emerald-500 text-white rounded-xl opacity-50" disabled>
-                                            <Send className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
                         </AnimatePresence>
                     </div>
                 </section>

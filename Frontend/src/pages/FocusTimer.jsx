@@ -135,7 +135,8 @@ export function FocusTimer({ user }) {
           type: 'tab_switch'
         };
         setInterruptionLogs(prev => [newLog, ...prev].slice(0, 10));
-        setErrorMessage('Timer paused! Transitioning to floating mode.');
+        localStorage.setItem('focus_interruptions', JSON.stringify([newLog, ...interruptionLogs].slice(0, 10)));
+        setErrorMessage('Timer paused! Switch back to resume.');
       } else if (document.visibilityState === 'visible' && currentPip) {
         try {
           currentPip.close();
@@ -207,13 +208,7 @@ export function FocusTimer({ user }) {
   };
 
   const handleStartTimer = async () => {
-    const nextActive = !isActive;
-    setIsActive(nextActive);
-    
-    // Auto-open PiP when starting if not already open
-    if (nextActive && !pipWindow && window.documentPictureInPicture) {
-      await togglePiP();
-    }
+    setIsActive(!isActive);
   };
 
   async function loadOverview() {
@@ -340,10 +335,10 @@ export function FocusTimer({ user }) {
           <div className="flex items-center gap-3">
             <button 
               onClick={togglePiP}
-              className={`p-2 rounded-xl transition-all ${pipWindow ? 'bg-[#7BAE7F] text-white shadow-lg scale-110' : 'bg-[#FAFBF9] text-[#5F705F] border border-[#F0F2F0] hover:bg-white'}`}
-              title="Open Floating Timer (Picture-in-Picture)"
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${pipWindow ? 'bg-[#7BAE7F] text-white shadow-lg scale-105' : 'bg-white text-[#5F705F] border border-[#E8F0E8] hover:bg-[#FAFBF9]'}`}
             >
-              <ExternalLink className="w-5 h-5" />
+              <ExternalLink className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Floating Mode</span>
             </button>
             <div className="bg-[#E2F0E7] text-[#7BAE7F] px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
               Focus Mode
@@ -530,7 +525,6 @@ export function FocusTimer({ user }) {
                   setSelectedTaskId(task.id); 
                   setTimeLeft(0); 
                   setIsActive(true); 
-                  if (!pipWindow && window.documentPictureInPicture) await togglePiP();
                 }}
                 className={`text-left p-6 rounded-[32px] border transition-all relative overflow-hidden group hover:shadow-md ${isSelected ? 'bg-[#E2F0E7] border-[#7BAE7F]/30' : 'bg-[#FAFBF9] border-[#F0F2F0]'}`}
               >
