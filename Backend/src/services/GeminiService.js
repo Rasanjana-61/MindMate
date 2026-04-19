@@ -8,7 +8,7 @@ class GeminiService {
             console.warn("WARNING: GEMINI_API_KEY is not set in environment variables.");
         }
         this.genAI = new GoogleGenerativeAI(apiKey || "DUMMY_KEY");
-        // Using Gemini 2.0 Flash as primary as it is available in user's model list
+        // Using Gemini 2.0 Flash as primary (confirmed available)
         this.modelName = "gemini-2.0-flash";
         this.model = this.genAI.getGenerativeModel({ model: this.modelName });
     }
@@ -99,17 +99,17 @@ class GeminiService {
                 console.warn("[Gemini] SDK error with primary model:", sdkError.message || sdkError);
 
                 // Fallback sequence: 
-                // 1. gemini-flash-latest
-                // 2. gemini-1.5-flash
-                // 3. gemini-pro
+                // 1. gemini-2.0-flash
+                // 2. gemini-flash-latest
+                // 3. gemini-2.5-flash
 
                 try {
-                    return await this.callGeminiApi(prompt, "gemini-flash-latest");
+                    return await this.callGeminiApi(prompt, "gemini-2.0-flash");
                 } catch (e1) {
                     try {
-                        return await this.callGeminiApi(prompt, "gemini-1.5-flash");
+                        return await this.callGeminiApi(prompt, "gemini-flash-latest");
                     } catch (e2) {
-                        return await this.callGeminiApi(prompt, "gemini-pro");
+                        return await this.callGeminiApi(prompt, "gemini-2.5-flash");
                     }
                 }
             }
@@ -147,12 +147,12 @@ class GeminiService {
             } catch (sdkError) {
                 console.warn("[Gemini] SDK error, trying fallbacks for general text...");
                 try {
-                    return await this.callGeminiApi(prompt, "gemini-flash-latest");
+                    return await this.callGeminiApi(prompt, "gemini-2.0-flash");
                 } catch (e1) {
                     try {
-                        return await this.callGeminiApi(prompt, "gemini-1.5-flash");
+                        return await this.callGeminiApi(prompt, "gemini-flash-latest");
                     } catch (e2) {
-                        return await this.callGeminiApi(prompt, "gemini-pro");
+                        return await this.callGeminiApi(prompt, "gemini-2.5-flash");
                     }
                 }
             }
