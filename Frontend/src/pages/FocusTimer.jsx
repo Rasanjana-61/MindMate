@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Activity,
   AlertTriangle,
@@ -6,6 +7,7 @@ import {
   CheckCircle2,
   Circle,
   Clock,
+  ExternalLink,
   Flame,
   History,
   Pause,
@@ -101,6 +103,14 @@ export function FocusTimer({ user }) {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [pipWindow, setPipWindow] = useState(null);
+  const pipWindowRef = useRef(null);
+
+  // Sync ref with state for use in event listeners
+  useEffect(() => {
+    pipWindowRef.current = pipWindow;
+  }, [pipWindow]);
+
   const isActiveRef = useRef(isActive);
   const timeLeftRef = useRef(timeLeft);
   const isBreakRef = useRef(isBreak);
@@ -113,6 +123,8 @@ export function FocusTimer({ user }) {
 
   useEffect(() => {
     const handleVisibilityChange = () => {
+      const currentPip = pipWindowRef.current;
+      
       if (document.visibilityState === 'hidden' && isActiveRef.current && !isBreakRef.current) {
         setIsActive(false);
         const now = new Date();
@@ -123,12 +135,86 @@ export function FocusTimer({ user }) {
           type: 'tab_switch'
         };
         setInterruptionLogs(prev => [newLog, ...prev].slice(0, 10));
-        setErrorMessage('Timer paused! Keep your focus on MindMate for maximum efficiency.');
+        setErrorMessage('Timer paused! Transitioning to floating mode.');
+      } else if (document.visibilityState === 'visible' && currentPip) {
+        try {
+          currentPip.close();
+        } catch (e) {
+          console.error("Failed to close PiP:", e);
+        }
+        setPipWindow(null);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (pipWindowRef.current) {
+        try { pipWindowRef.current.close(); } catch(e){}
+      }
+    };
   }, []);
+
+  const togglePiP = async () => {
+    if (pipWindow) {
+      pipWindow.close();
+      setPipWindow(null);
+      return;
+    }
+
+    if (!window.documentPictureInPicture) {
+      setErrorMessage("Your browser doesn't support the Floating Timer.");
+      return;
+    }
+
+    try {
+      const pip = await window.documentPictureInPicture.requestWindow({
+        width: 320,
+        height: 320,
+      });
+
+      // Copy styles 
+      [...document.styleSheets].forEach((styleSheet) => {
+        try {
+          if (styleSheet.cssRules) {
+            const cssRules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
+            const style = document.createElement('style');
+            style.textContent = cssRules;
+            pip.document.head.appendChild(style);
+          }
+        } catch (e) {
+          const link = document.createElement('link');
+          if (styleSheet.href) {
+            link.rel = 'stylesheet';
+            link.href = styleSheet.href;
+            pip.document.head.appendChild(link);
+          }
+        }
+      });
+
+      pip.addEventListener('pagehide', () => {
+        setPipWindow(null);
+      });
+
+      setPipWindow(pip);
+      return pip;
+    } catch (err) {
+      console.error('PiP Error:', err);
+      // Don't show error if it's just a user cancellation
+      if (err.name !== 'NotAllowedError') {
+        setErrorMessage("Could not open floating timer window.");
+      }
+    }
+  };
+
+  const handleStartTimer = async () => {
+    const nextActive = !isActive;
+    setIsActive(nextActive);
+    
+    // Auto-open PiP when starting if not already open
+    if (nextActive && !pipWindow && window.documentPictureInPicture) {
+      await togglePiP();
+    }
+  };
 
   async function loadOverview() {
     setIsLoading(true);
@@ -251,8 +337,17 @@ export function FocusTimer({ user }) {
             <h2 className="text-3xl font-bold text-[#2D3E33] mb-2">Pomodoro Focus Timer</h2>
             <p className="text-sm text-[#5F705F]">Stay on task with guided focus and break cycles designed for academic work.</p>
           </div>
-          <div className="bg-[#E2F0E7] text-[#7BAE7F] px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
-            Focus Mode
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={togglePiP}
+              className={`p-2 rounded-xl transition-all ${pipWindow ? 'bg-[#7BAE7F] text-white shadow-lg scale-110' : 'bg-[#FAFBF9] text-[#5F705F] border border-[#F0F2F0] hover:bg-white'}`}
+              title="Open Floating Timer (Picture-in-Picture)"
+            >
+              <ExternalLink className="w-5 h-5" />
+            </button>
+            <div className="bg-[#E2F0E7] text-[#7BAE7F] px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
+              Focus Mode
+            </div>
           </div>
         </div>
 
@@ -305,7 +400,7 @@ export function FocusTimer({ user }) {
             {/* Main Action Buttons */}
             <div className="flex items-center gap-4 mt-8 w-full justify-center">
               <button
-                onClick={() => setIsActive(!isActive)}
+                onClick={handleStartTimer}
                 className="flex-1 bg-[#7BAE7F] hover:bg-[#6B9E6E] text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#7BAE7F]/20 transition-all active:scale-95"
               >
                 {isActive ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
@@ -431,7 +526,12 @@ export function FocusTimer({ user }) {
             return (
               <motion.button 
                 key={task.id} 
-                onClick={() => { setSelectedTaskId(task.id); setTimeLeft(0); setIsActive(true); }}
+                onClick={async () => { 
+                  setSelectedTaskId(task.id); 
+                  setTimeLeft(0); 
+                  setIsActive(true); 
+                  if (!pipWindow && window.documentPictureInPicture) await togglePiP();
+                }}
                 className={`text-left p-6 rounded-[32px] border transition-all relative overflow-hidden group hover:shadow-md ${isSelected ? 'bg-[#E2F0E7] border-[#7BAE7F]/30' : 'bg-[#FAFBF9] border-[#F0F2F0]'}`}
               >
                 <div className="relative z-10 flex flex-col h-full">
@@ -469,7 +569,43 @@ export function FocusTimer({ user }) {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
 
+      {/* Picture-in-Picture Portal */}
+      {pipWindow && createPortal(
+        <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#FAFBF9] p-4 text-center overflow-hidden font-sans">
+          <div className="relative w-64 h-64 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 260 260">
+              <circle cx="130" cy="130" r={radius} fill="white" stroke="#F1F5F0" strokeWidth="6" />
+              <circle
+                cx="130" cy="130" r={radius} fill="none"
+                stroke={isBreak ? '#F59E0B' : '#7BAE7F'}
+                strokeWidth="10" strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-1000 ease-linear"
+              />
+            </svg>
+
+            <div className="absolute flex flex-col items-center">
+              <p className="text-[12px] font-bold text-[#7BAE7F] uppercase tracking-[0.2em] mb-1">
+                {isActive ? 'Active' : 'PAUSED'}
+              </p>
+              <span className="text-5xl font-bold text-[#2D3E33] tracking-tighter">
+                {formatCountdown(timeLeft)}
+              </span>
+              <p className="text-xs text-[#5F705F] mt-2 font-bold uppercase tracking-widest">
+                {isBreak ? 'Break Cycle' : 'Focus Session'}
+              </p>
+            </div>
+          </div>
+          {!isActive && (
+            <p className="mt-4 text-[10px] text-[#7BAE7F] font-bold uppercase animate-pulse">
+              Switch back to resume
+            </p>
+          )}
+        </div>,
+        pipWindow.document.body
+      )}
+    </div>
   );
 }

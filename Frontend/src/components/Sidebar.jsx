@@ -22,7 +22,7 @@ export function Sidebar({ currentPage, setPage, user, onLogout }) {
   ];
 
   const moodTrackerItems = [
-    { id: 'mood', label: 'Mood Tracker', icon: Smile },
+    { id: 'mood', label: 'Journal', icon: Smile },
   ];
 
   const communityNavItems = [
