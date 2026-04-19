@@ -16,7 +16,7 @@ function SidebarAvatar({ user }) {
 export function Sidebar({ currentPage, setPage, user, onLogout }) {
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'summarizer', label: 'AI Summarizer', icon: Sparkles, badge: 'New' },
+    { id: 'summarizer', label: 'AI Summarizer', icon: Sparkles },
     { id: 'focus', label: 'Focus Timer', icon: Timer },
     { id: 'tasks', label: 'Tasks', icon: ClipboardList },
   ];
