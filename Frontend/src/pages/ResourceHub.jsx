@@ -60,6 +60,7 @@ function getPlaceholderCover(type) {
 
 export function ResourceHub({ user }) {
   const [view, setView] = useState('explore'); // 'explore' or 'upload'
+  console.log("ResourceHub Rendered, current view:", view);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [resources, setResources] = useState([]);
@@ -197,7 +198,10 @@ export function ResourceHub({ user }) {
         </div>
 
         <button
-          onClick={() => setView(view === 'explore' ? 'upload' : 'explore')}
+          onClick={() => {
+            console.log("Toggle button clicked, moving to:", view === 'explore' ? 'upload' : 'explore');
+            setView(view === 'explore' ? 'upload' : 'explore');
+          }}
           className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl active:scale-95 ${
             view === 'explore' 
               ? 'bg-wellness-blue text-white hover:bg-wellness-blue/90' 
@@ -218,15 +222,9 @@ export function ResourceHub({ user }) {
         </button>
       </div>
 
-      <AnimatePresence mode="wait">
+      <div className="mt-8 transition-all">
         {view === 'explore' ? (
-          <motion.div
-            key="explore"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
-          >
+          <div className="space-y-8">
             {/* Filters & Search */}
             <div className="flex flex-col lg:flex-row gap-6 items-center">
               <div className="relative flex-1 w-full">
@@ -267,11 +265,8 @@ export function ResourceHub({ user }) {
             ) : resources.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {resources.map((res) => (
-                  <motion.div
-                    layout
+                  <div
                     key={res.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
                     className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 group flex flex-col h-full"
                   >
                     {/* Cover Image */}
@@ -356,7 +351,7 @@ export function ResourceHub({ user }) {
                         </button>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -368,15 +363,9 @@ export function ResourceHub({ user }) {
                 <p className="text-slate-400 font-medium">Be the first to share resources with your batchmates!</p>
               </div>
             )}
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
-            key="upload"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="max-w-3xl mx-auto"
-          >
+          <div className="max-w-3xl mx-auto">
             <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100">
               <div className="bg-wellness-blue p-8 flex items-center gap-4">
                  <div className="p-3 bg-white/20 rounded-2xl border border-white/30">
@@ -523,11 +512,11 @@ export function ResourceHub({ user }) {
                 </button>
               </form>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
-      <style jsx>{`
+      <style>{`
         .dashed-border-animate {
           background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23CBD5E1' stroke-width='4' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
           border-radius: 24px;

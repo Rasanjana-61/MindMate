@@ -49,8 +49,15 @@ const resourceFileFilter = (req, file, cb) => {
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "text/plain",
+    "video/mp4",
+    "video/webm",
+    "video/x-matroska",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/mp3",
+    "application/epub+zip"
   ];
-  const allowedExtensions = [".pdf", ".docx", ".txt"];
+  const allowedExtensions = [".pdf", ".docx", ".txt", ".mp4", ".mkv", ".webm", ".mp3", ".wav", ".epub"];
   const extension = path.extname(file.originalname).toLowerCase();
 
   if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(extension)) {
@@ -58,14 +65,14 @@ const resourceFileFilter = (req, file, cb) => {
     return;
   }
 
-  cb(new Error("Only PDF, DOCX, and TXT files are allowed."));
+  cb(new Error("Only PDF, DOCX, TXT, Video (MP4/MKV/WEBM), and Audio (MP3/WAV) files are allowed."));
 };
 
 const uploadResourceFile = multer({
   storage: resourceStorage,
   fileFilter: resourceFileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 200 * 1024 * 1024, // 200MB
   },
 });
 
