@@ -48,6 +48,7 @@ export function Tasks() {
   const [filter, setFilter] = useState('all');
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [categoryError, setCategoryError] = useState('');
 
   const [taskForm, setTaskForm] = useState({
     title: '',
@@ -76,6 +77,15 @@ export function Tasks() {
 
   const handleSaveTask = async (e) => {
     e.preventDefault();
+    setCategoryError('');
+
+    // Category Validation: IT, SE, DS, BS + 4 digits
+    const categoryRegex = /^(IT|SE|DS|BS)\d{4}$/;
+    if (!taskForm.category || !categoryRegex.test(taskForm.category)) {
+      setCategoryError('Must start with IT, SE, DS, or BS followed by 4 digits (e.g., IT1010)');
+      return;
+    }
+
     try {
       if (editingTask) {
         await updateTask(editingTask.id, taskForm);
@@ -84,6 +94,7 @@ export function Tasks() {
       }
       setIsAddingTask(false);
       setEditingTask(null);
+      setCategoryError('');
       setTaskForm({ title: '', description: '', dueDate: '', priority: 'medium', category: '', nextStep: '' });
       loadTasks();
     } catch (error) {
@@ -336,15 +347,19 @@ export function Tasks() {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                   <div>
+                  <div>
                     <label className="block text-xs font-bold text-[#5F705F] uppercase tracking-wider mb-2 ml-2">Category</label>
                     <input 
                       type="text" 
                       value={taskForm.category}
-                      onChange={(e) => setTaskForm({...taskForm, category: e.target.value})}
-                      placeholder="e.g. SE 318"
-                      className="w-full bg-[#FAFBF9] border border-[#F0F2F0] rounded-2xl px-6 py-4 text-sm font-bold text-[#2D3E33] focus:ring-2 focus:ring-[#7BAE7F]/20 outline-none transition-all"
+                      onChange={(e) => {
+                        setTaskForm({...taskForm, category: e.target.value.toUpperCase()});
+                        if (categoryError) setCategoryError('');
+                      }}
+                      placeholder="e.g. IT1010"
+                      className={`w-full bg-[#FAFBF9] border ${categoryError ? 'border-red-400' : 'border-[#F0F2F0]'} rounded-2xl px-6 py-4 text-sm font-bold text-[#2D3E33] focus:ring-2 focus:ring-[#7BAE7F]/20 outline-none transition-all`}
                     />
+                    {categoryError && <p className="text-[10px] text-red-500 font-bold mt-2 ml-2">{categoryError}</p>}
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-[#5F705F] uppercase tracking-wider mb-2 ml-2">Priority</label>
